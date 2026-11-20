@@ -15,10 +15,12 @@ project:
     explicit bijection from {x < 2^k} onto {y < 3^k : good k y}; and scanning a block twice
     doubles the period exactly when the block is primitive and has an odd number of odd digits.
   authors:
-    - "Su MingKai"
+    - name: "Su MingKai"
+      github: "3y3y3y-huaiji"
   license: "Apache-2.0"
   responsible_maintainers:
-    - "Su MingKai"
+    - name: "Su MingKai"
+      github: "3y3y3y-huaiji"
 
 classification:
   arxiv: ["math.NT"]
