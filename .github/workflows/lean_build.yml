@@ -64,6 +64,9 @@ jobs:
           #print axioms run_spec
           #print axioms step_pow_bstep
           #print axioms period_doubling
+          #print axioms step_pow_two_pow
+          #print axioms good_step_pow
+          #print axioms good_card
           LEAN
           OUTPUT=$(lake env lean check_axioms.lean)
           echo "$OUTPUT"
@@ -72,7 +75,8 @@ jobs:
             exit 1
           fi
           for T in step_parity step_parity_hex a_mod_six parity_window_hex cliff_sharp \
-                   ternary_machine step_pow_bstep period_doubling; do
+                   ternary_machine step_pow_bstep period_doubling step_pow_two_pow \
+                   good_step_pow good_card; do
             if ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' depends on axioms: [propext, Classical.choice, Quot.sound]" \
                && ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' depends on axioms: [propext, Quot.sound]" \
                && ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' does not depend on any axioms"; then
