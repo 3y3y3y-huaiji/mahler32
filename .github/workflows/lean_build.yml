@@ -1,0 +1,83 @@
+name: Lean 4 CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install elan
+        run: |
+          curl -sSfL --retry 5 --retry-connrefused https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          rm elan-init.sh
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Verify Lean & Lake Toolchain
+        run: |
+          lean --version
+          lake --version
+
+      - name: Fetch Mathlib Cache
+        run: lake exe cache get
+
+      - name: Lake Build
+        run: lake build -KwarningAsError=true
+
+      - name: Strict Verification of All Modules
+        run: |
+          lake env lean -D warningAsError=true Mahler32.lean
+          lake env lean -D warningAsError=true Mahler32/Basic.lean
+
+      - name: Mathlib Linter Check (#lint)
+        run: |
+          cat << 'LEAN' > run_linter.lean
+          import Mahler32.Basic
+
+          #lint
+          LEAN
+          lake env lean run_linter.lean
+          rm run_linter.lean
+
+      - name: Kernel Axioms Verification
+        run: |
+          cat << 'LEAN' > check_axioms.lean
+          import Mahler32.Basic
+
+          open Mahler32
+
+          #print axioms step_parity
+          #print axioms step_parity_hex
+          #print axioms a_mod_six
+          #print axioms parity_window_hex
+          #print axioms cliff_sharp
+          #print axioms ternary_machine
+          #print axioms run_spec
+          #print axioms step_pow_bstep
+          #print axioms period_doubling
+          LEAN
+          OUTPUT=$(lake env lean check_axioms.lean)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "sorryAx"; then
+            echo "Error: proof depends on sorryAx"
+            exit 1
+          fi
+          for T in step_parity step_parity_hex a_mod_six parity_window_hex cliff_sharp \
+                   ternary_machine step_pow_bstep period_doubling; do
+            if ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' depends on axioms: [propext, Classical.choice, Quot.sound]" \
+               && ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' depends on axioms: [propext, Quot.sound]" \
+               && ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' does not depend on any axioms"; then
+              echo "Error: unexpected axioms for $T"
+              exit 1
+            fi
+          done
+          echo "All kernel axioms verified successfully!"
