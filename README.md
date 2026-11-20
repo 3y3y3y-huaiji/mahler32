@@ -19,7 +19,7 @@ The recurrence is the `3/2`-dynamical system of Mahler (1968); `a(n) = ⌊K·(3/
 `K = 1.0815136685898…`, but `K(3)` is *not* a Mahler Z-number, so the parity sequence is not
 governed by that theorem.
 
-Everything below is machine-checked: **487 lines, no `sorry`**, and every core theorem depends
+Everything below is machine-checked: **555 lines, no `sorry`**, and every core theorem depends
 only on `propext`, `Classical.choice` and `Quot.sound`.
 
 ---
@@ -77,13 +77,20 @@ block such as `111` (whose repeating value is `1/2`) behaves like its primitive 
 
 ---
 
-## Known gap
+## The `2 ^ k` legal classes
 
-The cardinality `|{y < 3^k : good k y}| = 2^k` (the “`2^k` legal residue classes modulo `3^k`,
-one per parity history) is **not** formalized yet. The reversible half is: `step_pow_bstep` and
-`bstep_pow_step` show that every legal `y` has exactly one `k`-step predecessor, given explicitly
-by the inverse branch. The missing half is the surjectivity of the digit map (a lift `2y = 3z + c`
-needs the parity adjustment `z ↦ z + 3^{k-1}`). Numerically the count is exact for `k ≤ 7`.
+| Theorem | Statement |
+| :-- | :-- |
+| `step_lt_succ`, `step_strictMono`, `step_pow_strictMono` | `step` and all its iterates are strictly monotone |
+| `step_pow_two_pow` | `step^[k] (2^k) = 3^k` — the window boundary lands exactly on `3^k` |
+| `good_step_pow` | every point of the `k`-th image is legal |
+| `good_card` | **`\|{y < 3^k : good k y}\| = 2^k`** |
+
+The count is proved by an explicit bijection rather than by a surjectivity argument on the digit
+map: `x ↦ step^[k] x` maps `{x < 2^k}` onto `{y < 3^k : good k y}`. Membership uses
+`step^[k] x < step^[k] (2^k) = 3^k`; injectivity is strict monotonicity; surjectivity sends a legal
+`y` to `x = bstep^[k] y`, which satisfies `step^[k] x = y` by `step_pow_bstep` and `x < 2^k` by
+monotonicity. `#eval` reproduces `1, 2, 4, 8, 16, 32` for `k = 0 … 5`.
 
 ## Build
 

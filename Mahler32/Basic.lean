@@ -29,7 +29,9 @@ problem `a n % 2`; every statement is a closed-form local law, proved with `omeg
 * `cliff_sharp` : the window is sharp — `0` and `6 ^ m` agree on `m` base-`6` digits yet differ
   in parity at step `m`.
 * `run_spec` / `ternary_machine` : the base-`3` two-state machine (append `x % 2`, then divide by
-  `2` digit by digit with a carry in `{0, 1}`) computes `step x`.
+  `2` digit by digit with a carry in `{0, 1}`) computes `step x`;
+* `good_card` : exactly `2 ^ k` legal residue classes modulo `3 ^ k`, via the bijection
+  `x ↦ step^[k] x` from `{x < 2 ^ k}` onto `{y < 3 ^ k : good k y}`.
 -/
 
 namespace Mahler32
@@ -482,6 +484,72 @@ theorem step_pow_bstep : ∀ k y : ℕ, good k y → step^[k] (bstep^[k] y) = y
     obtain ⟨h0, hk⟩ := good.succ h
     rw [Function.iterate_succ_apply', Function.iterate_succ_apply,
       step_pow_bstep k (bstep y) hk, step_bstep y h0]
+
+
+/-! ### The `2 ^ k` legal residue classes
+
+`step` is strictly monotone, and `k` steps map the window boundary `2 ^ k` exactly onto
+`3 ^ k`.  Hence `x ↦ step^[k] x` is a bijection from `{x < 2 ^ k}` onto the legal set
+`{y < 3 ^ k : good k y}`, whose cardinality is therefore `2 ^ k`: one class per history. -/
+
+/-- `step` increases strictly. -/
+theorem step_lt_succ (n : ℕ) : step n < step (n + 1) := by
+  obtain ⟨k, rfl⟩ | ⟨k, rfl⟩ := two_cases n <;> unfold step <;> omega
+
+theorem step_strictMono : StrictMono step := strictMono_nat_of_lt_succ step_lt_succ
+
+theorem step_pow_strictMono (k : ℕ) : StrictMono (step^[k]) := step_strictMono.iterate k
+
+lemma step_pow_zero (k : ℕ) : step^[k] 0 = 0 := by
+  induction k with
+  | zero => simp
+  | succ k ih => rw [Function.iterate_succ_apply', ih]; simp [step]
+
+/-- `k` steps carry the window boundary `2 ^ k` onto `3 ^ k`. -/
+theorem step_pow_two_pow (k : ℕ) : step^[k] (2 ^ k) = 3 ^ k := by
+  have h := step_pow_shift k k le_rfl 1 0
+  simpa [step_pow_zero] using h
+
+/-- A positive iterate of `step` is never `≡ 1 (mod 3)`. -/
+lemma step_pow_mod_three_ne_one {n : ℕ} (hn : 0 < n) (x : ℕ) : step^[n] x % 3 ≠ 1 := by
+  obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+  rw [Function.iterate_succ_apply', step_mod_three]
+  omega
+
+/-- Every point of the `k`-th image is legal. -/
+theorem good_step_pow (k x : ℕ) : good k (step^[k] x) := by
+  intro j hj
+  have hjk : j ≤ k := by omega
+  have hsplit : step^[k] x = step^[j] (step^[k - j] x) := by
+    rw [← Function.iterate_add_apply, Nat.add_sub_cancel' hjk]
+  rw [hsplit, bstep_pow_step]
+  exact step_pow_mod_three_ne_one (by omega) x
+
+instance decidableGood (k : ℕ) : DecidablePred (good k) := fun y =>
+  Nat.decidableBallLT k (fun j _ => (bstep^[j] y) % 3 ≠ 1)
+
+/-- **The `2 ^ k` legal classes.**  The `k`-th iterate of `step` is a bijection from
+`{x < 2 ^ k}` onto `{y < 3 ^ k : good k y}`. -/
+theorem good_card (k : ℕ) :
+    ((Finset.range (3 ^ k)).filter (fun y => good k y)).card = 2 ^ k := by
+  have hbij : (Finset.range (2 ^ k)).card =
+      ((Finset.range (3 ^ k)).filter (fun y => good k y)).card := by
+    refine Finset.card_bij (fun x _ => step^[k] x) ?_ ?_ ?_
+    · intro x hx
+      simp only [Finset.mem_filter, Finset.mem_range] at hx ⊢
+      refine ⟨?_, good_step_pow k x⟩
+      rw [← step_pow_two_pow k]
+      exact (step_pow_strictMono k).lt_iff_lt.mpr hx
+    · intro x₁ _ x₂ _ h
+      exact (step_pow_strictMono k).injective h
+    · intro y hy
+      simp only [Finset.mem_filter, Finset.mem_range] at hy
+      obtain ⟨hy3, hyg⟩ := hy
+      refine ⟨bstep^[k] y, ?_, step_pow_bstep k y hyg⟩
+      rw [Finset.mem_range, ← (step_pow_strictMono k).lt_iff_lt, step_pow_bstep k y hyg,
+        step_pow_two_pow]
+      exact hy3
+  rw [← hbij, Finset.card_range]
 
 
 end Mahler32

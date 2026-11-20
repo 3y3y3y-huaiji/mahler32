@@ -13,7 +13,7 @@
 | 一.2 | 倍周期碎裂 | ⚠️ 需加**本原性** | 奇数个 1 且 B **本原** ⇒ 周期**严格** ×2（39/39 块验证）；偶数个 1 ⇒ 周期整除 \|B\|；奇数个 1 但 B 非本原（如 `111`，其重复值 = 1/2）⇒ 按本原根算（`111` 只从 1 涨到 2）。"趋向 (1/3,1/3,1/3)"只对高位成立 |
 | 一.2 | 数字均匀混匀 | ❌ 低位不成立 | 实测（n∈[2000,20000)）：pos0 = (.499,0,.501) 精确；pos1 = (.250,.499,.251)；pos2 = (.373,.250,.377)；pos≥3 才收敛到 1/3。原因见 §3 双射 |
 | 一.3 | `a_n % 3 ≠ 1` (n≥2) | ✅ | 且可加强为 `a_{n+1} % 3 = 2·(a_n % 2)`（Lean: `a_succ_mod_three`） |
-| 一.3 | 反向 (2/3)^k 淘汰 / 2^k 余数类 | ✅ 数值 / ⚠️ 基数未入 Lean | `\|T^k(Z₃) mod 3^k\| = 2^k` 数值验证到 k=7；**可逆性已形式化**（`step_pow_bstep` + `bstep_pow_step`），**基数**尚未（需位映射满射方向），见 §6 |
+| 一.3 | 反向 (2/3)^k 淘汰 / 2^k 余数类 | ✅ 已完整形式化 | `good_card`：`\|{y < 3^k : good k y}\| = 2^k`，由双射 `x ↦ step^[k] x : {x < 2^k} → {y < 3^k : good k y}` 给出（见 §6） |
 | 二.1 | 局域组合公式 | ✅ 完全正确 | 逐字复现 `a_{n+1}`（n<5000 全对）。pre-carry 最大值 11 ⇒ 进位严格 ∈{0,1} |
 | 二.3 | `b₀' = (t₀ + b₁) % 2` | ✅ 且**可证** | 不是"5000 步命中"，是定理：`step_parity_hex`。更强形式：`ε_{n+1} = bit₁(a_n)` |
 | 二.4 | 末位 ∈{0,2,3,5}，偶→{0,3}，奇→{2,5} | ⚠️ 是集合值，不是状态机 | 转移需 `a_n mod 12`，4 个状态不封闭。精确形式：`a_{n+1} mod 6 = 3ε_{n+1} + 2ε_n`，即末位是**相邻奇偶对的编码**（移位寄存器），不是状态机 |
@@ -91,7 +91,7 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 
 ## 6. Lean 4 现状
 
-正式模块：**`Mahler32/Basic.lean`（482 行，60 个声明）**，库根 `Mahler32.lean`，
+正式模块：**`Mahler32/Basic.lean`（555 行，69 个声明）**，库根 `Mahler32.lean`，
 在 `lakefile.lean` 中注册为 `lean_lib «Mahler32»`。
 
 - `lake build -KwarningAsError=true` → **Build completed successfully (8721 jobs)**，0 error / 0 warning / 0 sorry。
@@ -122,6 +122,10 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 | | `step_bstep` / `bstep_step` | 互逆（`step_bstep` 需 `y % 3 ≠ 1`） |
 | | `bstep_pow_step` / `step_pow_bstep` | k 步互逆；后者需合法路径 `good k y` |
 | | `good` / `good.zero` / `good.succ` | 合法前驱谓词及其展开 |
+| | `step_lt_succ` / `step_strictMono` / `step_pow_strictMono` | `step` 及其实迭代的严格单调性 |
+| | `step_pow_zero` / `step_pow_two_pow` | `step^[k] 0 = 0`；**`step^[k] (2^k) = 3^k`** |
+| | `good_step_pow` / `decidableGood` | `step^[k] x` 必合法；`good` 的可判定性 |
+| | **`good_card`** | **`\|{y < 3^k : good k y}\| = 2^k`**（`Finset.card_bij`） |
 | 倍周期 | `ones` / `ones_cons` | 奇数字计数 |
 | | `runRem_eq` | **一周期状态转移**：`runRem B r = (r + ones B) % 2` |
 | | `runOut_append` / `runOut_two_blocks` | 拼接律；两块扫描 = `runOut B r ++ runOut B ((r+ones B)%2)` |
@@ -130,24 +134,29 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 | | `period_doubling` | 奇数个 1 ⇒ `take \|B\| ≠ drop \|B\|`（`\|B\|` 不再是周期） |
 | | `period_persists` | 偶数个 1 ⇒ `take \|B\| = drop \|B\|`（周期保持） |
 
-**关于 2^k 合法余数类（路线图第 1 项）——部分完成，须如实说明：**
+**2^k 合法余数类（已完整形式化，`good_card`）：**
 
-已形式化的是"一一对应"的**结构性**部分：
+采用**显式双射**路线，绕开 `2y = 3z + c` 的满射奇偶适配：
 
-- `step_pow_bstep : good k y → step^[k] (bstep^[k] y) = y` —— 每个合法 y **确有一个** k 步前驱，
-  且由逆枝显式给出；
-- `bstep_pow_step : bstep^[k] (step^[k] x) = x` —— 前驱**唯一**。
+1. `step_pow_two_pow`：由 `step_pow_shift` 取 `x = 0, m = k, t = 1` 得 `step^[k] (2^k) = 3^k`
+   （配合 `step_pow_zero : step^[k] 0 = 0`）。这条把"窗口边界"精确对上：`2^k` 走 k 步刚好到 `3^k`。
+2. `step_lt_succ` / `step_strictMono` / `step_pow_strictMono`：`step` 严格单增 ⇒ `step^[k]` 严格单增，
+   于是 `step^[k] x < 3^k ↔ x < 2^k`、且 `step^[k]` 单射。
+3. `good_step_pow`：`step^[k] x` 必合法 —— 用 `bstep^[j] (step^[k] x) = step^[k-j] x` 把逆枝的
+   每步化成某个正迭代的像，再用 `step_pow_mod_three_ne_one`（`step y % 3 = 2·(y % 2) ≠ 1`）。
+4. `good_card`：`Finset.card_bij` 取映射 `x ↦ step^[k] x`，
+   - 落入：`x < 2^k ⇒ step^[k] x < step^[k] (2^k) = 3^k`，合法性由 3；
+   - 单射：`step^[k]` 严格单增；
+   - 满射：给定合法 `y`，取 `x = bstep^[k] y`，由 `step_pow_bstep` 得 `step^[k] x = y`，
+     再由单调性 `x < 2^k`（因 `y < 3^k = step^[k] (2^k)`）。
+   于是两边基数相等，配合 `Finset.card_range` 得 `= 2^k`。
 
-即 `good k` 恰是 `step^[k]` 的像、逆枝是它的逆。**尚未**形式化的是基数 `|{y < 3^k : good k y}| = 2^k`
-本身：它需要"位映射 `y ↦ ((bstep^[j] y) % 3)_j` 打到 `{0,1}^k` 上"的**满射**方向，而该方向要处理
-`2y = 3z + c` 的奇偶适配（给定 z 未必有解，须换成 `z + 3^{k-1}`）。这一方向目前只有
-数值验证（k ≤ 7 精确等于 `2^k`，见 `verify_32_claims.py` 的 [6] 段），未进 Lean。
+`#eval` 独立复核：k = 0..5 给出 `[1, 2, 4, 8, 16, 32]`。
 
 **待形式化**（按性价比排序）：
-1. 上述满射方向 ⇒ `card = 2^k`；
-2. 逆枝的局部性 `bstep y % 3^j = bstep (y % 3^(j+1)) % 3^j`（基数的另一条路）；
-3. `a n = ⌊K(3/2)^n⌋`（`Nat.floor` + `Tendsto`，`K` 用 `sSup`）；
-4. `2^k` 余数类与 §3 双射的合流。
+1. 逆枝的局部性 `bstep y % 3^j = bstep (y % 3^(j+1)) % 3^j`（可用于把 `good` 下推到 `ZMod (3^k)`）；
+2. `a n = ⌊K(3/2)^n⌋`（`Nat.floor` + `Tendsto`，`K` 用 `sSup`）；
+3. 位映射 `y ↦ ((bstep^[j] y) % 3)_j` 与 `{0,1}^k` 的显式同构（`good_card` 已给基数，此为加强版）。
 
 ## 7. 文献核对
 
@@ -177,7 +186,8 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 1. **块熵实验代替自旋链**：测 `h(L) = log p(L)/L` 的增长率。若线性 ⇒ 正熵 ⇒ 非 sofic
    （已由 `p(L)=2^L` 强烈支持）。张量网络在这里只会复现 `p(L)=2^L`，不提供新信息。
 2. **把对偶性写成定理**（§3）：`a_n mod 3^k ↔ (ε_{n-k},…,ε_{n-1})` 双射。可逆性方向已经在
-   Lean 里（`step_pow_bstep` / `bstep_pow_step`），只差基数那一步；它同时能解释低位三进制分布
+   Lean 里（`good_card` 已给出基数 `2^k`，`step_pow_bstep` / `bstep_pow_step` 给出可逆性）；
+   它同时能解释低位三进制分布
    (1/2,0,1/2)、(1/4,1/2,1/4) 的刚性。
 3. **等分布问题**：40 年未决的 Mahler 型问题在这里的化身是"2-adic 轨道 `1, 2, 3, 5, 8, …`
    是否等分布"。这比"物理方法"更接近真问题；建议把它明确写成一个猜想，而不是用动力学模拟去
