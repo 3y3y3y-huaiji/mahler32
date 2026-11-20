@@ -33,6 +33,13 @@ jobs:
       - name: Lake Build
         run: lake build -KwarningAsError=true
 
+      # Palomar builds these two targets by name.  `Challenge` is expected to log its `sorry`
+      # warnings; only a non-zero exit code is a failure here.
+      - name: Palomar targets
+        run: |
+          lake build Solution
+          lake build Challenge
+
       - name: Strict Verification of All Modules
         run: |
           lake env lean -D warningAsError=true Mahler32.lean
