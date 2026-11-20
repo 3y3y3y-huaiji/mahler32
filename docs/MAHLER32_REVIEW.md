@@ -192,3 +192,32 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 3. **等分布问题**：40 年未决的 Mahler 型问题在这里的化身是"2-adic 轨道 `1, 2, 3, 5, 8, …`
    是否等分布"。这比"物理方法"更接近真问题；建议把它明确写成一个猜想，而不是用动力学模拟去
    "检验"。
+
+## 9. Palomar 封装与机械预检
+
+注册库（Palomar Registry）要求提交物能独立阅读"证了什么"，因此仓库除 `Mahler32/Basic.lean`
+外还带四个封装文件：
+
+| 文件 | 作用 |
+| :-- | :-- |
+| `Challenge.lean` | 只 import Mathlib，重述 8 个定义与 7 条定理，证明全为 `sorry`（92 行） |
+| `Solution.lean` | `public import Mahler32.Basic`，同名同类型由库兑现 |
+| `comparator.json` | 7 条 theorem + 8 条 definition，`permitted_axioms` 三项，`enable_nanoda` |
+| `formalization.yaml` | v0.4 自报：math.NT、MSC 11A63/11B83、original-proof、OEIS/Mahler 背景、agent 披露 |
+
+三个技术要点，都是踩出来的：
+
+1. **`module` 会隐藏定义体**。加 `module` 后，凡靠 `rfl` 收口的定理（`a_zero`、`val_nil` 等）在
+   导出时报 "Not a definitional equality … must be exposed"。正确写法是 `@[expose] public def`，
+   只写 `public def` 不够。
+2. **每个 `.lean` 文件都要 `module` 头**，包括库根 `Mahler32.lean`。漏一个，预检直接拒绝并给出
+   `must begin with the module header keyword`。
+3. **`Solution` 必须是独立的 Lake 目标**。预检用 `lake build Solution` 构建，只注册 `Mahler32`
+   库时命令直接失败：`error: unknown target 'Solution'`（我们自己的 CI 当时只 `lake build` 默认
+   目标 + `lake env lean` 单文件，所以没暴露这个问题）。`lakefile.lean` 现在按官方模板声明
+   `lean_lib «Challenge»` 与 `lean_lib «Solution»`（`roots` 指向同名根模块）；**`Challenge` 不能
+   设为 default target**，否则它的 `sorry` 在 `-KwarningAsError=true` 下会把构建打断。
+
+机械预检（`PalomarSubmission` 复用工作流，`mode: full`、`palomar-standard-v1`）最终
+`status: pass`：0 error、0 warning、18254 jobs，Solution 构建成功。CI 也补了同名步骤
+（`lake build Solution`、`lake build Challenge`），使这类失败不会再次悄悄出现。
