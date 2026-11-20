@@ -8,6 +8,18 @@ on:
   workflow_dispatch:
 
 jobs:
+  guards:
+    name: Secret and layout gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # Same script the pre-commit hook runs, over the tracked tree.  Cheap, and
+      # it comes first so a leak fails the run before anything is built.
+      - name: Refuse credentials and scratch files
+        run: python3 scripts/check_no_secrets.py --tree
+
   build:
     name: Build and Verify
     runs-on: ubuntu-latest
