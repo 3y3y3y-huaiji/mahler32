@@ -1,4 +1,6 @@
-import Mahler32.Basic
+module
+
+public import Mahler32.Basic
 
 /-!
 # The Mahler `3/2` recursion
