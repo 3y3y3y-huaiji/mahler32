@@ -112,3 +112,13 @@ docs/MAHLER32_REVIEW.md # referee-style review: claim-by-claim verdicts, numeric
 This development was carried out with substantial LLM assistance. Every statement is checked by
 Lean 4 and by CI (`lake build -KwarningAsError=true`, `#lint`, and a kernel-axiom audit that fails
 on `sorryAx`).
+
+## License
+
+Dual-licensed, at your option, under either
+
+- **Apache License 2.0** — see [`LICENSE-APACHE`](LICENSE-APACHE)
+- **Mulan Permissive Software License v2 (MulanPSL-2.0)** — see [`LICENSE-MULAN`](LICENSE-MULAN)
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in
+this work by you shall be dual-licensed as above, without any additional terms or conditions.
