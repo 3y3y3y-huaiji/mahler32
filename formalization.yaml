@@ -17,10 +17,12 @@ project:
   authors:
     - name: "Su MingKai"
       github: "3y3y3y-huaiji"
+      orcid: "0009-0008-2312-6913"
   license: "Apache-2.0"
   responsible_maintainers:
     - name: "Su MingKai"
       github: "3y3y3y-huaiji"
+      orcid: "0009-0008-2312-6913"
 
 classification:
   arxiv: ["math.NT"]
