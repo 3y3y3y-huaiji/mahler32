@@ -4,7 +4,7 @@
 [![Lean 4](https://img.shields.io/badge/Lean-v4.36.0-blue.svg)](https://lean-lang.org/)
 [![Mathlib4](https://img.shields.io/badge/Mathlib4-v4.36.0-brightgreen.svg)](https://github.com/leanprover-community/mathlib4)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0008--2312--6913-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0008-2312-6913)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE-APACHE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![License: MulanPSL-2.0](https://img.shields.io/badge/License-MulanPSL_2.0-orange.svg)](LICENSE-MULAN)
 [![LLM Assisted](https://img.shields.io/badge/Formalized_with-LLM_Assistance-blueviolet.svg)](#ai--llm-assistance-disclosure)
 
@@ -118,7 +118,7 @@ on `sorryAx`).
 
 Dual-licensed, at your option, under either
 
-- **Apache License 2.0** — see [`LICENSE-APACHE`](LICENSE-APACHE)
+- **Apache License 2.0** — see [`LICENSE`](LICENSE)
 - **Mulan Permissive Software License v2 (MulanPSL-2.0)** — see [`LICENSE-MULAN`](LICENSE-MULAN)
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in

@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2026 Su MingKai. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE-APACHE.
+Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Su MingKai
 -/
 module
