@@ -5,8 +5,14 @@
 scratch/
 .workbuddy/
 mr/
+
+# Palomar submission scratch (never committed: some of it carries credentials)
 .submit*.json
 .verify*.json
 .status.json
 .tag_resp.json
 .gist_resp.json
+.review.json
+st.json
+page*.html
+pg*.html
