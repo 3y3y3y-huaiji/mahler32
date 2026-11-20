@@ -4,3 +4,9 @@
 *.c
 scratch/
 .workbuddy/
+mr/
+.submit*.json
+.verify*.json
+.status.json
+.tag_resp.json
+.gist_resp.json
