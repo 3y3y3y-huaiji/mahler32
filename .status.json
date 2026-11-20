@@ -1,1 +1,34 @@
-{"id":"qng3ppkj8mhc","status":"awaiting-review","repository":"3y3y3y-huaiji/mahler32","commit":"22df837912f84ec60439f4f3d56c79900466b42d","requested_paths":{"comparator_config_path":"comparator.json"},"created_at":"2026-11-20T14:17:13Z","preflight_run":null,"run":{"id":44751994482,"status":"completed","conclusion":"success","url":"https://github.com/PalomarRegistry/PalomarSubmission/actions/runs/44751994482","started_at":"2026-11-20T14:17:17Z"},"failure":null,"renderability_error":null,"failure_digest":null,"repair":null,"review_started_at":null,"review_service_issue":null,"typical_review_seconds":192,"registration_consent":false,"mathlib_cache_available":null,"test_submission":false,"registry_correction":false,"review_sha256":null,"registration_consent_review_sha256":null,"registered_url":null,"events":[{"at":"2026-11-20T14:17:13Z","status":"verifying","note":"Preparation and mechanical verification queued"},{"at":"2026-11-20T14:20:41Z","status":"awaiting-review","note":"Verification success"}]}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
+    <title>Palomar could not complete that just now — Palomar</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href="https://palomar-registry.org" aria-label="Palomar home">Palomar</a>
+      <nav aria-label="Main navigation">
+        <a href="https://palomar-registry.org">Registry</a>
+        <a href="https://palomar-registry.org/about.html">About</a>
+        <a href="/">Submit</a>
+      </nav>
+    </header>
+    <main id="content" class="page-main"><h1>Palomar could not complete that just now</h1><ul class="problems"><li>Try again in a moment. If you were making a decision, check its current status first.</li></ul><p><a href="/">Start again</a></p></main>
+    <footer class="site-footer">
+      <div><span class="footer-brand">Palomar</span><span> — a registry of Lean-verified results</span></div>
+      <div class="footer-links">
+        <a href="https://palomar-registry.org">Registry</a>
+        <a href="https://palomar-registry.org/about.html">About</a>
+        <a href="https://github.com/PalomarRegistry/PalomarPolicy/blob/main/CONTRIBUTING.md">Policy</a>
+        <a href="https://palomar-registry.org/privacy.html">Privacy</a>
+      </div>
+    </footer>
+  </body>
+</html>

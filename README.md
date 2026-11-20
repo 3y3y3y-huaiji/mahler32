@@ -103,9 +103,22 @@ lake build -KwarningAsError=true
 ## Layout
 
 ```
-Mahler32.lean           # library root
-Mahler32/Basic.lean     # all material
-docs/MAHLER32_REVIEW.md # referee-style review: claim-by-claim verdicts, numerics, literature
+Mahler32.lean            # library root
+Mahler32/Basic.lean      # all material
+Challenge.lean           # advertised statements only (proofs are `sorry`)
+Solution.lean            # imports Mahler32.Basic; the same names, proved
+comparator.json          # names Comparator checks between Challenge and Solution
+formalization.yaml       # self-report: classification, sources, automation, review status
+docs/MAHLER32_REVIEW.md  # referee-style review: claim-by-claim verdicts, numerics, literature
+```
+
+`Challenge.lean` and `Solution.lean` exist so the claims can be read in a few minutes without
+reading the proofs.  They are separate Lake targets (`lake build Challenge`, `lake build
+Solution`), matching the packaging expected by the [Palomar Registry](https://palomar-registry.org);
+
+```
+lake build Solution     # the real proofs
+lake build Challenge    # the statement surface, with its expected `sorry` warnings
 ```
 
 ## AI / LLM assistance disclosure
