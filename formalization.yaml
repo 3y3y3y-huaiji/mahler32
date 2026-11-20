@@ -1,0 +1,138 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "Parity structure of the 3/2 Mahler recursion"
+  description: >-
+    A Lean 4 formalization of the parity sequence of OEIS A061419, a(n+1) = a(n) + ceil(a(n)/2),
+    the 3/2 map of Mahler (1968).  Three result families.  (1) Local laws: the next parity is the
+    second binary digit of the current term, so each iteration spends exactly one binary digit;
+    the last base-6 digit is a bijection onto consecutive parity pairs.  (2) An information
+    window: m base-6 digits (equivalently m binary digits) determine exactly the next m parities,
+    and the bound is sharp -- 0 and 6^m agree on m digits yet differ in parity at step m.
+    (3) A 3-adic counterpart: the inverse branch (2y - 2y mod 3)/3 is a local rule, the k-step
+    legal predecessors of a point form exactly 2^k residue classes modulo 3^k, proved by an
+    explicit bijection from {x < 2^k} onto {y < 3^k : good k y}; and scanning a block twice
+    doubles the period exactly when the block is primitive and has an odd number of odd digits.
+  authors:
+    - "Su MingKai"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "Su MingKai"
+
+classification:
+  arxiv: ["math.NT"]
+  msc2020: ["11A63", "11B83"]
+
+sources:
+  - title: "Parity structure of the 3/2 Mahler recursion: information windows, 2^k inverse-branch classes, and period doubling"
+    type: original-proof
+    relationship: other
+    note: >-
+      The structural results formalized here (the sharp window bound, the 2^k bijection, the
+      period-doubling criterion) are, to the maintainer's knowledge, not taken from a published
+      paper; they are established by this formalization.  No priority or literature-completeness
+      claim is made.
+  - title: "OEIS A061419: a(n) = ceiling(a(n-1)*3/2)"
+    id: "https://oeis.org/A061419"
+    type: "web post"
+    relationship: background
+    note: "Source of the sequence and of the numerical constant K used in the analytic formula."
+  - title: "An unsolved problem on the powers of 3/2"
+    authors: ["Kurt Mahler"]
+    type: "article"
+    location: "J. Austral. Math. Soc. 8 (1968), 313-321"
+    relationship: background
+    note: "Introduces the 3/2 map whose orbit this formalization studies."
+
+related_formalizations: []
+
+status:
+  scope: >-
+    Formalized: the one-step laws for the 3/2 map; the parity window and its sharpness; the
+    base-3 two-state transducer; the inverse branch and the k-step round trip; the count of
+    legal residue classes; and period doubling for two-block scans, with the primitivity
+    caveat for degenerate blocks.  Not formalized: the analytic formula a(n) = floor(K (3/2)^n);
+    equidistribution of the parity sequence (a Mahler-type open problem); and the exact new
+    period for non-primitive blocks, which reduces to their primitive root.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+
+automation:
+  methods:
+    - method: "agent"
+      models: ["DeepSeek-V4.1-Flash"]
+      framework: "Lean 4 + Mathlib (agent-driven editing, compiling and CI iteration)"
+      tool_setup: >-
+        Proofs largely discharged by `omega` and `ring`; numerics cross-checked with a Python
+        script; every change validated by `lake build -KwarningAsError=true`, `#lint` and a
+        kernel-axiom audit in CI.
+      cost:
+        wall_time: "one working session"
+        spend_usd: "subscription-based"
+      hardware: "local machine + GitHub Actions"
+      prompting_notes: >-
+        The maintainer set the mathematical direction, supplied the bijection strategy for the
+        2^k count, and reviewed each mathematical claim; the agent wrote and iterated the Lean.
+  notes: >-
+    Human and agent worked interactively.  The maintainer checked the mathematics (including
+    correcting an over-general period-doubling claim to its primitive-block form) and the agent
+    handled elaboration, tactic search and CI.
+
+fidelity:
+  divergences: >-
+    None known.  The period-doubling statement is deliberately restricted to two-block scans and
+    carries a primitivity hypothesis; for non-primitive blocks the period collapses to that of
+    the primitive root, which is documented but not formalized.
+
+review:
+  status: "self-assessed"
+  reviewers: []
+  notes: >-
+    No external human review of the statements or proofs has been performed.  Statements were
+    audited by the maintainer against the informal account and cross-checked numerically; the
+    proofs are checked by Lean's kernel in CI.
+
+alignment:
+  namespace: "Mahler32"
+  statements:
+    - source: "OEIS A061419 recurrence"
+      lean: "Mahler32.a"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "a 0 = 1, a (n+1) = a n + ceil(a n / 2)."
+    - source: "parity law (this formalization)"
+      lean: "Mahler32.step_parity"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "step x % 2 = x / 2 % 2, the second binary digit."
+    - source: "information window (this formalization)"
+      lean: "Mahler32.parity_window_hex"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "m base-6 digits determine the next m parities."
+    - source: "sharpness of the window (this formalization)"
+      lean: "Mahler32.cliff_sharp"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "0 versus 6^m witness at step m."
+    - source: "base-3 two-state transducer (this formalization)"
+      lean: "Mahler32.ternary_machine"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "Long-division transducer reproduces ceil(3x/2)."
+    - source: "2^k legal classes (this formalization)"
+      lean: "Mahler32.good_card"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "Explicit bijection from {x < 2^k} onto {y < 3^k : good k y}."
+    - source: "period doubling (this formalization)"
+      lean: "Mahler32.period_doubling"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "Odd count of odd digits means |B| is not a period of the two-block scan."
+
+acknowledgements: >-
+  Thanks to the Lean FRO and Mathlib communities for Lean 4 and Mathlib, and to OEIS for
+  A061419.

@@ -3,7 +3,9 @@ Copyright (c) 2026 Su MingKai. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE-APACHE.
 Authors: Su MingKai
 -/
-import Mathlib
+module
+
+public import Mathlib
 
 /-!
 # The Mahler `3/2` recursion `a(n+1) = a n + ⌈a n / 2⌉`
@@ -34,15 +36,17 @@ problem `a n % 2`; every statement is a closed-form local law, proved with `omeg
   `x ↦ step^[k] x` from `{x < 2 ^ k}` onto `{y < 3 ^ k : good k y}`.
 -/
 
+public section
+
 namespace Mahler32
 
 /-- `a n` is A061419: `a 0 = 1` and `a (n+1) = a n + ⌈a n / 2⌉`. -/
-def a : ℕ → ℕ
+@[expose] public def a : ℕ → ℕ
   | 0 => 1
   | n + 1 => a n + (a n + 1) / 2
 
 /-- The step map `x ↦ x + ⌈x / 2⌉` of the recursion. -/
-def step (x : ℕ) : ℕ := x + (x + 1) / 2
+@[expose] public def step (x : ℕ) : ℕ := x + (x + 1) / 2
 
 @[simp] lemma a_zero : a 0 = 1 := rfl
 
@@ -143,7 +147,7 @@ This is exactly the transducer of the problem statement; `ternary_machine` says 
 `step x`.  Note that no bound on the digits is needed — the invariant is pure algebra. -/
 
 /-- Value of a most-significant-digit-first digit list in base `3`. -/
-def val : List ℕ → ℕ
+@[expose] public def val : List ℕ → ℕ
   | [] => 0
   | d :: ds => d * 3 ^ ds.length + val ds
 
@@ -173,12 +177,12 @@ lemma val_digits (x : ℕ) : val (Nat.digits 3 x).reverse = x := by
   rw [val_reverse_eq_ofDigits, Nat.ofDigits_digits]
 
 /-- Quotient digits produced by the scan. -/
-def runOut : List ℕ → ℕ → List ℕ
+@[expose] public def runOut : List ℕ → ℕ → List ℕ
   | [], _ => []
   | d :: ds, r => (3 * r + d) / 2 :: runOut ds ((3 * r + d) % 2)
 
 /-- Final carry of the scan. -/
-def runRem : List ℕ → ℕ → ℕ
+@[expose] public def runRem : List ℕ → ℕ → ℕ
   | [], r => r
   | d :: ds, r => runRem ds ((3 * r + d) % 2)
 
@@ -350,7 +354,7 @@ of the number of odd digits is exactly the affine part of the state map.  So
 -/
 
 /-- Number of odd digits of a digit list. -/
-def ones (L : List ℕ) : ℕ := (L.map (fun d => d % 2)).sum
+@[expose] public def ones (L : List ℕ) : ℕ := (L.map (fun d => d % 2)).sum
 
 @[simp] lemma ones_nil : ones [] = 0 := rfl
 
@@ -428,7 +432,7 @@ defined exactly when `y ≢ 1 (mod 3)`.  Being a *local* rule, it contracts `3`-
 parity digits. -/
 
 /-- Inverse branch of `step`: undo one base-`3` digit. -/
-def bstep (y : ℕ) : ℕ := (2 * y - 2 * y % 3) / 3
+@[expose] public def bstep (y : ℕ) : ℕ := (2 * y - 2 * y % 3) / 3
 
 /-- Clearing the division: `3 * bstep y + 2y % 3 = 2y`. -/
 lemma bstep_mul (y : ℕ) : 3 * bstep y + 2 * y % 3 = 2 * y := by
@@ -468,7 +472,7 @@ theorem bstep_pow_step (k : ℕ) (x : ℕ) : bstep^[k] (step^[k] x) = x := by
     exact ih
 
 /-- The legality predicate: the first `k` inverse steps never hit `≡ 1 (mod 3)`. -/
-def good (k y : ℕ) : Prop := ∀ j, j < k → (bstep^[j] y) % 3 ≠ 1
+@[expose] public def good (k y : ℕ) : Prop := ∀ j, j < k → (bstep^[j] y) % 3 ≠ 1
 
 lemma good.zero (y : ℕ) : good 0 y := fun j hj => absurd hj (Nat.not_lt_zero j)
 
@@ -525,7 +529,7 @@ theorem good_step_pow (k x : ℕ) : good k (step^[k] x) := by
   rw [hsplit, bstep_pow_step]
   exact step_pow_mod_three_ne_one (by omega) x
 
-instance decidableGood (k : ℕ) : DecidablePred (good k) := fun y =>
+public instance decidableGood (k : ℕ) : DecidablePred (good k) := fun y =>
   Nat.decidableBallLT k (fun j _ => (bstep^[j] y) % 3 ≠ 1)
 
 /-- **The `2 ^ k` legal classes.**  The `k`-th iterate of `step` is a bijection from
@@ -553,3 +557,5 @@ theorem good_card (k : ℕ) :
 
 
 end Mahler32
+
+end

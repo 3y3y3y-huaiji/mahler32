@@ -1,0 +1,25 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "Mahler32.step_parity",
+    "Mahler32.a_mod_six",
+    "Mahler32.parity_window_hex",
+    "Mahler32.cliff_sharp",
+    "Mahler32.ternary_machine",
+    "Mahler32.good_card",
+    "Mahler32.period_doubling"
+  ],
+  "definition_names": [
+    "Mahler32.a",
+    "Mahler32.step",
+    "Mahler32.bstep",
+    "Mahler32.good",
+    "Mahler32.val",
+    "Mahler32.runOut",
+    "Mahler32.runRem",
+    "Mahler32.ones"
+  ],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}
