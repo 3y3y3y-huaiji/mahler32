@@ -5,15 +5,18 @@ project:
   name: "Parity structure of the 3/2 Mahler recursion"
   description: >-
     A Lean 4 formalization of the parity sequence of OEIS A061419, a(n+1) = a(n) + ceil(a(n)/2),
-    the 3/2 map of Mahler (1968).  Three result families.  (1) Local laws: the next parity is the
+    the 3/2 map of Mahler (1968).  Five result families.  (1) Local laws: the next parity is the
     second binary digit of the current term, so each iteration spends exactly one binary digit;
-    the last base-6 digit is a bijection onto consecutive parity pairs.  (2) An information
-    window: m base-6 digits (equivalently m binary digits) determine exactly the next m parities,
-    and the bound is sharp -- 0 and 6^m agree on m digits yet differ in parity at step m.
-    (3) A 3-adic counterpart: the inverse branch (2y - 2y mod 3)/3 is a local rule, the k-step
-    legal predecessors of a point form exactly 2^k residue classes modulo 3^k, proved by an
-    explicit bijection from {x < 2^k} onto {y < 3^k : good k y}; and scanning a block twice
-    doubles the period exactly when the block is primitive and has an odd number of odd digits.
+    the last base-6 digit is a bijection onto consecutive parity pairs.  (2) Information window
+    and light-cone flip: m base-6 digits determine exactly the next m parities (sharpness via 0 vs
+    6^m); adding 6^k shifts step^[k] by 9^k and always flips step-k parity, while step^[k] x % 2
+    splits linearly on bit k.  (3) A 3-adic counterpart: the inverse branch (2y - 2y mod 3)/3 is a
+    local rule modulo 3^(j+1), k-step legality depends only on y mod 3^k, legal predecessors form
+    2^k residue classes modulo 3^k, and scanning a block twice doubles the period when the block is
+    primitive with an odd number of odd digits.  (4) 11-free backward pruning: forbidding two
+    consecutive odd backward steps reduces the count modulo 3^k to Nat.fib (k + 2).  (5) Walsh-
+    Hadamard structure: masks omitting bit k have Walsh coefficient 0, and masks with bit k equal
+    to 1 reduce to twice the nonlinear core on k bits.
   authors:
     - name: "Su MingKai"
       github: "3y3y3y-huaiji"
@@ -53,10 +56,12 @@ related_formalizations: []
 
 status:
   scope: >-
-    Formalized: the one-step laws for the 3/2 map; the parity window and its sharpness; the
-    base-3 two-state transducer; the inverse branch and the k-step round trip; the count of
-    legal residue classes; and period doubling for two-block scans, with the primitivity
-    caveat for degenerate blocks.  Not formalized: the analytic formula a(n) = floor(K (3/2)^n);
+    Formalized: the one-step laws for the 3/2 map; the parity window and its sharpness; light-cone
+    flip by 6^k and F_2 linear splitting of bit k; the base-3 two-state transducer; the inverse
+    branch, its 3-adic locality modulo 3^(j+1), and the k-step round trip; the 2^k count of legal
+    residue classes and the Fib(k+2) count of 11-free legal residue classes modulo 3^k; period
+    doubling for two-block scans with the primitivity caveat; and Walsh-Hadamard zero correlation
+    for masks omitting bit k.  Not formalized: the analytic formula a(n) = floor(K (3/2)^n);
     equidistribution of the parity sequence (a Mahler-type open problem); and the exact new
     period for non-primitive blocks, which reduces to their primitive root.
   sorry_count: 0
@@ -66,7 +71,7 @@ status:
 automation:
   methods:
     - method: "agent"
-      models: ["DeepSeek-V4.1-Flash"]
+      models: ["DeepSeek-V4.1-Flash", "Gemini"]
       framework: "Lean 4 + Mathlib (agent-driven editing, compiling and CI iteration)"
       tool_setup: >-
         Proofs largely discharged by `omega` and `ring`; numerics cross-checked with a Python
@@ -136,6 +141,46 @@ alignment:
       module: "Mahler32.Basic"
       status: "proved"
       note: "Odd count of odd digits means |B| is not a period of the two-block scan."
+    - source: "hexadecimal light-cone growth (this formalization)"
+      lean: "Mahler32.step_pow_add_six_pow"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "step^[k] (x + 6^k) = step^[k] x + 9^k."
+    - source: "hexadecimal light-cone flip (this formalization)"
+      lean: "Mahler32.light_cone_flip_hex"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "Adding 6^k always flips step-k parity."
+    - source: "F_2 linear splitting (this formalization)"
+      lean: "Mahler32.parity_linear_split"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "Top bit (x / 2^k) % 2 separates as a linear XOR summand."
+    - source: "3-adic inverse locality (this formalization)"
+      lean: "Mahler32.bstep_mod_three_pow"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "bstep y % 3^j depends only on y % 3^(j+1)."
+    - source: "3-adic legality modulus invariance (this formalization)"
+      lean: "Mahler32.good_mod_iff"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "good k y holds iff good k (y % 3^k)."
+    - source: "11-free Fibonacci pruning (this formalization)"
+      lean: "Mahler32.good11Free_card"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "11-free legal classes modulo 3^k count Nat.fib (k + 2)."
+    - source: "Walsh zero correlation (this formalization)"
+      lean: "Mahler32.walsh_zero_of_bit_zero"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "Walsh coefficient vanishes whenever mask bit k is 0."
+    - source: "Walsh core reduction (this formalization)"
+      lean: "Mahler32.walsh_eq_two_mul_core"
+      module: "Mahler32.Basic"
+      status: "proved"
+      note: "When mask bit k is 1, walsh k u = 2 * walshCore k u."
 
 acknowledgements: >-
   Thanks to the Lean FRO and Mathlib communities for Lean 4 and Mathlib, and to OEIS for

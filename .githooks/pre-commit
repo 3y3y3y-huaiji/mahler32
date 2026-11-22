@@ -2,7 +2,7 @@
 # Refuse credentials, submission scratch files and stray root-level .json.
 # Installed with: git config core.hooksPath .githooks
 # Bypass is deliberately awkward: git commit --no-verify (see AGENTS.md, rule 4).
-if command -v python3 >/dev/null 2>&1; then
+if python3 -c "import sys" >/dev/null 2>&1; then
     PY=python3
 else
     PY=python

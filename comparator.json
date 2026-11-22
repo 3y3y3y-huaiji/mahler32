@@ -8,7 +8,15 @@
     "Mahler32.cliff_sharp",
     "Mahler32.ternary_machine",
     "Mahler32.good_card",
-    "Mahler32.period_doubling"
+    "Mahler32.period_doubling",
+    "Mahler32.step_pow_add_six_pow",
+    "Mahler32.light_cone_flip_hex",
+    "Mahler32.parity_linear_split",
+    "Mahler32.bstep_mod_three_pow",
+    "Mahler32.good_mod_iff",
+    "Mahler32.good11Free_card",
+    "Mahler32.walsh_zero_of_bit_zero",
+    "Mahler32.walsh_eq_two_mul_core"
   ],
   "definition_names": [
     "Mahler32.a",
@@ -18,7 +26,11 @@
     "Mahler32.val",
     "Mahler32.runOut",
     "Mahler32.runRem",
-    "Mahler32.ones"
+    "Mahler32.ones",
+    "Mahler32.good11Free",
+    "Mahler32.bitDot",
+    "Mahler32.walsh",
+    "Mahler32.walshCore"
   ],
   "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
   "enable_nanoda": true

@@ -20,8 +20,9 @@ The recurrence is the `3/2`-dynamical system of Mahler (1968); `a(n) = ⌊K·(3/
 `K = 1.0815136685898…`, but `K(3)` is *not* a Mahler Z-number, so the parity sequence is not
 governed by that theorem.
 
-Everything below is machine-checked: **555 lines, no `sorry`**, and every core theorem depends
-only on `propext`, `Classical.choice` and `Quot.sound`.
+Everything below is machine-checked: **1046 lines (108 `#lint`-checked declarations), no `sorry`**,
+and every core theorem depends only on `propext`, `Classical.choice` and `Quot.sound` (some
+3-adic window theorems use only `propext` and `Quot.sound`).
 
 ---
 
@@ -92,6 +93,26 @@ map: `x ↦ step^[k] x` maps `{x < 2^k}` onto `{y < 3^k : good k y}`. Membership
 `step^[k] x < step^[k] (2^k) = 3^k`; injectivity is strict monotonicity; surjectivity sends a legal
 `y` to `x = bstep^[k] y`, which satisfies `step^[k] x = y` by `step_pow_bstep` and `x < 2^k` by
 monotonicity. `#eval` reproduces `1, 2, 4, 8, 16, 32` for `k = 0 … 5`.
+
+---
+
+## 5. Light-cone flip, 3-adic window, 11-free Fibonacci pruning, and Walsh zero correlation
+
+| Group | Theorem | Statement |
+| :-- | :-- | :-- |
+| Light-cone & `F₂` split | `step_pow_add_six_pow` | `step^[k] (x + 6^k) = step^[k] x + 9^k` |
+| | `light_cone_flip_hex` | `(step^[k] (x + 6^k)) % 2 ≠ (step^[k] x) % 2` |
+| | `parity_linear_split` | `(step^[k] x) % 2 = ((step^[k] (x % 2^k)) % 2 + (x / 2^k) % 2) % 2` |
+| 3-adic window | `bstep_mod_three_pow` | `bstep y % 3^j = bstep (y % 3^(j+1)) % 3^j` |
+| | `good_mod_iff` | `good k y ↔ good k (y % 3^k)` |
+| 11-free pruning | `good11Free_card` | `\|{y < 3^k : good11Free k y}\| = Nat.fib (k + 2)` |
+| Walsh spectrum | `walsh_zero_of_bit_zero` | `u / 2^k % 2 = 0 → walsh k u = 0` |
+| | `walsh_eq_two_mul_core` | `u / 2^k % 2 = 1 → walsh k u = 2 * walshCore k u` |
+
+Because `parity_linear_split` separates bit `k` as a pure linear XOR summand, any linear mask
+omitting bit `k` has Walsh correlation `0` (`50%` accuracy).  Adding the `11`-free condition
+(forbidding consecutive odd backward steps) shrinks the legal residue classes modulo `3^k` from
+`2^k` to `Nat.fib (k + 2)` (`#eval` checks `k = 0 … 5` give `[1, 2, 3, 5, 8, 13]`).
 
 ## Build
 

@@ -91,12 +91,14 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 
 ## 6. Lean 4 现状
 
-正式模块：**`Mahler32/Basic.lean`（555 行，69 个声明）**，库根 `Mahler32.lean`，
+正式模块：**`Mahler32/Basic.lean`（1046 行，108 个 `#lint` 核验声明）**，库根 `Mahler32.lean`，
 在 `lakefile.lean` 中注册为 `lean_lib «Mahler32»`。
 
-- `lake build -KwarningAsError=true` → **Build completed successfully (8721 jobs)**，0 error / 0 warning / 0 sorry。
-- `#print axioms` 抽查 21 条核心定理：全部只依赖 `propext`、`Classical.choice`、`Quot.sound`
-  （`runOut_append` 甚至只用 `propext`）。
+- `lake build -KwarningAsError=true Mahler32 Solution`（Lean 4.33.1 / Mathlib 4.33.1 沙箱全量核验）→
+  **Build completed successfully (8710 jobs)**，0 error / 0 warning / 0 sorry；`lake build Challenge` 仅含预期的 `sorry` 警告。
+- `#print axioms` 核验全部核心定理：全部只依赖 `propext`、`Classical.choice`、`Quot.sound`
+  （`runOut_append` 仅用 `propext`；`bstep_mod_three_pow`、`good_mod_iff` 等 3-adic 局部引理仅用 `propext`、`Quot.sound`）。
+- `#lint` 全文件扫描：`Found 0 errors in 108 declarations`（14 linters 全过）。
 - 风格审计（`.agents/skills/mathlib-style-and-naming`）：0 error / 0 warning，100% 合规。
 
 | 组 | 定理 | 内容 |
@@ -133,6 +135,16 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 | | `runOut_blocks_ne` | 两个输出块首数字必不同（需每位 < 3） |
 | | `period_doubling` | 奇数个 1 ⇒ `take \|B\| ≠ drop \|B\|`（`\|B\|` 不再是周期） |
 | | `period_persists` | 偶数个 1 ⇒ `take \|B\| = drop \|B\|`（周期保持） |
+| 光锥与线性剥离 | `step_pow_add_two_pow` / `step_pow_add_six_pow` | `step^[k](x+2^k) = step^[k] x + 3^k`；`step^[k](x+6^k) = step^[k] x + 9^k` |
+| | `step_pow_add_two_pow_parity` / `light_cone_flip_hex` | 翻转第 `k` 位或加 `6^k` 必然翻转第 `k` 步奇偶 |
+| | `parity_linear_split` | `step^[k] x % 2 = ((step^[k](x % 2^k)) % 2 + (x / 2^k) % 2) % 2` |
+| 3-adic 逆窗口 | `bstep_add_three_pow` / `bstep_mod_three_pow` | `bstep y % 3^j = bstep (y % 3^(j+1)) % 3^j` |
+| | `bstep_pow_add_three_pow` / `good_mod_iff` | `good k y ↔ good k (y % 3^k)` |
+| 11-free 剪枝 | `good11Free` / `good11Free_mod_iff` | 禁连续两步奇数输出；模 `3^k` 不变性 |
+| | **`good11Free_card`** | **`\|{y < 3^k : good11Free k y}\| = Nat.fib (k + 2)`** |
+| Walsh 谱 | `bitDot` / `walsh` / `walshCore` | `F₂` 内积、全表 Walsh 系数与低 `k` 位非线性核系数 |
+| | **`walsh_zero_of_bit_zero`** | 掩码不含第 `k` 位时 `walsh k u = 0`（精确 50% 相关） |
+| | `walsh_eq_two_mul_core` / `walsh_add_two_pow` | 掩码含第 `k` 位时 `walsh k u = 2 * walshCore k u` |
 
 **2^k 合法余数类（已完整形式化，`good_card`）：**
 
@@ -151,12 +163,16 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
      再由单调性 `x < 2^k`（因 `y < 3^k = step^[k] (2^k)`）。
    于是两边基数相等，配合 `Finset.card_range` 得 `= 2^k`。
 
-`#eval` 独立复核：k = 0..5 给出 `[1, 2, 4, 8, 16, 32]`。
+`#eval` 独立复核：
+- `good` 计数 `k = 0..5`：`[1, 2, 4, 8, 16, 32]`
+- `good11Free` 计数 `k = 0..5`：`[1, 2, 3, 5, 8, 13]`
+- `walsh 2`（`u = 0..7`）：`[0, 0, 0, 0, 0, 0, 0, 8]`
+- `walsh 3`（`u = 0..15`）：`[0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 8, 0, 8, -8, 0]`
 
 **待形式化**（按性价比排序）：
-1. 逆枝的局部性 `bstep y % 3^j = bstep (y % 3^(j+1)) % 3^j`（可用于把 `good` 下推到 `ZMod (3^k)`）；
-2. `a n = ⌊K(3/2)^n⌋`（`Nat.floor` + `Tendsto`，`K` 用 `sSup`）；
-3. 位映射 `y ↦ ((bstep^[j] y) % 3)_j` 与 `{0,1}^k` 的显式同构（`good_card` 已给基数，此为加强版）。
+1. `a n = ⌊K(3/2)^n⌋`（`Nat.floor` + `Tendsto`，`K` 用 `sSup`）；
+2. 位映射 `y ↦ ((bstep^[j] y) % 3)_j` 与 `{0,1}^k` 的显式同构（`good_card` 已给基数，此为加强版）。
+3. ANF 次数下界与 Walsh 谱衰减界（需配合有限域布尔多项式与更深 2-adic 估计）。
 
 ## 7. 文献核对
 
@@ -200,9 +216,9 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 
 | 文件 | 作用 |
 | :-- | :-- |
-| `Challenge.lean` | 只 import Mathlib，重述 8 个定义与 7 条定理，证明全为 `sorry`（92 行） |
+| `Challenge.lean` | 只 import Mathlib，重述 12 个定义（含 2 个可判定实例）与 15 条定理，证明全为 `sorry`（154 行） |
 | `Solution.lean` | `public import Mahler32.Basic`，同名同类型由库兑现 |
-| `comparator.json` | 7 条 theorem + 8 条 definition，`permitted_axioms` 三项，`enable_nanoda` |
+| `comparator.json` | 15 条 theorem + 12 条 definition，`permitted_axioms` 三项，`enable_nanoda` |
 | `formalization.yaml` | v0.4 自报：math.NT、MSC 11A63/11B83、original-proof、OEIS/Mahler 背景、agent 披露 |
 
 三个技术要点，都是踩出来的：

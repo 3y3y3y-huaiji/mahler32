@@ -3,9 +3,23 @@ name: Lean 4 CI
 on:
   push:
     branches: [ main, master ]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - 'LICENSE*'
+      - 'AGENTS.md'
   pull_request:
     branches: [ main, master ]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - 'LICENSE*'
+      - 'AGENTS.md'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   guards:
@@ -22,6 +36,7 @@ jobs:
 
   build:
     name: Build and Verify
+    needs: guards
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -86,6 +101,14 @@ jobs:
           #print axioms step_pow_two_pow
           #print axioms good_step_pow
           #print axioms good_card
+          #print axioms step_pow_add_six_pow
+          #print axioms light_cone_flip_hex
+          #print axioms parity_linear_split
+          #print axioms bstep_mod_three_pow
+          #print axioms good_mod_iff
+          #print axioms good11Free_card
+          #print axioms walsh_zero_of_bit_zero
+          #print axioms walsh_eq_two_mul_core
           LEAN
           OUTPUT=$(lake env lean check_axioms.lean)
           echo "$OUTPUT"
@@ -95,7 +118,9 @@ jobs:
           fi
           for T in step_parity step_parity_hex a_mod_six parity_window_hex cliff_sharp \
                    ternary_machine step_pow_bstep period_doubling step_pow_two_pow \
-                   good_step_pow good_card; do
+                   good_step_pow good_card step_pow_add_six_pow light_cone_flip_hex \
+                   parity_linear_split bstep_mod_three_pow good_mod_iff good11Free_card \
+                   walsh_zero_of_bit_zero walsh_eq_two_mul_core; do
             if ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' depends on axioms: [propext, Classical.choice, Quot.sound]" \
                && ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' depends on axioms: [propext, Quot.sound]" \
                && ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' does not depend on any axioms"; then

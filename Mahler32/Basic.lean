@@ -33,7 +33,13 @@ problem `a n % 2`; every statement is a closed-form local law, proved with `omeg
 * `run_spec` / `ternary_machine` : the base-`3` two-state machine (append `x % 2`, then divide by
   `2` digit by digit with a carry in `{0, 1}`) computes `step x`;
 * `good_card` : exactly `2 ^ k` legal residue classes modulo `3 ^ k`, via the bijection
-  `x ↦ step^[k] x` from `{x < 2 ^ k}` onto `{y < 3 ^ k : good k y}`.
+  `x ↦ step^[k] x` from `{x < 2 ^ k}` onto `{y < 3 ^ k : good k y}`;
+* `light_cone_flip_hex` / `parity_linear_split` : flipping bit `k` (or adding `6 ^ k`) always
+  flips step-`k` parity, and `step^[k] x % 2` splits linearly on bit `k`;
+* `bstep_mod_three_pow` / `good_mod_iff` : `bstep` and `good k` depend only on `y % 3 ^ k`;
+* `good11Free_card` : `11`-free legal predecessors modulo `3 ^ k` count `Nat.fib (k + 2)`;
+* `walsh_zero_of_bit_zero` / `walsh_eq_two_mul_core` : Walsh-Hadamard zero-correlation when the
+  top bit of the mask is `0`, and factor-of-`2` reduction to `walshCore` when it is `1`.
 -/
 
 public section
@@ -554,6 +560,485 @@ theorem good_card (k : ℕ) :
         step_pow_two_pow]
       exact hy3
   rw [← hbij, Finset.card_range]
+
+
+/-! ### Light-cone flip and linear splitting
+
+Flipping bit `k` of `x` (`x ↦ x + 2 ^ k`) adds `3 ^ k` after `k` steps, which is odd, so parity
+always flips.  In base `6`, adding `6 ^ k` shifts by `9 ^ k`, flipping parity at step `k`.
+Algebraically, `step^[k] x % 2` separates linearly as
+`((step^[k] (x % 2 ^ k)) % 2 + (x / 2 ^ k) % 2) % 2`. -/
+
+/-- Shifting by `2 ^ k` shifts `step^[k]` by `3 ^ k`. -/
+theorem step_pow_add_two_pow (k x : ℕ) : step^[k] (x + 2 ^ k) = step^[k] x + 3 ^ k := by
+  simpa using step_pow_shift k k le_rfl 1 x
+
+/-- Shifting by `6 ^ k` shifts `step^[k]` by `9 ^ k` (base-`6` light-cone growth). -/
+theorem step_pow_add_six_pow (k x : ℕ) : step^[k] (x + 6 ^ k) = step^[k] x + 9 ^ k := by
+  have h6 : 6 ^ k = 2 ^ k * 3 ^ k := by
+    rw [show (6 : ℕ) = 2 * 3 from by norm_num, mul_pow]
+  have h9 : 3 ^ k * 3 ^ k = 9 ^ k := by
+    rw [← mul_pow]
+    norm_num
+  simpa [h6, h9] using step_pow_shift k k le_rfl (3 ^ k) x
+
+/-- Flipping bit `k` always flips the parity after `k` steps. -/
+theorem step_pow_add_two_pow_parity (k x : ℕ) :
+    (step^[k] (x + 2 ^ k)) % 2 = 1 - (step^[k] x) % 2 := by
+  rw [step_pow_add_two_pow]
+  have h3 := three_pow_mod_two k
+  omega
+
+/-- **Hexadecimal light-cone flip**: adding `6 ^ k` always flips the parity at step `k`. -/
+theorem light_cone_flip_hex (k x : ℕ) :
+    (step^[k] (x + 6 ^ k)) % 2 ≠ (step^[k] x) % 2 := by
+  rw [step_pow_add_six_pow]
+  have h9 : 9 ^ k % 2 = 1 := by
+    have h3 := three_pow_mod_two k
+    rw [show (9 : ℕ) = 3 * 3 from by norm_num, mul_pow, Nat.mul_mod, h3]
+  omega
+
+/-- **`F₂` linear splitting**: `step^[k] x % 2` separates linearly on bit `k`
+(`(x / 2 ^ k) % 2`) and a nonlinear core depending only on `x % 2 ^ k`. -/
+theorem parity_linear_split (k x : ℕ) :
+    (step^[k] x) % 2 = ((step^[k] (x % 2 ^ k)) % 2 + (x / 2 ^ k) % 2) % 2 := by
+  have hsplit : x = x % 2 ^ k + 2 ^ k * (x / 2 ^ k) := (Nat.mod_add_div x (2 ^ k)).symm
+  conv_lhs => rw [hsplit, step_pow_shift k k le_rfl (x / 2 ^ k) (x % 2 ^ k)]
+  have h3 := three_pow_mod_two k
+  simp only [Nat.sub_self, pow_zero, one_mul]
+  rw [Nat.add_mod, Nat.mul_mod, h3]
+  omega
+
+
+/-! ### The 3-adic backward window
+
+Adding a multiple of `3 ^ (j + 1)` to `y` changes `bstep y` by a multiple of `3 ^ j`.
+Consequently, `bstep` depends locally on `y % 3 ^ (j + 1)`, and `good k y` depends only on
+`y % 3 ^ k`. -/
+
+/-- Adding a multiple of `3 ^ (j + 1)` shifts `bstep` by `3 ^ j * (2 * t)`. -/
+theorem bstep_add_three_pow (j t y : ℕ) :
+    bstep (y + 3 ^ (j + 1) * t) = bstep y + 3 ^ j * (2 * t) := by
+  have h3 : 3 ^ (j + 1) * t = 3 * (3 ^ j * t) := by rw [pow_succ]; ring
+  have hmod : 2 * (y + 3 ^ (j + 1) * t) % 3 = 2 * y % 3 := by rw [h3]; omega
+  have hmul : 2 * (y + 3 ^ (j + 1) * t) = 2 * y + 3 * (3 ^ j * (2 * t)) := by
+    rw [h3]
+    ring
+  have hm1 := bstep_mul (y + 3 ^ (j + 1) * t)
+  have hm2 := bstep_mul y
+  rw [hmod, hmul] at hm1
+  omega
+
+/-- Local symmetry window for `bstep`: `bstep y % 3 ^ j` depends only on `y % 3 ^ (j + 1)`. -/
+theorem bstep_mod_three_pow (j y : ℕ) :
+    bstep y % 3 ^ j = bstep (y % 3 ^ (j + 1)) % 3 ^ j := by
+  conv_lhs => rw [← Nat.mod_add_div y (3 ^ (j + 1))]
+  rw [bstep_add_three_pow, Nat.add_mul_mod_self_left]
+
+/-- Iterated `3`-adic shift of `bstep`. -/
+theorem bstep_pow_add_three_pow (m k : ℕ) (hk : k ≤ m) (t y : ℕ) :
+    bstep^[k] (y + 3 ^ m * t) = bstep^[k] y + 3 ^ (m - k) * (2 ^ k * t) := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    have hk' : k ≤ m := by omega
+    rw [Function.iterate_succ_apply', ih hk', Function.iterate_succ_apply']
+    have hshift := bstep_add_three_pow (m - k - 1) (2 ^ k * t) (bstep^[k] y)
+    obtain ⟨d, hd⟩ : ∃ d, m - k = d + 1 := ⟨m - k - 1, by omega⟩
+    have hd' : d = m - (k + 1) := by omega
+    rw [show m - k - 1 = d from by omega] at hshift
+    rw [hd, hshift, hd', pow_succ]
+    ring
+
+/-- The first `k` digits emitted by `bstep` are invariant under shifts by `3 ^ k`. -/
+lemma bstep_pow_mod_three_of_lt {k j : ℕ} (hj : j < k) (t y : ℕ) :
+    (bstep^[j] (y + 3 ^ k * t)) % 3 = (bstep^[j] y) % 3 := by
+  rw [bstep_pow_add_three_pow k j (by omega) t y]
+  obtain ⟨d, hd⟩ : ∃ d, k - j = d + 1 := ⟨k - j - 1, by omega⟩
+  have hcomm : 3 ^ (k - j) * (2 ^ j * t) = (3 ^ d * (2 ^ j * t)) * 3 := by
+    rw [hd, pow_succ]
+    ring
+  rw [hcomm, Nat.add_mul_mod_self_right]
+
+/-- Shifting by `3 ^ k` preserves `k`-step legality. -/
+theorem good_add_three_pow (k t y : ℕ) : good k (y + 3 ^ k * t) ↔ good k y := by
+  constructor
+  · intro h j hj
+    have hmod := bstep_pow_mod_three_of_lt hj t y
+    exact hmod ▸ h j hj
+  · intro h j hj
+    have hmod := bstep_pow_mod_three_of_lt hj t y
+    exact hmod.symm ▸ h j hj
+
+/-- Legality for `k` backward steps depends only on `y % 3 ^ k`. -/
+theorem good_mod_iff (k y : ℕ) : good k y ↔ good k (y % 3 ^ k) := by
+  conv_lhs => rw [← Nat.mod_add_div y (3 ^ k)]
+  exact good_add_three_pow k (y / 3 ^ k) (y % 3 ^ k)
+
+
+/-! ### 11-free backward pruning and Fibonacci count
+
+Imposing the Mahler Z-number `11`-free condition (forbidding two consecutive odd backward steps,
+i.e., two consecutive `≡ 2 (mod 3)` steps) reduces the surviving residue classes modulo `3 ^ k`
+from `2 ^ k` to the Fibonacci number `Nat.fib (k + 2)`. -/
+
+/-- `y` has a legal `k`-step backward orbit with no two consecutive odd outputs (`11`-free). -/
+@[expose] public def good11Free (k y : ℕ) : Prop :=
+  good k y ∧ ∀ j, j < k - 1 → ¬ ((bstep^[j] y) % 3 = 2 ∧ (bstep^[j + 1] y) % 3 = 2)
+
+public instance decidableGood11Free (k : ℕ) : DecidablePred (good11Free k) := fun y =>
+  @instDecidableAnd _ _ (decidableGood k y)
+    (Nat.decidableBallLT (k - 1)
+      (fun j _ => ¬ ((bstep^[j] y) % 3 = 2 ∧ (bstep^[j + 1] y) % 3 = 2)))
+
+/-- Shifting by `3 ^ k` preserves the `k`-step `11`-free condition. -/
+theorem good11Free_add_three_pow (k t y : ℕ) :
+    good11Free k (y + 3 ^ k * t) ↔ good11Free k y := by
+  unfold good11Free
+  rw [good_add_three_pow]
+  refine and_congr_right fun _ => ⟨fun h j hj => ?_, fun h j hj => ?_⟩
+  · have h1 := bstep_pow_mod_three_of_lt (by omega : j < k) t y
+    have h2 := bstep_pow_mod_three_of_lt (by omega : j + 1 < k) t y
+    have := h j hj
+    rwa [h1, h2] at this
+  · have h1 := bstep_pow_mod_three_of_lt (by omega : j < k) t y
+    have h2 := bstep_pow_mod_three_of_lt (by omega : j + 1 < k) t y
+    have := h j hj
+    rwa [← h1, ← h2] at this
+
+/-- `11`-free legality for `k` backward steps depends only on `y % 3 ^ k`. -/
+theorem good11Free_mod_iff (k y : ℕ) : good11Free k y ↔ good11Free k (y % 3 ^ k) := by
+  conv_lhs => rw [← Nat.mod_add_div y (3 ^ k)]
+  exact good11Free_add_three_pow k (y / 3 ^ k) (y % 3 ^ k)
+
+lemma bstep_three_mul (q : ℕ) : bstep (3 * q) = 2 * q := by
+  have hm := bstep_mul (3 * q)
+  omega
+
+lemma bstep_three_mul_add_two (q : ℕ) : bstep (3 * q + 2) = 2 * q + 1 := by
+  have hm := bstep_mul (3 * q + 2)
+  omega
+
+lemma good11Free_succ_of_mod_three_eq_zero {k y : ℕ} (h0 : y % 3 = 0) :
+    good11Free (k + 1) y ↔ good11Free k (bstep y) := by
+  constructor
+  · rintro ⟨hg, h11⟩
+    refine ⟨(good.succ hg).2, fun j hj => ?_⟩
+    have := h11 (j + 1) (by omega)
+    simpa [Function.iterate_succ_apply] using this
+  · rintro ⟨hg, h11⟩
+    refine ⟨fun j hj => ?_, fun j hj => ?_⟩
+    · cases j with
+      | zero => simp [h0]
+      | succ j =>
+        rw [Function.iterate_succ_apply]
+        exact hg j (by omega)
+    · cases j with
+      | zero => simp [h0]
+      | succ j =>
+        have := h11 j (by omega)
+        simpa [Function.iterate_succ_apply] using this
+
+lemma good11Free_succ_succ_of_mod_three_eq_two {k y : ℕ} (h2 : y % 3 = 2) :
+    good11Free (k + 2) y ↔ good11Free (k + 1) (bstep y) ∧ (bstep y) % 3 = 0 := by
+  constructor
+  · rintro ⟨hg, h11⟩
+    have hsucc := (good.succ hg).2
+    have hb1 : (bstep y) % 3 ≠ 1 := (good.succ hsucc).1
+    have h0 := h11 0 (by omega)
+    simp only [Function.iterate_zero_apply, Nat.zero_add, Function.iterate_one, h2,
+      true_and] at h0
+    refine ⟨⟨hsucc, fun j hj => ?_⟩, by omega⟩
+    have := h11 (j + 1) (by omega)
+    simpa [Function.iterate_succ_apply] using this
+  · rintro ⟨⟨hg, h11⟩, hb0⟩
+    refine ⟨fun j hj => ?_, fun j hj => ?_⟩
+    · cases j with
+      | zero => simp [h2]
+      | succ j =>
+        rw [Function.iterate_succ_apply]
+        exact hg j (by omega)
+    · cases j with
+      | zero => simp [hb0]
+      | succ j =>
+        have := h11 j (by omega)
+        simpa [Function.iterate_succ_apply] using this
+
+lemma eq_of_add_mod_two_eq {q₁ q₂ r : ℕ} (h1 : q₁ < 2) (h2 : q₂ < 2)
+    (heq : (q₁ + r) % 2 = (q₂ + r) % 2) : q₁ = q₂ := by
+  omega
+
+lemma eq_of_mod_three_pow_eq_of_lt {m a₁ a₂ : ℕ} (ha1 : a₁ < 2 * 3 ^ m) (ha2 : a₂ < 2 * 3 ^ m)
+    (hpar : a₁ % 2 = a₂ % 2) (hmod : a₁ % 3 ^ m = a₂ % 3 ^ m) : a₁ = a₂ := by
+  have hpow : 0 < 3 ^ m := pow_pos (by norm_num) m
+  have hq1 : a₁ / 3 ^ m < 2 := by rw [Nat.div_lt_iff_lt_mul hpow]; omega
+  have hq2 : a₂ / 3 ^ m < 2 := by rw [Nat.div_lt_iff_lt_mul hpow]; omega
+  have h3mod : 3 ^ m % 2 = 1 := three_pow_mod_two m
+  have hp1 : (a₁ / 3 ^ m + a₁ % 3 ^ m) % 2 = a₁ % 2 := by
+    have hdm := congrArg (· % 2) (Nat.div_add_mod a₁ (3 ^ m))
+    rw [Nat.add_mod, Nat.mul_mod, h3mod] at hdm
+    omega
+  have hp2 : (a₂ / 3 ^ m + a₂ % 3 ^ m) % 2 = a₂ % 2 := by
+    have hdm := congrArg (· % 2) (Nat.div_add_mod a₂ (3 ^ m))
+    rw [Nat.add_mod, Nat.mul_mod, h3mod] at hdm
+    omega
+  rw [hmod, hpar] at hp1
+  have hqeq : a₁ / 3 ^ m = a₂ / 3 ^ m := eq_of_add_mod_two_eq hq1 hq2 (hp1.trans hp2.symm)
+  rw [← Nat.div_add_mod a₁ (3 ^ m), ← Nat.div_add_mod a₂ (3 ^ m), hqeq, hmod]
+
+lemma card_good11Free_mod_zero (k : ℕ) :
+    ((Finset.range (3 ^ (k + 1))).filter (fun y => good11Free (k + 1) y ∧ y % 3 = 0)).card =
+      ((Finset.range (3 ^ k)).filter (fun w => good11Free k w)).card := by
+  refine Finset.card_bij (fun y _ => bstep y % 3 ^ k) ?_ ?_ ?_
+  · intro y hy
+    simp only [Finset.mem_filter, Finset.mem_range] at hy ⊢
+    refine ⟨Nat.mod_lt _ (pow_pos (by norm_num) k), ?_⟩
+    rw [← good11Free_mod_iff]
+    exact (good11Free_succ_of_mod_three_eq_zero hy.2.2).mp hy.2.1
+  · intro y₁ hy₁ y₂ hy₂ heq
+    simp only [Finset.mem_filter, Finset.mem_range] at hy₁ hy₂
+    have h3k : 3 ^ (k + 1) = 3 * 3 ^ k := by rw [pow_succ]; ring
+    have hy1_eq : y₁ = 3 * (y₁ / 3) := by omega
+    have hy2_eq : y₂ = 3 * (y₂ / 3) := by omega
+    have hb1 : bstep y₁ = 2 * (y₁ / 3) := by
+      conv_lhs => rw [hy1_eq]
+      exact bstep_three_mul _
+    have hb2 : bstep y₂ = 2 * (y₂ / 3) := by
+      conv_lhs => rw [hy2_eq]
+      exact bstep_three_mul _
+    have hbeq : bstep y₁ = bstep y₂ :=
+      eq_of_mod_three_pow_eq_of_lt (by omega) (by omega) (by omega) heq
+    omega
+  · intro w hw
+    simp only [Finset.mem_filter, Finset.mem_range] at hw
+    obtain ⟨hwlt, hwg⟩ := hw
+    have h3k : 3 ^ (k + 1) = 3 * 3 ^ k := by rw [pow_succ]; ring
+    have h3mod : 3 ^ k % 2 = 1 := three_pow_mod_two k
+    by_cases hwpar : w % 2 = 0
+    · refine ⟨3 * (w / 2), ?_, ?_⟩
+      · simp only [Finset.mem_filter, Finset.mem_range]
+        refine ⟨by omega, ?_, by omega⟩
+        rw [good11Free_succ_of_mod_three_eq_zero (by omega), bstep_three_mul]
+        have : 2 * (w / 2) = w := by omega
+        rwa [this]
+      · rw [bstep_three_mul, show 2 * (w / 2) = w from by omega, Nat.mod_eq_of_lt hwlt]
+    · refine ⟨3 * ((w + 3 ^ k) / 2), ?_, ?_⟩
+      · simp only [Finset.mem_filter, Finset.mem_range]
+        refine ⟨by omega, ?_, by omega⟩
+        rw [good11Free_succ_of_mod_three_eq_zero (by omega), bstep_three_mul]
+        have hsum : 2 * ((w + 3 ^ k) / 2) = w + 3 ^ k := by omega
+        rw [hsum, ← Nat.mul_one (3 ^ k)]
+        exact (good11Free_add_three_pow k 1 w).mpr hwg
+      · rw [bstep_three_mul, show 2 * ((w + 3 ^ k) / 2) = w + 3 ^ k from by omega,
+          Nat.add_mod_right, Nat.mod_eq_of_lt hwlt]
+
+lemma card_good11Free_mod_two (k : ℕ) :
+    ((Finset.range (3 ^ (k + 2))).filter (fun y => good11Free (k + 2) y ∧ y % 3 = 2)).card =
+      ((Finset.range (3 ^ (k + 1))).filter
+        (fun w => good11Free (k + 1) w ∧ w % 3 = 0)).card := by
+  refine Finset.card_bij (fun y _ => bstep y % 3 ^ (k + 1)) ?_ ?_ ?_
+  · intro y hy
+    simp only [Finset.mem_filter, Finset.mem_range] at hy ⊢
+    obtain ⟨hyg, hb0⟩ := (good11Free_succ_succ_of_mod_three_eq_two hy.2.2).mp hy.2.1
+    refine ⟨Nat.mod_lt _ (pow_pos (by norm_num) (k + 1)), ?_, ?_⟩
+    · rwa [← good11Free_mod_iff]
+    · have hdvd : 3 ∣ 3 ^ (k + 1) := ⟨3 ^ k, by rw [pow_succ]; ring⟩
+      rw [Nat.mod_mod_of_dvd _ hdvd, hb0]
+  · intro y₁ hy₁ y₂ hy₂ heq
+    simp only [Finset.mem_filter, Finset.mem_range] at hy₁ hy₂
+    have h3k : 3 ^ (k + 2) = 3 * 3 ^ (k + 1) := by rw [pow_succ]; ring
+    have hy1_eq : y₁ = 3 * (y₁ / 3) + 2 := by omega
+    have hy2_eq : y₂ = 3 * (y₂ / 3) + 2 := by omega
+    have hb1 : bstep y₁ = 2 * (y₁ / 3) + 1 := by
+      conv_lhs => rw [hy1_eq]
+      exact bstep_three_mul_add_two _
+    have hb2 : bstep y₂ = 2 * (y₂ / 3) + 1 := by
+      conv_lhs => rw [hy2_eq]
+      exact bstep_three_mul_add_two _
+    have hbeq : bstep y₁ = bstep y₂ :=
+      eq_of_mod_three_pow_eq_of_lt (by omega) (by omega) (by omega) heq
+    omega
+  · intro w hw
+    simp only [Finset.mem_filter, Finset.mem_range] at hw
+    obtain ⟨hwlt, hwg, hw0⟩ := hw
+    have h3k : 3 ^ (k + 2) = 3 * 3 ^ (k + 1) := by rw [pow_succ]; ring
+    have h3pos : 1 ≤ 3 ^ (k + 1) := Nat.one_le_pow _ _ (by norm_num)
+    have h3mod : 3 ^ (k + 1) % 2 = 1 := three_pow_mod_two (k + 1)
+    have h3div3 : 3 ^ (k + 1) % 3 = 0 := by
+      rw [pow_succ]
+      omega
+    by_cases hwpar : w % 2 = 1
+    · refine ⟨3 * ((w - 1) / 2) + 2, ?_, ?_⟩
+      · simp only [Finset.mem_filter, Finset.mem_range]
+        refine ⟨by omega, ?_, by omega⟩
+        rw [good11Free_succ_succ_of_mod_three_eq_two (by omega), bstep_three_mul_add_two]
+        have : 2 * ((w - 1) / 2) + 1 = w := by omega
+        rw [this]
+        exact ⟨hwg, hw0⟩
+      · rw [bstep_three_mul_add_two, show 2 * ((w - 1) / 2) + 1 = w from by omega,
+          Nat.mod_eq_of_lt hwlt]
+    · refine ⟨3 * ((w + 3 ^ (k + 1) - 1) / 2) + 2, ?_, ?_⟩
+      · simp only [Finset.mem_filter, Finset.mem_range]
+        refine ⟨by omega, ?_, by omega⟩
+        rw [good11Free_succ_succ_of_mod_three_eq_two (by omega), bstep_three_mul_add_two]
+        have hsum : 2 * ((w + 3 ^ (k + 1) - 1) / 2) + 1 = w + 3 ^ (k + 1) := by omega
+        rw [hsum]
+        refine ⟨?_, by omega⟩
+        rw [← Nat.mul_one (3 ^ (k + 1))]
+        exact (good11Free_add_three_pow (k + 1) 1 w).mpr hwg
+      · rw [bstep_three_mul_add_two,
+          show 2 * ((w + 3 ^ (k + 1) - 1) / 2) + 1 = w + 3 ^ (k + 1) from by omega,
+          Nat.add_mod_right, Nat.mod_eq_of_lt hwlt]
+
+/-- **11-free Fibonacci count**: the number of `k`-step `11`-free legal residue classes modulo
+`3 ^ k` is `Nat.fib (k + 2)`. -/
+theorem good11Free_card : ∀ k : ℕ,
+    ((Finset.range (3 ^ k)).filter (fun y => good11Free k y)).card = Nat.fib (k + 2)
+  | 0 => by decide
+  | 1 => by decide
+  | k + 2 => by
+    have ih1 := good11Free_card (k + 1)
+    have ih0 := good11Free_card k
+    let S := (Finset.range (3 ^ (k + 2))).filter (fun y => good11Free (k + 2) y)
+    have hpart := Finset.card_filter_add_card_filter_not (s := S) (fun y => y % 3 = 0)
+    have h0 : (S.filter (fun y => y % 3 = 0)).card =
+        ((Finset.range (3 ^ (k + 2))).filter
+          (fun y => good11Free (k + 2) y ∧ y % 3 = 0)).card := by
+      simp [S, Finset.filter_filter]
+    have h2 : (S.filter (fun y => ¬ y % 3 = 0)).card =
+        ((Finset.range (3 ^ (k + 2))).filter
+          (fun y => good11Free (k + 2) y ∧ y % 3 = 2)).card := by
+      congr 1
+      ext y
+      simp only [S, Finset.mem_filter, Finset.mem_range]
+      constructor
+      · rintro ⟨⟨hy, hg⟩, hne⟩
+        have hy1 : y % 3 ≠ 1 := hg.1 0 (by omega)
+        exact ⟨hy, hg, by omega⟩
+      · rintro ⟨hy, hg, hy2⟩
+        exact ⟨⟨hy, hg⟩, by omega⟩
+    rw [h0, h2, card_good11Free_mod_zero (k + 1), card_good11Free_mod_two k,
+      card_good11Free_mod_zero k, ih1, ih0] at hpart
+    rw [← hpart, Nat.fib_add_two (n := k + 2), show k + 2 + 1 = k + 1 + 2 from by omega,
+      Nat.add_comm]
+
+
+/-! ### Walsh-Hadamard zero correlation
+
+By `parity_linear_split`, the Boolean function `x ↦ step^[k] x % 2` on `k + 1` bits has the top
+bit `x_k` separated as an independent linear XOR summand.  Consequently, any Walsh-Hadamard mask
+`u` with `k`-th bit `0` has correlation `walsh k u = 0`, and any mask with `k`-th bit `1`
+doubles the Walsh coefficient of the nonlinear core on `k` bits. -/
+
+/-- Bitwise dot product modulo `2` over the lowest `n` bits. -/
+@[expose] public def bitDot (n u x : ℕ) : ℕ :=
+  (∑ i ∈ Finset.range n, (u / 2 ^ i % 2) * (x / 2 ^ i % 2)) % 2
+
+/-- Walsh-Hadamard coefficient of `x ↦ step^[k] x % 2` on `k + 1` bits at linear mask `u`. -/
+@[expose] public def walsh (k u : ℕ) : ℤ :=
+  ∑ x ∈ Finset.range (2 ^ (k + 1)), (-1 : ℤ) ^ ((step^[k] x) % 2 + bitDot (k + 1) u x)
+
+/-- Walsh-Hadamard coefficient of the nonlinear core `g_k` on the low `k` bits at mask `u`. -/
+@[expose] public def walshCore (k u : ℕ) : ℤ :=
+  ∑ x ∈ Finset.range (2 ^ k), (-1 : ℤ) ^ ((step^[k] x) % 2 + bitDot k u x)
+
+lemma div_two_pow_add_two_pow_mod_two {k i : ℕ} (hi : i < k) (x : ℕ) :
+    (x + 2 ^ k) / 2 ^ i % 2 = x / 2 ^ i % 2 := by
+  obtain ⟨d, hd⟩ : ∃ d, k = i + (d + 1) := ⟨k - i - 1, by omega⟩
+  have hpow : 2 ^ k = 2 ^ i * (2 ^ d * 2) := by rw [hd, pow_add, pow_succ]
+  rw [hpow, Nat.add_mul_div_left _ _ (pow_pos (by norm_num) i)]
+  omega
+
+lemma bitDot_succ_of_lt {k u x : ℕ} (hx : x < 2 ^ k) :
+    bitDot (k + 1) u x = bitDot k u x := by
+  simp only [bitDot, Finset.sum_range_succ, Nat.div_eq_of_lt hx, Nat.zero_mod, mul_zero,
+    add_zero]
+
+lemma bitDot_succ_add_two_pow {k u x : ℕ} (hx : x < 2 ^ k) :
+    bitDot (k + 1) u (x + 2 ^ k) = (bitDot k u x + u / 2 ^ k % 2) % 2 := by
+  unfold bitDot
+  rw [Finset.sum_range_succ]
+  have hsum : ∑ i ∈ Finset.range k, (u / 2 ^ i % 2) * ((x + 2 ^ k) / 2 ^ i % 2) =
+      ∑ i ∈ Finset.range k, (u / 2 ^ i % 2) * (x / 2 ^ i % 2) := by
+    refine Finset.sum_congr rfl fun i hi => ?_
+    rw [div_two_pow_add_two_pow_mod_two (Finset.mem_range.mp hi) x]
+  have htop : (x + 2 ^ k) / 2 ^ k % 2 = 1 := by
+    rw [show x + 2 ^ k = x + 2 ^ k * 1 from by ring,
+      Nat.add_mul_div_left x 1 (pow_pos (by norm_num) k), Nat.div_eq_of_lt hx]
+  rw [hsum, htop, mul_one]
+  omega
+
+lemma bitDot_add_two_pow (k u x : ℕ) : bitDot k (u + 2 ^ k) x = bitDot k u x := by
+  unfold bitDot
+  have hsum : ∑ i ∈ Finset.range k, ((u + 2 ^ k) / 2 ^ i % 2) * (x / 2 ^ i % 2) =
+      ∑ i ∈ Finset.range k, (u / 2 ^ i % 2) * (x / 2 ^ i % 2) := by
+    refine Finset.sum_congr rfl fun i hi => ?_
+    rw [div_two_pow_add_two_pow_mod_two (Finset.mem_range.mp hi) u]
+  rw [hsum]
+
+lemma neg_one_pow_eq_mod_two (n : ℕ) : (-1 : ℤ) ^ n = (-1 : ℤ) ^ (n % 2) := by
+  conv_lhs => rw [← Nat.div_add_mod n 2]
+  rw [pow_add, pow_mul]
+  norm_num
+
+lemma walsh_split (k u : ℕ) :
+    walsh k u = ∑ x ∈ Finset.range (2 ^ k),
+      ((-1 : ℤ) ^ ((step^[k] x) % 2 + bitDot (k + 1) u x) +
+        (-1 : ℤ) ^ ((step^[k] (x + 2 ^ k)) % 2 + bitDot (k + 1) u (x + 2 ^ k))) := by
+  unfold walsh
+  rw [show 2 ^ (k + 1) = 2 ^ k + 2 ^ k from by rw [pow_succ, mul_two]]
+  rw [Finset.sum_range_add, ← Finset.sum_add_distrib]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  rw [Nat.add_comm (2 ^ k) x]
+
+/-- **Walsh zero-correlation theorem**: any mask omitting bit `k` has Walsh coefficient `0`. -/
+theorem walsh_zero_of_bit_zero (k u : ℕ) (hu : u / 2 ^ k % 2 = 0) : walsh k u = 0 := by
+  rw [walsh_split]
+  refine Finset.sum_eq_zero fun x hx => ?_
+  have hxlt := Finset.mem_range.mp hx
+  rw [step_pow_add_two_pow_parity, bitDot_succ_of_lt hxlt, bitDot_succ_add_two_pow hxlt, hu,
+    Nat.add_zero]
+  have ha : (step^[k] x) % 2 < 2 := Nat.mod_lt _ (by norm_num)
+  have hb : bitDot k u x < 2 := Nat.mod_lt _ (by norm_num)
+  rw [neg_one_pow_eq_mod_two ((step^[k] x) % 2 + bitDot k u x),
+    neg_one_pow_eq_mod_two (1 - (step^[k] x) % 2 + bitDot k u x % 2)]
+  rcases (by omega : ((step^[k] x) % 2 + bitDot k u x) % 2 = 0 ∨
+      ((step^[k] x) % 2 + bitDot k u x) % 2 = 1) with h | h
+  · have h' : (1 - (step^[k] x) % 2 + bitDot k u x % 2) % 2 = 1 := by omega
+    rw [h, h']
+    norm_num
+  · have h' : (1 - (step^[k] x) % 2 + bitDot k u x % 2) % 2 = 0 := by omega
+    rw [h, h']
+    norm_num
+
+/-- **Walsh core reduction**: when bit `k` of the mask is `1`, `walsh k u = 2 * walshCore k u`. -/
+theorem walsh_eq_two_mul_core (k u : ℕ) (hu : u / 2 ^ k % 2 = 1) :
+    walsh k u = 2 * walshCore k u := by
+  rw [walsh_split]
+  unfold walshCore
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun x hx => ?_
+  have hxlt := Finset.mem_range.mp hx
+  rw [step_pow_add_two_pow_parity, bitDot_succ_of_lt hxlt, bitDot_succ_add_two_pow hxlt, hu]
+  have ha : (step^[k] x) % 2 < 2 := Nat.mod_lt _ (by norm_num)
+  have hb : bitDot k u x < 2 := Nat.mod_lt _ (by norm_num)
+  have hpair : (1 - (step^[k] x) % 2 + (bitDot k u x + 1) % 2) % 2 =
+      ((step^[k] x) % 2 + bitDot k u x) % 2 := by omega
+  rw [neg_one_pow_eq_mod_two ((step^[k] x) % 2 + bitDot k u x),
+    neg_one_pow_eq_mod_two (1 - (step^[k] x) % 2 + (bitDot k u x + 1) % 2), hpair,
+    ← neg_one_pow_eq_mod_two]
+  ring
+
+/-- Explicit mask form for `u = u' + 2 ^ k` with `u' < 2 ^ k`. -/
+theorem walsh_add_two_pow {k u' : ℕ} (hu : u' < 2 ^ k) :
+    walsh k (u' + 2 ^ k) = 2 * walshCore k u' := by
+  have hbit : (u' + 2 ^ k) / 2 ^ k % 2 = 1 := by
+    rw [show u' + 2 ^ k = u' + 2 ^ k * 1 from by ring,
+      Nat.add_mul_div_left u' 1 (pow_pos (by norm_num) k), Nat.div_eq_of_lt hu]
+  rw [walsh_eq_two_mul_core k (u' + 2 ^ k) hbit]
+  unfold walshCore
+  refine congrArg (2 * ·) (Finset.sum_congr rfl fun x _ => ?_)
+  rw [bitDot_add_two_pow]
 
 
 end Mahler32
