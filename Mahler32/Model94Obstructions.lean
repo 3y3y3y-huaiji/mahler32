@@ -23,17 +23,23 @@ adds `2`).  Seven groups of results are proved:
    `N + 2` steps.
 3. `forbidden_sum_c2_mod4` — if `g + g' = c · 4^k - 1` with `c ≡ 2 (mod 4)` then both cannot
    survive `k + 1` steps.
-4. `odd_rung_klein4_exclusion` — the kernel-checked `N = 3` Klein-4 exclusion: at most `3` of the
-   four sibling/mirror points survive `N + 1` steps (general odd `N` is a script certificate).
+4. `odd_rung_klein4_no_four` — the **general odd-`N`** Klein-4 exclusion: for every odd `N ≥ 3`,
+   `g < 4^{N-1}`, `δ ∈ {1,2,3}`, the four sibling/mirror points `g`, `g + δ·4^{N-1}`, `4^N-1-g`,
+   `4^N-1-(g+δ·4^{N-1})` cannot all survive `N+1` steps; at most three survive.  The `N = 3`
+   `decide` instance `odd_rung_klein4_exclusion` is kept as a concrete kernel witness.
 5. `sum_shadow_exact` / `diff_shadow_exact` — the independent sum and difference shadow dynamics
    reproduce the pair sum / difference exactly.
 6. `base9_transducer_exact` / `base9_digit_sum_conservation` — the carry-free base-9 transducer and
    its exact digit-sum conservation law.
 7. `finite_roof_block_certificate` — the kernel-checked finite-roof mirror-block bound
-   `8 · |S_{N+2}| ≤ 3 · |S_N|` in the `4^4 = 256` window (larger moduli are script certificates).
+   `8 · |S_{N+2}| ≤ 3 · |S_N|` in the `4^4 = 256` window, together with the **general lifting
+   engine** `step94_add_four_pow`, `iter94_add_four_pow`, `survives94_add_four_pow`: survival to
+   any fixed horizon `k` is periodic with period `4^k`, so a finite window at horizon `k` exhausts
+   all `N` for that horizon.  The roof ratio itself at larger moduli (`4^6, 4^7, 4^9`) remains a
+   script certificate.
 
-The general statements in groups 1–3 and 5–6 are proved over all `N`; groups 4 and 7 are
-`decide`-checked finite instances, with the wider moduli reproduced by
+The general statements in groups 1–6 and the locality/lifting lemmas are proved over all `N`;
+group 7's roof ratio at a fixed window is kernel `decide`, with wider moduli reproduced by
 `scripts/generate_certificates.py`.  Nothing here asserts the Mahler `3/2` or `9/4` conjectures.
 -/
 
@@ -660,6 +666,266 @@ public theorem finite_roof_block_certificate :
     8 * ((Finset.range (4 ^ 4)).filter (fun g => survives94 (4 + 2) g)).card
       ≤ 3 * ((Finset.range (4 ^ 4)).filter (fun g => survives94 4 g)).card := by
   decide
+
+/-! ### General-`N` lifting: survival to `k` steps has period `4^k` -/
+
+/-- One step of the `9/4` map commutes with adding `4^(k+1) · t`, up to the exact shift
+`9 · 4^k · t`.  This is the finite-window lifting engine: it shows that survival to any fixed
+horizon is determined by the low base-`4` digits. -/
+public lemma step94_add_four_pow (k t g : ℕ) :
+    step94 (g + 4 ^ (k + 1) * t) = (step94 g).map (fun h => h + 9 * 4 ^ k * t) := by
+  have h4 : 4 ^ (k + 1) * t = 4 * (4 ^ k * t) := by rw [pow_succ]; ring
+  have hmod : (g + 4 ^ (k + 1) * t) % 4 = g % 4 := by
+    rw [h4, Nat.add_mul_mod_self_left]
+  have hlt : g % 4 < 4 := Nat.mod_lt _ (by norm_num)
+  interval_cases hm : g % 4
+  · simp [step94, hm, hmod]
+  · rw [step94_of_mod_one hm, step94_of_mod_one (by simpa using hmod)]
+    congr 1
+    have hsplit : 9 * (g + 4 ^ (k + 1) * t) + 3
+        = (9 * g + 3) + 4 * (9 * 4 ^ k * t) := by rw [pow_succ]; ring
+    rw [hsplit, Nat.add_mul_div_left _ _ (by norm_num)]
+  · rw [step94_of_mod_two hm, step94_of_mod_two (by simpa using hmod)]
+    congr 1
+    have hsplit : 9 * (g + 4 ^ (k + 1) * t) + 2
+        = (9 * g + 2) + 4 * (9 * 4 ^ k * t) := by rw [pow_succ]; ring
+    rw [hsplit, Nat.add_mul_div_left _ _ (by norm_num)]
+  · simp [step94, hm, hmod]
+
+/-- Iterating `k` steps: survival/iteration of `g + 4^k · t` is the iteration of `g` shifted by
+`9^k · t`. -/
+public lemma iter94_add_four_pow (k t g : ℕ) :
+    iter94 k (g + 4 ^ k * t) = (iter94 k g).map (fun h => h + 9 ^ k * t) := by
+  induction k generalizing g t with
+  | zero => simp
+  | succ k ih =>
+    rw [iter94_succ, iter94_succ, step94_add_four_pow]
+    cases step94 g with
+    | none => simp
+    | some h =>
+      simp only [Option.map_some, Option.bind_some]
+      have hrw : h + 9 * 4 ^ k * t = h + 4 ^ k * (9 * t) := by ring
+      rw [hrw, ih (9 * t) h]
+      have hf : (fun x => x + 9 ^ k * (9 * t)) = (fun x => x + 9 ^ (k + 1) * t) := by
+        funext x; rw [pow_succ]; ring
+      rw [hf]
+
+/-- **Finite-window lifting.**  Survival to `k` steps is invariant under adding a multiple of
+`4^k`, so the finite window `[0, 4^k)` exhausts every survival pattern; in particular every
+"finite window" count at horizon `k` is exactly the count at horizon `k` in any larger window. -/
+public theorem survives94_add_four_pow (k t g : ℕ) :
+    survives94 k (g + 4 ^ k * t) ↔ survives94 k g := by
+  unfold survives94
+  rw [iter94_add_four_pow]
+  cases iter94 k g with
+  | none => simp
+  | some h => simp
+
+/-! ### Theorem 4, general odd `N`: at most three of each Klein-4 quadruple survive -/
+
+/-- For odd `N = 2m+1`, `(9^N - 1)/4 ≡ 2 (mod 4)`. -/
+public lemma nine_pow_odd_sub_one_div_four_mod (m : ℕ) :
+    (9 ^ (2 * m + 1) - 1) / 4 % 4 = 2 := by
+  have hX : 9 ^ (2 * m + 1) % 16 = 9 := nine_pow_odd_mod16 m
+  have hXeq : 9 ^ (2 * m + 1) = 16 * (9 ^ (2 * m + 1) / 16) + 9 := by
+    have := Nat.div_add_mod (9 ^ (2 * m + 1)) 16
+    rw [hX] at this
+    omega
+  rw [hXeq]
+  have hsimp : 16 * (9 ^ (2 * m + 1) / 16) + 9 - 1
+      = 4 * (4 * (9 ^ (2 * m + 1) / 16) + 2) := by omega
+  rw [hsimp, Nat.mul_div_right _ (by norm_num)]
+  omega
+
+/-- For odd `N = 2m+1`, `(3·9^N + 1)/4 ≡ 3 (mod 4)`. -/
+public lemma three_nine_pow_odd_add_one_div_four_mod (m : ℕ) :
+    (3 * 9 ^ (2 * m + 1) + 1) / 4 % 4 = 3 := by
+  have hX : 9 ^ (2 * m + 1) % 16 = 9 := nine_pow_odd_mod16 m
+  have hXeq : 9 ^ (2 * m + 1) = 16 * (9 ^ (2 * m + 1) / 16) + 9 := by
+    have := Nat.div_add_mod (9 ^ (2 * m + 1)) 16
+    rw [hX] at this
+    omega
+  rw [hXeq]
+  have hsimp : 3 * (16 * (9 ^ (2 * m + 1) / 16) + 9) + 1
+      = 4 * (12 * (9 ^ (2 * m + 1) / 16) + 7) := by ring
+  rw [hsimp, Nat.mul_div_right _ (by norm_num)]
+  omega
+
+/-- Two residues in `{1,2}` whose sum is `≡ 0 (mod 4)` must both be `2`. -/
+public lemma both_residues_two {a b : ℕ}
+    (ha : a % 4 = 1 ∨ a % 4 = 2) (hb : b % 4 = 1 ∨ b % 4 = 2)
+    (h : (a + b) % 4 = 0) : a % 4 = 2 ∧ b % 4 = 2 := by
+  have hkey : (a + b) % 4 = (a % 4 + b % 4) % 4 := Nat.add_mod _ _ _
+  rw [h] at hkey
+  rcases ha with ha | ha <;> rcases hb with hb | hb
+  · rw [ha, hb] at hkey; omega
+  · rw [ha, hb] at hkey; omega
+  · rw [ha, hb] at hkey; omega
+  · exact ⟨ha, hb⟩
+
+/-- Iterating the difference shadow on `r · 4^m` gives `r · 9^m`. -/
+public lemma iterDiff_mul_four_pow (r m : ℕ) :
+    iterDiff m (r * 4 ^ m) = some (r * 9 ^ m) := by
+  induction m generalizing r with
+  | zero => simp
+  | succ m ih =>
+    rw [iterDiff_succ]
+    have hm : (r * 4 ^ (m + 1)) % 4 = 0 := by
+      have h4 : r * 4 ^ (m + 1) = 4 * (r * 4 ^ m) := by rw [pow_succ]; ring
+      rw [h4, Nat.mul_mod_right]
+    rw [stepDiff_of_mod_zero hm]
+    have hval : 9 * (r * 4 ^ (m + 1)) / 4 = (9 * r) * 4 ^ m := by
+      have h4 : 9 * (r * 4 ^ (m + 1)) = 4 * ((9 * r) * 4 ^ m) := by rw [pow_succ]; ring
+      rw [h4, Nat.mul_div_right _ (by norm_num)]
+    rw [hval, Option.bind_some, ih (9 * r)]
+    congr 1
+    rw [pow_succ]; ring
+
+/-- **Theorem 4 (general odd `N`).**  For every odd `N ≥ 3`, `g < 4^{N-1}` and `δ ∈ {1,2,3}`, it is
+impossible that all four of `g`, `g + δ·4^{N-1}`, `4^N - 1 - g`, `4^N - 1 - (g + δ·4^{N-1})`
+survive `N + 1` steps.  This is the uniform-in-`N` Klein-4 exclusion (the `N = 3` kernel instance
+is `odd_rung_klein4_exclusion`); it upgrades the previous `decide`-only statement. -/
+public theorem odd_rung_klein4_no_four {N g δ : ℕ}
+    (hN : 3 ≤ N) (hodd : N % 2 = 1) (hg : g < 4 ^ (N - 1))
+    (hδ1 : 1 ≤ δ) (hδ3 : δ ≤ 3) :
+    ¬ (survives94 (N + 1) g ∧ survives94 (N + 1) (g + δ * 4 ^ (N - 1)) ∧
+       survives94 (N + 1) (4 ^ N - 1 - g) ∧
+       survives94 (N + 1) (4 ^ N - 1 - (g + δ * 4 ^ (N - 1)))) := by
+  intro h
+  obtain ⟨hA, hB, hAb, hBb⟩ := h
+  have hN1 : 1 ≤ N := by omega
+  -- size bounds
+  have hApow : 4 ^ (N - 1) ≤ 4 ^ N := Nat.pow_le_pow_right (by norm_num) (by omega)
+  have hA_lt : g < 4 ^ N := lt_of_lt_of_le hg hApow
+  have hB_lt : g + δ * 4 ^ (N - 1) < 4 ^ N := by
+    have hX : 0 < 4 ^ (N - 1) := Nat.pow_pos (by norm_num)
+    have hle : δ * 4 ^ (N - 1) ≤ 3 * 4 ^ (N - 1) := Nat.mul_le_mul_right _ hδ3
+    have hp : 4 ^ N = 4 * 4 ^ (N - 1) := by
+      have h : N = (N - 1) + 1 := by omega
+      conv_lhs => rw [h]
+      rw [pow_succ]
+      exact Nat.mul_comm _ _
+    nlinarith [hg, hle, hp, hX]
+  -- iterates at time `N` and `N-1`
+  have hNle : N ≤ N + 1 := by omega
+  obtain ⟨aN, haN⟩ := exists_iter_of_survives (survives94_le hNle hA)
+  obtain ⟨bN, hbN⟩ := exists_iter_of_survives (survives94_le hNle hB)
+  have hNm : N = (N - 1) + 1 := by omega
+  have haN' : iter94 N g = some aN := haN
+  have hbN' : iter94 N (g + δ * 4 ^ (N - 1)) = some bN := hbN
+  rw [hNm, iter94_add (N - 1) 1] at haN' hbN'
+  obtain ⟨A', hA', hstepA⟩ := Option.bind_eq_some_iff.mp haN'
+  obtain ⟨B', hB', hstepB⟩ := Option.bind_eq_some_iff.mp hbN'
+  have hstepA' : step94 A' = some aN := by simpa [iter94] using hstepA
+  have hstepB' : step94 B' = some bN := by simpa [iter94] using hstepB
+  -- difference shadow: `B' - A' = δ 9^{N-1}`
+  have hgB : g ≤ g + δ * 4 ^ (N - 1) := Nat.le_add_right _ _
+  obtain ⟨hA'leB', hdiff⟩ :=
+    diff_shadow_exact (N - 1) (g + δ * 4 ^ (N - 1)) g B' A' hgB hB' hA'
+  rw [Nat.add_sub_cancel_left] at hdiff
+  rw [iterDiff_mul_four_pow δ (N - 1)] at hdiff
+  have hB'A' : B' - A' = δ * 9 ^ (N - 1) := (Option.some.inj hdiff).symm
+  obtain ⟨haNbN, hsd⟩ := step_diff_pair hA'leB' hstepB' hstepA'
+  rw [hB'A'] at hsd
+  -- mirror sums at level `N`
+  obtain ⟨am, ham, hsumA⟩ :=
+    mirror_conservation_94 hN1 (le_refl N) g hA_lt aN haN
+  obtain ⟨bm, hbm, hsumB⟩ :=
+    mirror_conservation_94 hN1 (le_refl N) (g + δ * 4 ^ (N - 1)) hB_lt bN hbN
+  obtain ⟨abar, habar⟩ := exists_iter_of_survives (survives94_le hNle hAb)
+  obtain ⟨bbar, hbbar⟩ := exists_iter_of_survives (survives94_le hNle hBb)
+  have ham_eq : am = abar := by rw [ham] at habar; exact Option.some.inj habar
+  have hbm_eq : bm = bbar := by rw [hbm] at hbbar; exact Option.some.inj hbbar
+  have h9 : 9 ^ N % 4 = 1 := nine_pow_mod4 N
+  have hsumA'' : aN + abar = 9 ^ N - 1 := by
+    have := hsumA
+    rw [ham_eq] at this
+    have h0 : 4 ^ (N - N) = 1 := by rw [Nat.sub_self]; norm_num
+    rw [h0, mul_one] at this
+    exact this
+  have hsumB'' : bN + bbar = 9 ^ N - 1 := by
+    have := hsumB
+    rw [hbm_eq] at this
+    have h0 : 4 ^ (N - N) = 1 := by rw [Nat.sub_self]; norm_num
+    rw [h0, mul_one] at this
+    exact this
+  have hsumAmod : (aN + abar) % 4 = 0 := by
+    rw [hsumA'']
+    obtain ⟨q, hq⟩ : ∃ q, 9 ^ N = 4 * q + 1 := by
+      refine ⟨9 ^ N / 4, ?_⟩
+      have := Nat.div_add_mod (9 ^ N) 4
+      rw [h9] at this
+      omega
+    rw [hq]
+    have : 4 * q + 1 - 1 = 4 * q := by omega
+    rw [this, Nat.mul_mod_right]
+  have hsumBmod : (bN + bbar) % 4 = 0 := by
+    rw [hsumB'']
+    obtain ⟨q, hq⟩ : ∃ q, 9 ^ N = 4 * q + 1 := by
+      refine ⟨9 ^ N / 4, ?_⟩
+      have := Nat.div_add_mod (9 ^ N) 4
+      rw [h9] at this
+      omega
+    rw [hq]
+    have : 4 * q + 1 - 1 = 4 * q := by omega
+    rw [this, Nat.mul_mod_right]
+  obtain ⟨ha2, _⟩ :=
+    both_residues_two (mod_of_survives_one (step_of_survives hA aN haN))
+      (mod_of_survives_one (step_of_survives hAb abar habar)) hsumAmod
+  obtain ⟨hb2, _⟩ :=
+    both_residues_two (mod_of_survives_one (step_of_survives hB bN hbN))
+      (mod_of_survives_one (step_of_survives hBb bbar hbbar)) hsumBmod
+  have hres : (bN - aN) % 4 = 0 := by omega
+  -- `N` odd: `N = 2 * (N/2) + 1`
+  have hNsplit : N = 2 * (N / 2) + 1 := by
+    have := Nat.div_add_mod N 2
+    rw [hodd] at this
+    omega
+  have hdmod : (δ * 9 ^ (N - 1)) % 4 = δ := by
+    have h9e : 9 ^ (N - 1) % 4 = 1 := nine_pow_mod4 (N - 1)
+    obtain ⟨c, hc⟩ : ∃ c, 9 ^ (N - 1) = 4 * c + 1 := by
+      refine ⟨9 ^ (N - 1) / 4, ?_⟩
+      have := Nat.div_add_mod (9 ^ (N - 1)) 4
+      rw [h9e] at this
+      omega
+    rw [hc]
+    have hmul : δ * (4 * c + 1) = δ + 4 * (δ * c) := by ring
+    rw [hmul, Nat.add_mul_mod_self_left]
+    exact Nat.mod_eq_of_lt (by omega)
+  have h9N : 9 * 9 ^ (N - 1) = 9 ^ N := by
+    rw [mul_comm, ← pow_succ]
+    congr 1
+    omega
+  interval_cases δ
+  · -- δ = 1
+    have hd1 : (1 * 9 ^ (N - 1)) % 4 = 1 := by simpa using hdmod
+    rw [stepDiff_of_mod_one hd1] at hsd
+    have heq : (9 * (1 * 9 ^ (N - 1)) - 1) / 4 = bN - aN := Option.some.inj hsd
+    have hL : (9 * (1 * 9 ^ (N - 1)) - 1) / 4 % 4 = 2 := by
+      have hp : 9 * (1 * 9 ^ (N - 1)) - 1 = 9 ^ N - 1 := by
+        rw [one_mul]
+        rw [h9N]
+      rw [hp, hNsplit]
+      exact nine_pow_odd_sub_one_div_four_mod (N / 2)
+    rw [heq] at hL
+    omega
+  · -- δ = 2: difference residue `2` makes the shadow undefined
+    have hd2 : (2 * 9 ^ (N - 1)) % 4 = 2 := by simpa using hdmod
+    simp [stepDiff, hd2] at hsd
+  · -- δ = 3
+    have hd3 : (3 * 9 ^ (N - 1)) % 4 = 3 := by simpa using hdmod
+    rw [stepDiff_of_mod_three hd3] at hsd
+    have heq : (9 * (3 * 9 ^ (N - 1)) + 1) / 4 = bN - aN := Option.some.inj hsd
+    have hL : (9 * (3 * 9 ^ (N - 1)) + 1) / 4 % 4 = 3 := by
+      have hp : 9 * (3 * 9 ^ (N - 1)) + 1 = 3 * 9 ^ N + 1 := by
+        have hm : 9 * (3 * 9 ^ (N - 1)) = 3 * 9 ^ N := by
+          calc 9 * (3 * 9 ^ (N - 1)) = 3 * (9 * 9 ^ (N - 1)) := by ring
+            _ = 3 * 9 ^ N := by rw [h9N]
+        rw [hm]
+      rw [hp, hNsplit]
+      exact three_nine_pow_odd_add_one_div_four_mod (N / 2)
+    rw [heq] at hL
+    omega
 
 /-! ### Theorem 6: carry-free base-9 conservation -/
 

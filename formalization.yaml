@@ -22,6 +22,28 @@ project:
       github: "3y3y3y-huaiji"
       orcid: "0009-0008-2312-6913"
   license: "Apache-2.0"
+  # Single source of truth: `lean-toolchain`.  `scripts/verify_ssot.py` fails if
+  # these differ from the pinned toolchain.
+  toolchain:
+    lean: "v4.36.0"
+    mathlib: "v4.36.0"
+  modules:
+    - "Mahler32/Basic.lean"
+    - "Mahler32/Base6LightCone.lean"
+    - "Mahler32/SyracuseGates.lean"
+    - "Mahler32/ArnoldTongue5State.lean"
+    - "Mahler32/ArnoldTongue7State.lean"
+    - "Mahler32/DAGBoundedGap.lean"
+    - "Mahler32/TwoWorldPadeCriterion.lean"
+    - "Mahler32/Fib11Free.lean"
+    - "Mahler32/WalshZeroCorr.lean"
+    - "Mahler32/HInvariance.lean"
+    - "Mahler32/SyracuseBijection.lean"
+    - "Mahler32/ZeroEntropyCages.lean"
+    - "Mahler32/DiscreteFluidCertificates.lean"
+    - "Mahler32/Model94Obstructions.lean"
+    - "Mahler32/QuiverMonotone.lean"
+    - "Mahler32Conditional/AlgebraicPairBranch.lean"
   responsible_maintainers:
     - name: "Su MingKai"
       github: "3y3y3y-huaiji"

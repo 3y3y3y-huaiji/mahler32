@@ -1,7 +1,7 @@
 # 审稿意见：`a_{n+1} = a_n + ⌈a_n/2⌉` 的奇偶序列（A061419 / A205083）
 
-核验方式：整数精确计算（`scratch/verify_32_claims.py`）+ Lean 4 形式化（`scratch/Mahler32.lean`，
-`lake env lean` 通过，0 error / 0 warning / 无 sorry）。下文索引统一为 `a 0 = 1`（你的 `a_1 = 1`）。
+核验方式：整数精确计算（`scripts/generate_certificates.py`）+ Lean 4 形式化（`Mahler32/Basic.lean`
+及其任务模块，`lake env lean` 通过，0 error / 0 warning / 无 sorry）。下文索引统一为 `a 0 = 1`（你的 `a_1 = 1`）。
 
 ---
 
@@ -94,7 +94,7 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 正式模块：**`Mahler32/Basic.lean`（1046 行，108 个 `#lint` 核验声明）**，库根 `Mahler32.lean`，
 在 `lakefile.lean` 中注册为 `lean_lib «Mahler32»`。
 
-- `lake build -KwarningAsError=true Mahler32 Solution`（Lean 4.33.1 / Mathlib 4.33.1 沙箱全量核验）→
+- `lake build -KwarningAsError=true Mahler32 Solution`（Lean 4.36.0 / Mathlib 4.36.0 沙箱全量核验）→
   **Build completed successfully (8710 jobs)**，0 error / 0 warning / 0 sorry；`lake build Challenge` 仅含预期的 `sorry` 警告。
 - `#print axioms` 核验全部核心定理：全部只依赖 `propext`、`Classical.choice`、`Quot.sound`
   （`runOut_append` 仅用 `propext`；`bstep_mod_three_pow`、`good_mod_iff` 等 3-adic 局部引理仅用 `propext`、`Quot.sound`）。

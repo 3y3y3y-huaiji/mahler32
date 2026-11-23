@@ -72,9 +72,46 @@ that bypasses the hook still cannot merge green. `git commit --no-verify` exists
 and is allowed only when the hook itself is broken, never to push a file past
 it; say so in the commit message if you use it.
 
-## 5. Lean work
+Lightweight gates (`check_no_secrets.py`, `verify_ssot.py`,
+`generate_certificates.py`, `actionlint`) are cheap enough to run locally on
+every change; the heavy Lean work (`lake build`, `#lint`, `leanchecker`, nanoda)
+is left to GitHub Actions rather than run in the sandbox.
+
+## 5. SSOT 强联动表 — 改一个 Lean 模块，就同时改这四处
+
+`scripts/verify_ssot.py` 在 CI 里机械校验下表；缺一处即红。它不是提醒，是门禁。
+
+| 你改了什么 | 必须同时更新 | 校验点 |
+| :-- | :-- | :-- |
+| 新增/重命名 `Mahler32/*.lean` | `Mahler32Core.lean`（import） | 从 `Mahler32Core` 可传递到达 |
+| 同上 | `AuditAxioms.lean`（`#print axioms` + 模块名） | 每个模块都被审计 |
+| 同上 | `SpecCheck.lean`（`example … := rfl/exact`） | 每个模块都有定义/签名锁 |
+| 同上 | `README.md`（模块清单表） | 每个 `Mahler32/*.lean` 路径都登记 |
+| 改 `lean-toolchain` | `formalization.yaml`、`README.md` | 两处版本号与 `lean-toolchain` 完全一致 |
+| 改任何被论文引用的定理名 | `papers/*/main.tex` 的 theorem-to-Lean 表 | 论文追踪表与 `#print axioms` 同名 |
+| 纠偏旧误判 | 同步 `README.md`、`papers/` | `STALE_PHRASES` 黑名单不得命中 |
+
+论文追踪表是 `papers/paper1_transcendence/main.tex` 与
+`papers/paper2_zero_entropy_fluid/main.tex` 末尾的 Lean 声明表；改了定理名却不改它，
+等于把未验证的声明留在论文里。
+
+## 6. Lean work
 
 The Lean-specific rules (proof golfing, `snake_case`/`UpperCamelCase`, the style
 script, `lake build -KwarningAsError=true`) are unchanged and are documented in
 `docs/MAHLER32_REVIEW.md` §6. `Challenge.lean` is the only file allowed to
 contain `sorry`; `Mahler32/Basic.lean` must build with none.
+
+## 7. 提交流程：开 PR，不要直推 `main`/`master`
+
+1. 从最新 `main` 开临时分支：`git switch -c trae/<topic> origin/main`。
+2. 本地跑轻量门禁：`check_no_secrets.py --tree`、`verify_ssot.py`、
+   `generate_certificates.py --verify`；装了 actionlint 再跑 `actionlint`。
+3. 按第 1 条显式 `git add <file> …`，提交后 `git push -u origin HEAD` 推分支。
+4. 开 PR 到 `main`（`gh pr create --base main --head trae/<topic>`），写清
+   “为什么改、改了哪些模块、联动更新了哪些文件”。
+5. 等 `guards.yml` / `lean_build.yml` / `papers.yml` 全绿；需要独立内核复核时给 PR
+   加 `run-independent-kernel` 标签。
+6. 只在 PR 上合并（squash）；合并后 `pr-cleanup.yml` 自动删除临时分支。
+
+直推 `main`/`master`、`git add -A`、`git commit --no-verify` 都不属于提交流程。

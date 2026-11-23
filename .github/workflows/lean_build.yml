@@ -2,7 +2,7 @@ name: Lean 4 CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, 'trae/**' ]
     paths-ignore:
       - 'README.md'
       - 'docs/**'
@@ -17,6 +17,9 @@ on:
       - 'AGENTS.md'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -27,12 +30,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       # Same script the pre-commit hook runs, over the tracked tree.  Cheap, and
       # it comes first so a leak fails the run before anything is built.
       - name: Refuse credentials and scratch files
         run: python3 scripts/check_no_secrets.py --tree
+
+      # Single-source-of-truth gate: lean-toolchain vs formalization.yaml/README,
+      # module inventory (imported + audited + locked + registered), stale-claim
+      # blacklist and repository-internal link integrity.  Cheap, no Lean needed.
+      - name: SSOT gate
+        run: python3 scripts/verify_ssot.py
 
   build:
     name: Build and Verify
@@ -40,14 +49,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Install elan
         run: |
           curl -sSfL --retry 5 --retry-connrefused https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
           sh elan-init.sh -y --default-toolchain none
           rm elan-init.sh
-          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
       - name: Verify Lean & Lake Toolchain
         run: |
@@ -57,8 +66,17 @@ jobs:
       - name: Fetch Mathlib Cache
         run: lake exe cache get
 
-      - name: Lake Build
-        run: lake build -KwarningAsError=true
+      # Seal every target that carries the zero-axiom claim, with warnings-as-errors.
+      - name: Lean build (all audited targets)
+        run: |
+          lake build -KwarningAsError=true \
+            Mahler32Core Solution SpecCheck SpecCheckConditional
+
+      # `AuditAxioms*.lean` are root modules, not Lake roots; re-elaborate them directly.
+      - name: Lean build (audit modules)
+        run: |
+          lake env lean -D warningAsError=true AuditAxioms.lean
+          lake env lean -D warningAsError=true AuditAxiomsConditional.lean
 
       # Palomar builds these two targets by name.  `Challenge` is expected to log its `sorry`
       # warnings; only a non-zero exit code is a failure here.
@@ -70,26 +88,41 @@ jobs:
       - name: Conditional target (task 11)
         run: lake build Mahler32Conditional
 
-      # The previous CI hard-coded `Mahler32/Basic.lean`, so a newly added module could be
-      # committed with `sorry` and still pass.  This gate is source-level: no core module may
-      # contain `sorry`/`admit`, no core module may declare an `axiom`, and the conditional
-      # axiom may not be mentioned anywhere in the zero-axiom core.
-      - name: Core source gate (no sorry, no axiom)
+      # Source-level gate: no core module may contain `sorry`/`admit`/`native_decide`, may not
+      # declare an `axiom`, and the conditional axiom may not leak into the zero-axiom core.
+      # Comments are stripped first, so prose like "no `sorry`" does not trip the gate.
+      - name: Core source gate (no sorry/admit/native_decide/axiom)
         run: |
-          set -euo pipefail
-          if grep -nE '\b(sorry|admit)\b' Mahler32/*.lean Mahler32Core.lean; then
-            echo "::error::core modules must not contain sorry/admit" >&2
-            exit 1
-          fi
-          if grep -nE '^[[:space:]]*(private[[:space:]]+|protected[[:space:]]+|noncomputable[[:space:]]+)*axiom\b' \
-              Mahler32/*.lean Mahler32Core.lean; then
-            echo "::error::core modules must not declare axioms" >&2
-            exit 1
-          fi
-          if grep -rn 'schlickewei_subspace_Q3' Mahler32/ Mahler32Core.lean Solution.lean; then
-            echo "::error::the conditional axiom leaked into the zero-axiom core" >&2
-            exit 1
-          fi
+          python3 - <<'PY'
+          import pathlib, re, sys
+
+          def strip_comments(s: str) -> str:
+              s = re.sub(r"/-.*?-/", "", s, flags=re.S)   # block / doc comments
+              s = re.sub(r"--[^\n]*", "", s)              # line comments
+              return s
+
+          core = sorted(pathlib.Path("Mahler32").glob("*.lean")) + [
+              pathlib.Path("Mahler32Core.lean")
+          ]
+          bad = False
+          for f in core:
+              text = strip_comments(f.read_text())
+              for kw in ("sorry", "admit", "native_decide"):
+                  for m in re.finditer(r"\b" + kw + r"\b", text):
+                      line = text[: m.start()].count("\n") + 1
+                      print(f"::error file={f},line={line}::forbidden `{kw}` in core module")
+                      bad = True
+              if re.search(r"^\s*(private\s+|protected\s+|noncomputable\s+)*axiom\b", text, re.M):
+                  print(f"::error file={f}::core modules must not declare axioms")
+                  bad = True
+
+          leak_scan = core + [pathlib.Path("Solution.lean")]
+          for f in leak_scan:
+              if "schlickewei_subspace_Q3" in f.read_text():
+                  print(f"::error file={f}::the conditional axiom leaked into the zero-axiom core")
+                  bad = True
+          sys.exit(1 if bad else 0)
+          PY
 
       # Compile *every* module by name, not just `Basic.lean`, with warnings-as-errors.
       # `lake env lean` re-elaborates the source, so a `sorry` shows up as a warning
@@ -116,8 +149,7 @@ jobs:
           rm -f "$LINT_FILE"
 
       # The zero-axiom audit: every main theorem of tasks 1–10 must depend only on the Lean
-      # standard triple.  `check_axioms.py` also rejects `sorryAx` and parses every line, so
-      # adding a module without extending the audit is impossible to miss in review.
+      # standard triple.  `check_axioms.py` also rejects `sorryAx` and parses every line.
       - name: Kernel Axioms Verification (zero-axiom core)
         run: |
           python3 scripts/check_axioms.py AuditAxioms.lean propext,Quot.sound,Classical.choice
@@ -129,46 +161,48 @@ jobs:
             AuditAxiomsConditional.lean \
             propext,Quot.sound,Classical.choice,Mahler32Conditional.schlickewei_subspace_Q3
 
-      # ---------------------------------------------------------------------------------
-      # SpecCheck: definition / statement / value lock.
-      #
-      # `SpecCheck.lean` re-states the verbatim task-sheet definitions (`example … := rfl`),
-      # the exact final theorem types (`example … := exact theTheorem`), and concrete numeric
-      # anchors (`example … := by decide`).  It compiles *only* if the implementation still
-      # matches the sheet: a weakened definition breaks `rfl`, a weaker theorem breaks
-      # `exact`, and an abstract/hollow replacement breaks the `decide` anchors.
-      # `SpecCheckConditional.lean` does the same for the one permitted task-11 axiom.
-      # Neither file is a default target, so `lake build` stays warning-clean; CI compiles
-      # them explicitly with warnings-as-errors.
-      # ---------------------------------------------------------------------------------
+      # Certificates must be exact, self-consistent and reproducible.  `--verify` asserts every
+      # finite claim; the second run + diff rules out non-deterministic output drifting from the
+      # committed sources.
+      - name: Exact rational certificates (verify + reproducibility)
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_certificates.py --verify
+          python3 scripts/generate_certificates.py > /tmp/cert-a.txt
+          python3 scripts/generate_certificates.py > /tmp/cert-b.txt
+          diff -u /tmp/cert-a.txt /tmp/cert-b.txt
+
+      # SpecCheck: definition / statement / value lock.  Neither file is a default target, so CI
+      # compiles them explicitly with warnings-as-errors.
       - name: SpecCheck (definition, statement and value lock)
         run: |
           set -euo pipefail
           lake env lean -D warningAsError=true SpecCheck.lean
           lake env lean -D warningAsError=true SpecCheckConditional.lean
 
-      # ---------------------------------------------------------------------------------
-      # Independent kernel replay.
-      #
-      # `leanchecker` is the standalone kernel checker shipped with the toolchain.  It
-      # re-checks the compiled `.olean` declarations through the kernel, independently of
-      # the elaborator and tactics, so a forged/tampered `.olean` (or an unsound tactic that
-      # nonetheless produced a term) is caught.  It is version-matched to v4.36 by
-      # construction; `leanprover/lean4checker` does not yet build against v4.36.
-      #
-      # A second, fully independent kernel (nanoda, written in Rust) runs in
-      # `.github/workflows/independent-kernel.yml`, and in the Palomar preflight, which
-      # invokes `comparator` with `enable_nanoda: true`.
-      # ---------------------------------------------------------------------------------
+      # Lint the workflows themselves (expression syntax, shellcheck on `run:`, action
+      # pinning).  Pinned to a release, not `main`.
+      - name: actionlint
+        run: |
+          set -euo pipefail
+          curl -sSfL --retry 5 --retry-connrefused -o "$RUNNER_TEMP/actionlint.tar.gz" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_linux_amd64.tar.gz
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color
+
+      # Independent kernel replay via the standalone `leanchecker` shipped with the toolchain.
       - name: Kernel replay (leanchecker)
         run: |
           set -euo pipefail
           for m in \
             Mahler32.Base6LightCone Mahler32.SyracuseGates \
             Mahler32.ArnoldTongue5State Mahler32.ArnoldTongue7State \
-            Mahler32.DAGBoundedGap Mahler32.TwoWorldPadeCriterion \
+            Mahler32.DAGBoundedGap Mahler32.QuiverMonotone \
+            Mahler32.TwoWorldPadeCriterion \
             Mahler32.Fib11Free Mahler32.WalshZeroCorr \
             Mahler32.HInvariance Mahler32.SyracuseBijection \
+            Mahler32.ZeroEntropyCages Mahler32.DiscreteFluidCertificates \
+            Mahler32.Model94Obstructions \
             Mahler32.Basic Mahler32Core \
             Mahler32Conditional.AlgebraicPairBranch; do
             echo "::group::leanchecker $m"
