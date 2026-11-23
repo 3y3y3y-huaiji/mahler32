@@ -114,4 +114,7 @@ PR 分类：`lean_build.yml` 的 `classify` 只对**最近一次推送**做路�
 `lake-manifest.json`、`comparator.json`、`AuditAxioms*`、`SpecCheck*`、`check_axioms.py`、
 `generate_certificates.py`、`verify_all.sh` 或 `lean_build.yml`，就全量重跑。
 
+特性分支只通过 PR 跑 `lean_build.yml`（它不再监听 `trae/**` 的 push），同一次提交不会
+跑两遍；`main`/`master` 的 push 仍然全量跑。
+
 直推 `main`/`master`、`git add -A`、`git commit --no-verify` 都不属于提交流程。
