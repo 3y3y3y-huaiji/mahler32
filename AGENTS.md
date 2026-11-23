@@ -101,3 +101,17 @@ The Lean-specific rules (proof golfing, `snake_case`/`UpperCamelCase`, the style
 script, `lake build -KwarningAsError=true`) are unchanged and are documented in
 `docs/MAHLER32_REVIEW.md` §6. `Challenge.lean` is the only file allowed to
 contain `sorry`; `Mahler32/Basic.lean` must build with none.
+
+## 7. 提交流程：开 PR，不要直推 `main`/`master`
+
+1. 从最新 `main` 开临时分支：`git switch -c trae/<topic> origin/main`。
+2. 本地跑轻量门禁：`check_no_secrets.py --tree`、`verify_ssot.py`、
+   `generate_certificates.py --verify`；装了 actionlint 再跑 `actionlint`。
+3. 按第 1 条显式 `git add <file> …`，提交后 `git push -u origin HEAD` 推分支。
+4. 开 PR 到 `main`（`gh pr create --base main --head trae/<topic>`），写清
+   “为什么改、改了哪些模块、联动更新了哪些文件”。
+5. 等 `guards.yml` / `lean_build.yml` / `papers.yml` 全绿；需要独立内核复核时给 PR
+   加 `run-independent-kernel` 标签。
+6. 只在 PR 上合并（squash）；合并后 `pr-cleanup.yml` 自动删除临时分支。
+
+直推 `main`/`master`、`git add -A`、`git commit --no-verify` 都不属于提交流程。
