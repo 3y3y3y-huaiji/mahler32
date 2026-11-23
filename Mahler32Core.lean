@@ -10,11 +10,13 @@ public import Mahler32.Fib11Free
 public import Mahler32.WalshZeroCorr
 public import Mahler32.HInvariance
 public import Mahler32.SyracuseBijection
+public import Mahler32.ZeroEntropyCages
+public import Mahler32.DiscreteFluidCertificates
 
 /-!
-# Zero-axiom core entry point (tasks 1–10)
+# Zero-axiom core entry point (tasks 1–12)
 
-This module imports the ten core task modules and nothing else.  It neither imports the
+This module imports the twelve core task modules and nothing else.  It neither imports the
 conditional task-11 module nor `Mahler32.Basic`'s advertised surface, so `#print axioms` on it
 is a faithful audit of the zero-axiom claim.
 

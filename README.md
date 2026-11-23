@@ -114,6 +114,36 @@ omitting bit `k` has Walsh correlation `0` (`50%` accuracy).  Adding the `11`-fr
 (forbidding consecutive odd backward steps) shrinks the legal residue classes modulo `3^k` from
 `2^k` to `Nat.fib (k + 2)` (`#eval` checks `k = 0 … 5` give `[1, 2, 3, 5, 8, 13]`).
 
+## Task modules and papers (2026-11)
+
+The toolchain is pinned to the **latest release** pair, Lean `v4.36.0` / Mathlib `v4.36.0`
+(`lean-toolchain`, `lakefile.lean`); no nightly or unreleased pins are used.
+
+Beyond the core parity development, the following task modules are built and audited:
+
+| Module | Machine-checked content |
+| :-- | :-- |
+| `Mahler32/TwoWorldPadeCriterion.lean` | two-world identity; agreement criterion `two_world_iff`; integer engine `two_pow_dvd_eq_zero`; rational `√2` bounds |
+| `Mahler32/ArnoldTongue5State.lean` | the `5`-state count, **plus** exact windows where the real `T` branches stay in `[1/3, 11/15)` (`T_false_maps`, `T_true_maps`) |
+| `Mahler32/ArnoldTongue7State.lean` | the `7`-state count, **plus** the exact `T` windows on `[7/24, 17/24)` |
+| `Mahler32/DAGBoundedGap.lean` | bounded gap; exact hitting set `S7_iff_hits`; the `g + 128` carry branch (`zStepNat_add_128`) |
+| `Mahler32/ZeroEntropyCages.lean` | integer exclusion; exact four-term cage `cage_two_sevenths`; width bookkeeping |
+| `Mahler32/DiscreteFluidCertificates.lean` | cup map self-map; exact `4/19 → 6/19 → 9/19 → 4/19` three-cycle; `3/2` expansion; `2 : 1` mass split |
+
+Two companion papers live in `papers/`:
+
+- `papers/paper1_transcendence/` — *A Two-World Padé Criterion for Base 3/2 and the
+  Algebraic–Pair Branch*
+- `papers/paper2_zero_entropy_fluid/` — *Zero-Entropy Cages and Discrete Fluid for the Mahler
+  3/2 Map*
+
+Both carry a theorem-to-Lean traceability table.  Two honesty caveats are stated there rather
+than hidden: the general “all real `ξ` excluded” statement is a human-level proposition whose
+only machine-checked ingredients are the integer engine and the concrete `[2/7,5/7)` cage; and the
+quoted “`δ* = 8/57`” threshold is **contradicted** by exact computation (the family
+`[δ,1/2)` empties for every `δ > 0` we tested, including `7/57`).  Nothing here claims Mahler's
+original conjecture.
+
 ## Build
 
 ```bash
@@ -131,6 +161,8 @@ Solution.lean            # imports Mahler32.Basic; the same names, proved
 comparator.json          # names Comparator checks between Challenge and Solution
 formalization.yaml       # self-report: classification, sources, automation, review status
 docs/MAHLER32_REVIEW.md  # referee-style review: claim-by-claim verdicts, numerics, literature
+papers/                  # two companion papers (LaTeX source + refs.bib)
+scripts/verify_all.sh    # one-shot: build, audit, certificates, secret guard, papers
 ```
 
 `Challenge.lean` and `Solution.lean` exist so the claims can be read in a few minutes without
