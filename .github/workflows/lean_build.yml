@@ -1,8 +1,10 @@
 name: Lean 4 CI
 
 on:
+  # Feature branches are validated through their pull requests; running both
+  # `push` (trae/**) and `pull_request` built the same tree twice.
   push:
-    branches: [ main, master, 'trae/**' ]
+    branches: [ main, master ]
     paths-ignore:
       - 'README.md'
       - 'docs/**'
