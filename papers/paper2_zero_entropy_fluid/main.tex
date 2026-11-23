@@ -3,10 +3,13 @@
 \usepackage[margin=2.6cm]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{hyperref}
+\usepackage{xurl}
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{natbib}
 \bibliographystyle{plainnat}
+
+\setlength{\emergencystretch}{3em}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
@@ -70,7 +73,7 @@ If $2^{N}\mid M$ and $|M|<2^{N}$ for $M\in\Z$, then $M=0$.
 
 \begin{proof}
 $M=2^N k$ gives $2^N|k|<2^N$, hence $|k|<1$ and $k=0$.
-Machine-checked: \lean{Mahler32.ZeroEntropyCages.exclusion\_integer}.
+Machine-checked: \lean{exclusion\_integer} in \lean{ZeroEntropyCages}.
 \end{proof}
 
 Lemma~\ref{lem:engine2} is the arithmetic half of every exclusion argument: an eventually

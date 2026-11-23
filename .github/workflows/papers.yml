@@ -1,0 +1,93 @@
+name: Papers
+
+# Compiles the natural-language companion papers in `papers/` to PDF on every change, and
+# publishes the PDFs as a build artifact.  This is deliberately separate from `lean_build.yml`:
+# the Lean gate does not need a TeX installation, and a paper edit should not rebuild Mathlib.
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'papers/**'
+      - '.github/workflows/papers.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'papers/**'
+      - '.github/workflows/papers.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: papers-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build LaTeX papers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-bibtex-extra \
+            texlive-fonts-recommended
+
+      - name: Compile each paper (latexmk, BibTeX included)
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          papers=(papers/*/)
+          if [ ${#papers[@]} -eq 0 ]; then
+            echo "::error::no paper directories found under papers/" >&2
+            exit 1
+          fi
+          for d in "${papers[@]}"; do
+            [ -f "$d/main.tex" ] || continue
+            echo "::group::Compiling $d"
+            ( cd "$d" && latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex )
+            echo "::endgroup::"
+          done
+
+      - name: Collect PDFs
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          shopt -s nullglob
+          for f in papers/*/main.pdf; do
+            name="$(basename "$(dirname "$f")")"
+            cp "$f" "dist/${name}.pdf"
+          done
+          test -n "$(ls -A dist 2>/dev/null)" || { echo "::error::no PDFs produced" >&2; exit 1; }
+          ls -l dist
+
+      - name: Upload paper PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: mahler32-papers
+          path: dist/*.pdf
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Job summary
+        run: |
+          {
+            echo "## Generated papers"
+            echo
+            echo "| Paper | PDF |"
+            echo "| :-- | :-- |"
+            for f in dist/*.pdf; do
+              b="$(basename "$f")"
+              echo "| ${b%.pdf} | artifact: \`mahler32-papers/${b}\` |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

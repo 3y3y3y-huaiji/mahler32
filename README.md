@@ -151,6 +151,14 @@ lake exe cache get      # prebuilt Mathlib oleans
 lake build -KwarningAsError=true
 ```
 
+The companion papers are built by [`.github/workflows/papers.yml`](.github/workflows/papers.yml):
+every push or pull request touching `papers/**` compiles both `main.tex` files with `latexmk`
+(BibTeX included) and uploads the PDFs as the `mahler32-papers` build artifact.  Locally:
+
+```bash
+cd papers/paper1_transcendence && latexmk -pdf main.tex   # or paper2_zero_entropy_fluid
+```
+
 ## Layout
 
 ```
