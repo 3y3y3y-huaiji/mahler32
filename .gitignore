@@ -16,3 +16,6 @@ mr/
 st.json
 page*.html
 pg*.html
+
+# Uploaded task material (never committed)
+.uploads/

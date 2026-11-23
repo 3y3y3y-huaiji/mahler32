@@ -67,65 +67,64 @@ jobs:
           lake build Solution
           lake build Challenge
 
-      - name: Strict Verification of All Modules
+      - name: Conditional target (task 11)
+        run: lake build Mahler32Conditional
+
+      # The previous CI hard-coded `Mahler32/Basic.lean`, so a newly added module could be
+      # committed with `sorry` and still pass.  This gate is source-level: no core module may
+      # contain `sorry`/`admit`, no core module may declare an `axiom`, and the conditional
+      # axiom may not be mentioned anywhere in the zero-axiom core.
+      - name: Core source gate (no sorry, no axiom)
         run: |
-          lake env lean -D warningAsError=true Mahler32.lean
-          lake env lean -D warningAsError=true Mahler32/Basic.lean
-
-      - name: Mathlib Linter Check (#lint)
-        run: |
-          cat << 'LEAN' > run_linter.lean
-          import Mahler32.Basic
-
-          #lint
-          LEAN
-          lake env lean run_linter.lean
-          rm run_linter.lean
-
-      - name: Kernel Axioms Verification
-        run: |
-          cat << 'LEAN' > check_axioms.lean
-          import Mahler32.Basic
-
-          open Mahler32
-
-          #print axioms step_parity
-          #print axioms step_parity_hex
-          #print axioms a_mod_six
-          #print axioms parity_window_hex
-          #print axioms cliff_sharp
-          #print axioms ternary_machine
-          #print axioms run_spec
-          #print axioms step_pow_bstep
-          #print axioms period_doubling
-          #print axioms step_pow_two_pow
-          #print axioms good_step_pow
-          #print axioms good_card
-          #print axioms step_pow_add_six_pow
-          #print axioms light_cone_flip_hex
-          #print axioms parity_linear_split
-          #print axioms bstep_mod_three_pow
-          #print axioms good_mod_iff
-          #print axioms good11Free_card
-          #print axioms walsh_zero_of_bit_zero
-          #print axioms walsh_eq_two_mul_core
-          LEAN
-          OUTPUT=$(lake env lean check_axioms.lean)
-          echo "$OUTPUT"
-          if echo "$OUTPUT" | grep -q "sorryAx"; then
-            echo "Error: proof depends on sorryAx"
+          set -euo pipefail
+          if grep -nE '\b(sorry|admit)\b' Mahler32/*.lean Mahler32Core.lean; then
+            echo "::error::core modules must not contain sorry/admit" >&2
             exit 1
           fi
-          for T in step_parity step_parity_hex a_mod_six parity_window_hex cliff_sharp \
-                   ternary_machine step_pow_bstep period_doubling step_pow_two_pow \
-                   good_step_pow good_card step_pow_add_six_pow light_cone_flip_hex \
-                   parity_linear_split bstep_mod_three_pow good_mod_iff good11Free_card \
-                   walsh_zero_of_bit_zero walsh_eq_two_mul_core; do
-            if ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' depends on axioms: [propext, Classical.choice, Quot.sound]" \
-               && ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' depends on axioms: [propext, Quot.sound]" \
-               && ! echo "$OUTPUT" | grep -Fq "'Mahler32.$T' does not depend on any axioms"; then
-              echo "Error: unexpected axioms for $T"
-              exit 1
-            fi
+          if grep -nE '^[[:space:]]*(private[[:space:]]+|protected[[:space:]]+|noncomputable[[:space:]]+)*axiom\b' \
+              Mahler32/*.lean Mahler32Core.lean; then
+            echo "::error::core modules must not declare axioms" >&2
+            exit 1
+          fi
+          if grep -rn 'schlickewei_subspace_Q3' Mahler32/ Mahler32Core.lean Solution.lean; then
+            echo "::error::the conditional axiom leaked into the zero-axiom core" >&2
+            exit 1
+          fi
+
+      # Compile *every* module by name, not just `Basic.lean`, with warnings-as-errors.
+      # `lake env lean` re-elaborates the source, so a `sorry` shows up as a warning
+      # (hence an error) even if a stale `.olean` was already sitting in `.lake`.
+      - name: Strict Verification of All Modules
+        run: |
+          set -uo pipefail
+          status=0
+          for f in Mahler32Core.lean Mahler32.lean AuditAxioms.lean AuditAxiomsConditional.lean \
+                   Mahler32/*.lean Mahler32Conditional/*.lean; do
+            echo "::group::lake env lean -D warningAsError=true $f"
+            lake env lean -D warningAsError=true "$f" || status=1
+            echo "::endgroup::"
           done
-          echo "All kernel axioms verified successfully!"
+          exit $status
+
+      # One `#lint` over the whole zero-axiom core instead of a single-file lint.
+      - name: Mathlib Linter Check (#lint over the whole core)
+        run: |
+          set -euo pipefail
+          LINT_FILE=$(mktemp --suffix=.lean)
+          printf 'import Mahler32Core\n\n#lint\n' > "$LINT_FILE"
+          lake env lean "$LINT_FILE"
+          rm -f "$LINT_FILE"
+
+      # The zero-axiom audit: every main theorem of tasks 1–10 must depend only on the Lean
+      # standard triple.  `check_axioms.py` also rejects `sorryAx` and parses every line, so
+      # adding a module without extending the audit is impossible to miss in review.
+      - name: Kernel Axioms Verification (zero-axiom core)
+        run: |
+          python3 scripts/check_axioms.py AuditAxioms.lean propext,Quot.sound,Classical.choice
+
+      # The conditional audit: exactly one extra axiom is allowed, and only here.
+      - name: Kernel Axioms Verification (conditional task 11)
+        run: |
+          python3 scripts/check_axioms.py \
+            AuditAxiomsConditional.lean \
+            propext,Quot.sound,Classical.choice,Mahler32Conditional.schlickewei_subspace_Q3
