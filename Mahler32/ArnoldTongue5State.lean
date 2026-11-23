@@ -81,4 +81,45 @@ public theorem countPaths_zero_lt (k : ℕ) (hk : 8 ≤ k) :
   rw [countPaths_zero_all]
   omega
 
+/-! ### The dynamics of `T` itself
+
+The automaton table above is a *combinatorial* object.  The theorems below tie it back to the
+actual translated Mahler map `T_t x = (3x - t)/2` on `I = [1/3, 11/15)`: they locate, with exact
+rational arithmetic, the sub-intervals on which each branch stays inside `I`.  `T false` stays
+inside `I` exactly on `[1/3, 22/45)`, and `T true` stays inside `I` exactly on `[5/9, 11/15)`. -/
+
+/-- Unfolding of the `t = false` branch: `T false x = 3x/2`. -/
+public theorem T_false_eq (x : ℚ) : T false x = 3 * x / 2 := by
+  unfold T
+  norm_num
+
+/-- Unfolding of the `t = true` branch: `T true x = (3x - 1)/2`. -/
+public theorem T_true_eq (x : ℚ) : T true x = (3 * x - 1) / 2 := by
+  unfold T
+  norm_num
+
+/-- On `[1/3, 22/45)`, the `t = false` branch lands back in `I = [1/3, 11/15)`. -/
+public theorem T_false_maps (x : ℚ) (h0 : 1 / 3 ≤ x) (h1 : x < 22 / 45) :
+    1 / 3 ≤ T false x ∧ T false x < 11 / 15 := by
+  rw [T_false_eq]
+  constructor <;> linarith
+
+/-- On `[5/9, 11/15)`, the `t = true` branch lands back in `I = [1/3, 11/15)`. -/
+public theorem T_true_maps (x : ℚ) (h0 : 5 / 9 ≤ x) (h1 : x < 11 / 15) :
+    1 / 3 ≤ T true x ∧ T true x < 11 / 15 := by
+  rw [T_true_eq]
+  constructor <;> linarith
+
+/-- The `t = false` branch is strictly increasing. -/
+public theorem T_strictMono_false : StrictMono (T false) := by
+  intro a b hab
+  rw [T_false_eq, T_false_eq]
+  linarith
+
+/-- The `t = true` branch is strictly increasing. -/
+public theorem T_strictMono_true : StrictMono (T true) := by
+  intro a b hab
+  rw [T_true_eq, T_true_eq]
+  linarith
+
 end Mahler32.ArnoldTongue5State

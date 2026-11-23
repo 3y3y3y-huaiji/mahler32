@@ -1,0 +1,270 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\fract}[1]{\left\{#1\right\}}
+\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\Nu}{\mu}
+
+\title{Zero-Entropy Cages and Discrete Fluid for the Mahler $\tfrac32$ Map}
+\author{Su MingKai}
+\date{2026}
+
+\begin{document}
+
+\begin{abstract}
+We study two complementary obstructions for the Mahler map $T x=\fract{3x/2}$: interval
+\emph{cages} that admit no long orbit, and a \emph{discrete fluid} picture in which mass is
+transported by the piecewise-affine branches.  The exact finite content is machine-checked in
+Lean 4 with Mathlib: the integer-vanishing engine, an exact four-term cage for
+$[2/7,5/7)$, the exact three-cycle $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$ of the
+$\bmod\,\tfrac12$ cup map, piecewise expansion by $\tfrac32$, and the $2{:}1$ mass split.  The
+``all real numbers are excluded'' statement is isolated as a human-level proposition; the
+analytic and spectral numbers sometimes quoted for it are reported as empirical and explicitly
+not asserted as theorems.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+The base $\tfrac32$ expansion $\fract{\xi(3/2)^n}$ is the subject of \citep{strauch1997,
+lagarias2003,andrieu2026,cassaigne2026}, with the arithmetic side developed in
+\citep{stephan2026subspace,stephan2026minimal,stephan2026third,cook2026,calegari2025,elmv}.
+The two obstructions treated here are elementary but exact, and they are the part that survives
+formalisation without numerical analysis.
+
+\paragraph{Scope and honesty.}
+Section~\ref{sec:cages}--\ref{sec:fluid} contain machine-checked results.  The quantitative
+claims about chaos onset, spectral gaps, Hausdorff dimension, the ``$8/57$ threshold'', and the
+cosine-product bound are \emph{empirical}: they are reported in Section~\ref{sec:empirical} with
+explicit warnings, and the accompanying script recomputes the finite certificates but does not
+turn those numbers into theorems.  In one case (the $8/57$ threshold) our own computation
+contradicts the quoted value; see Remark~\ref{rem:857}.
+
+\section{Zero-entropy cages}
+\label{sec:cages}
+
+\subsection{The engine}
+
+\begin{lemma}[Integer exclusion]
+\label{lem:engine2}
+If $2^{N}\mid M$ and $|M|<2^{N}$ for $M\in\Z$, then $M=0$.
+\end{lemma}
+
+\begin{proof}
+$M=2^N k$ gives $2^N|k|<2^N$, hence $|k|<1$ and $k=0$.
+Machine-checked: \lean{Mahler32.ZeroEntropyCages.exclusion\_integer}.
+\end{proof}
+
+Lemma~\ref{lem:engine2} is the arithmetic half of every exclusion argument: an eventually
+periodic orbit produces an integer divisible by all powers of $2$, and the Archimedean bound
+kills it.
+
+\subsection{The exact $[2/7,5/7)$ cage}
+
+Write $Tq$ for the Lean implementation of $T$ on $\Q$,
+$Tq(x)=\tfrac{3x}{2}$ if $\tfrac{3x}{2}<1$ and $\tfrac{3x}{2}-1$ otherwise.
+
+\begin{theorem}[No four-term orbit]
+\label{thm:cage}
+There is no $x\in\Q$ with $x,Tq x,Tq^{2}x,Tq^{3}x$ all in $[2/7,5/7)$; equivalently, if the
+first three lie in the interval then the fourth does not.
+\end{theorem}
+
+\begin{proof}
+One tracks the exact rational images.  From $x\in[2/7,5/7)$ the wrap branch of the first step is
+impossible (it would force $x\ge 6/7$), so $x<10/21$ and $Tq x=3x/2$.  The same argument at the
+second step forces $Tq^{2}x=9x/4$ and $x<20/63$.  For the third step, $z=9x/4\in[9/14,5/7)$; if
+$\tfrac{3z}{2}<1$ then $Tq z=\tfrac{27x}{8}\ge\tfrac{27}{28}>\tfrac57$, and otherwise
+$Tq z=\tfrac{27x}{8}-1<\tfrac1{14}<\tfrac27$.  Either way $Tq^{3}x\notin[2/7,5/7)$.
+Machine-checked: \lean{Mahler32.ZeroEntropyCages.cage\_two\_sevenths}.
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:cage} is strictly stronger than ``zero entropy'' for this interval: it says the
+survivor set has no point with four consecutive hits, so it is empty.  In particular there is no
+$\xi>0$ whose orbit stays in $[2/7,5/7)$.
+\end{remark}
+
+\begin{proposition}[Zero-entropy exclusion, human-level]
+\label{prop:allreal}
+Let $U\subset[0,1)$ be a finite union of rational intervals whose survivor set
+$\bigcap_{n\ge0}T^{-n}U$ is contained in $\{0\}$.  Then no $\xi>0$ satisfies
+$\{\xi(3/2)^n\}\in U$ for all $n$.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+If a survivor existed with $\xi>0$, zero entropy of the coding would make its $2$-adic expansion
+eventually periodic; clearing denominators produces an integer divisible by $2^{N}$ for every
+$N$, and Lemma~\ref{lem:engine2} forces it to vanish, i.e.\ $\xi=0$.
+\end{proof}
+
+\begin{remark}
+Proposition~\ref{prop:allreal} is \emph{not} formalised.  Its second sentence (zero entropy
+$\Rightarrow$ eventually periodic) and the clearing step are human-level; only the integer engine
+(Lemma~\ref{lem:engine2}) and the concrete cage (Theorem~\ref{thm:cage}) are machine-checked.  We
+resist the temptation to present the general statement as a Lean theorem.
+\end{remark}
+
+\subsection{Width bookkeeping}
+
+\begin{proposition}
+The single interval $[2/7,5/7)$ has width $3/7$; the holed union
+$[1/7,3/7)\cup[4/7,6/7)$ has total width $4/7>1/2$.
+\end{proposition}
+
+\begin{proof}
+Direct arithmetic.  Machine-checked: \lean{width\_three\_sevenths},
+\lean{width\_four\_sevenths}, \lean{four\_sevenths\_gt\_half}.
+\end{proof}
+
+\section{Chaos onset and the holed $4/7$ cage}
+\label{sec:onset}
+
+For each finite union $U$ of rational intervals one may ask for the least depth at which exact
+preimage refinement empties, i.e.\ the least $n$ with $\bigcap_{k\le n}T^{-k}U=\varnothing$.  The
+script \texttt{scripts/generate\_certificates.py} computes this exactly in rational arithmetic
+for the barrier families quoted in the literature.  All of the following empty within five
+steps:
+
+\begin{center}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Barrier set $U$ & exact emptying depth\\
+\midrule
+$[2/7,5/7)$ & $3$\\
+$[1/7,3/7)\cup[4/7,6/7)$ & $5$\\
+$[28/97,69/97)$ & $3$\\
+$[5/24,11/24)\cup[13/24,19/24)$ & $3$\\
+$[1/5,7/15)\cup[8/15,4/5)$ & $4$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These are \emph{stronger} than the ``$31$-state / $128$-state zero-entropy automaton'' descriptions
+in the working notes: the automaton counts depend on the choice of partition, whereas the
+emptying depth is partition-free.  Only the first row is promoted to a Lean theorem
+(Theorem~\ref{thm:cage}); the rest are reproduced by the script.
+
+\begin{remark}[The $8/57$ threshold]
+\label{rem:857}
+The working notes state that $\delta^\ast=8/57$ is critical for the left hole family
+$[\delta,\tfrac12)$.  This does not survive exact computation: $[\delta,\tfrac12)$ already empties
+for every $\delta\ge 8/57$ \emph{and} for much smaller $\delta$; a bisection in the accompanying
+script drives the critical value to $0$ to machine precision.  We therefore do \emph{not} state
+an $8/57$ theorem.  This is a correction, not a weakening: the family appears to have empty
+survivor set for every $\delta>0$, with $\{0\}$ as the only survivor at $\delta=0$.
+\end{remark}
+
+\section{Discrete fluid on the Mahler cup}
+\label{sec:fluid}
+
+The ``cup'' map is $Tcup(x)=(3x/2)\bmod\tfrac12$ on $[0,\tfrac12)$.
+
+\begin{proposition}[Self-map]
+If $0\le x<\tfrac12$ then $0\le Tcup(x)<\tfrac12$.
+\end{proposition}
+\begin{proof}
+On the non-wrapping branch $\tfrac{3x}{2}\in[0,\tfrac12)$; on the wrapping branch
+$\tfrac{3x}{2}-\tfrac12\in[0,\tfrac14)$.  Machine-checked:
+\lean{Mahler32.DiscreteFluidCertificates.Tcup\_mem}.
+\end{proof}
+
+\begin{theorem}[Exact three-cycle]
+\label{thm:cycle}
+$Tcup(4/19)=6/19$, $Tcup(6/19)=9/19$, $Tcup(9/19)=4/19$; the period is exactly three.
+\end{theorem}
+\begin{proof}
+Direct rational evaluation; the return values avoid the wrap until the last step, where
+$\tfrac32\cdot\tfrac9{19}-\tfrac12=\tfrac{4}{19}$.
+Machine-checked: \lean{cup\_cycle}, \lean{cup\_period\_three}.
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:cycle} is the reason an ``all positive reals excluded'' statement must respect
+the branch structure: the cup map genuinely has a positive periodic survivor.  The cages of
+Section~\ref{sec:cages} refer to $T$ on $[0,1)$, not to $Tcup$.
+\end{remark}
+
+\begin{proposition}[Expansion and mass split]
+On a fixed branch, $Tcup$ stretches distances by exactly $3/2$:
+$|Tcup(x)-Tcup(y)|=\tfrac32|x-y|$.  Moreover
+$\tfrac12-\tfrac13=2(\tfrac14-\tfrac16)$, and $x\mapsto \tfrac{2x}{3}$ maps
+$[1/4,1/2]$ onto $[1/6,1/3]$ with the lower half onto $[1/6,1/4]$; this is the arithmetic content
+of $\Nu([1/6,1/4])=\Nu([1/3,1/2])$ for a measure carried by the transport.
+\end{proposition}
+\begin{proof}
+Subtract the two linear branches.  Machine-checked: \lean{Tcup\_dist}, \lean{two\_one\_split},
+\lean{scale\_two\_thirds}.
+\end{proof}
+
+\section{The $9/4$ model and the Euler triangle}
+\label{sec:ninefour}
+
+The linear model $4g_{k+1}=9g_k+d_k$ with $d_k\in\{2,3\}$ is the affine shadow of the cup map
+near the three-cycle; the $180^\circ$ mirror symmetry quoted in the notes is the involution
+$(\varepsilon,r)\mapsto(1-\varepsilon,4^{k}-1-r)$ on the digit string.  We record it here as
+motivation only: the exact statements formalised are Theorem~\ref{thm:cycle} and the two
+propositions of Section~\ref{sec:fluid}.  The ``Euler-anchor / triangle'' interpretation, and the
+cosine-product bound $\le 0.7409$ sometimes attached to it, are numerical observations
+(Section~\ref{sec:empirical}), not Lean theorems.
+
+\section{Empirical observations and open problems}
+\label{sec:empirical}
+
+The following numbers appear in the working notes and are \emph{reported}, not proved:
+\begin{itemize}[leftmargin=1.4em]
+  \item chaos onset $L_{\text{chaos}}\approx 0.428705$;
+  \item mixing spectral gap $\approx 0.2898$;
+  \item Hausdorff dimension migration $\approx 0.8548$;
+  \item a three-step cosine-product bound $\le 0.7409$.
+\end{itemize}
+They require the Fourier/transfer-operator analysis of the map, which is outside the formalised
+core.  The $8/57$ threshold is, additionally, contradicted by exact computation
+(Remark~\ref{rem:857}).  We list these as open: any of them could be made a theorem with a
+suitable analytic development, but none is asserted here.
+
+\section{Formalisation traceability}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Result & Lean declaration & Status\\
+\midrule
+Integer exclusion & \lean{ZeroEntropyCages.exclusion\_integer} & proved\\
+$[2/7,5/7)$ cage & \lean{ZeroEntropyCages.cage\_two\_sevenths} & proved\\
+Widths & \lean{width\_three\_sevenths}, \lean{width\_four\_sevenths} & proved\\
+Cup self-map & \lean{DiscreteFluidCertificates.Tcup\_mem} & proved\\
+$4/19$ cycle & \lean{cup\_cycle}, \lean{cup\_period\_three} & proved\\
+Expansion & \lean{Tcup\_dist} & proved\\
+$2{:}1$ split & \lean{two\_one\_split}, \lean{scale\_two\_thirds} & proved\\
+All-real exclusion & Proposition~\ref{prop:allreal} & not formalised\\
+$8/57$ threshold & --- & contradicted (Remark~\ref{rem:857})\\
+Spectral / dimension / cosine & --- & empirical only\\
+\bottomrule
+\end{tabular}
+\caption{Theorem-to-Lean map for Paper~2.}
+\end{table}
+
+\bibliography{refs}
+
+\end{document}

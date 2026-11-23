@@ -86,4 +86,32 @@ public theorem countPaths7_zero : ∀ k, 1 ≤ k → countPaths7 0 k = 2 * k
     rw [e, countPaths7_one (k + 1) (by omega), countPaths7_zero (k + 1) (by omega)]
     omega
 
+/-! ### The dynamics of `T` itself
+
+With `I = [7/24, 17/24)`, the translated Mahler branches `T_t x = (3x - t)/2` stay inside `I`
+exactly on `[7/24, 17/36)` (`t = false`) and on `[19/36, 17/24)` (`t = true`).  These exact
+rational windows are the dynamical content the automaton abstracts. -/
+
+/-- Unfolding of the `t = false` branch: `T false x = 3x/2`. -/
+public theorem T_false_eq (x : ℚ) : T false x = 3 * x / 2 := by
+  unfold T
+  norm_num
+
+/-- Unfolding of the `t = true` branch: `T true x = (3x - 1)/2`. -/
+public theorem T_true_eq (x : ℚ) : T true x = (3 * x - 1) / 2 := by
+  unfold T
+  norm_num
+
+/-- On `[7/24, 17/36)`, the `t = false` branch lands back in `I = [7/24, 17/24)`. -/
+public theorem T_false_maps (x : ℚ) (h0 : 7 / 24 ≤ x) (h1 : x < 17 / 36) :
+    7 / 24 ≤ T false x ∧ T false x < 17 / 24 := by
+  rw [T_false_eq]
+  constructor <;> linarith
+
+/-- On `[19/36, 17/24)`, the `t = true` branch lands back in `I = [7/24, 17/24)`. -/
+public theorem T_true_maps (x : ℚ) (h0 : 19 / 36 ≤ x) (h1 : x < 17 / 24) :
+    7 / 24 ≤ T true x ∧ T true x < 17 / 24 := by
+  rw [T_true_eq]
+  constructor <;> linarith
+
 end Mahler32.ArnoldTongue7State

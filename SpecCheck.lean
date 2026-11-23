@@ -5,7 +5,7 @@ public import Mahler32Core
 /-!
 # `SpecCheck` — the definition lock, statement lock and numeric anchors
 
-This file is a *read-only* statement surface over the zero-axiom core (tasks 1–10).  It is not a
+This file is a *read-only* statement surface over the zero-axiom core (tasks 1–12).  It is not a
 proof of anything new: it is a gate.  CI compiles it with `warningAsError`, and every declaration
 below is chosen so that it **only typechecks if the implementation still matches the task sheet**:
 
@@ -434,5 +434,34 @@ example : hiTile 1 = 1 / 4 := by norm_num [hiTile]
 example : (1 / 16 : ℚ) < loTile 4 := by norm_num [loTile]
 
 end SpecCheck.SyracuseBijection
+
+/-! ### `ZeroEntropyCages` and `DiscreteFluidCertificates` -/
+
+namespace SpecCheck.NewModules
+
+open Mahler32.ZeroEntropyCages Mahler32.DiscreteFluidCertificates
+
+/-- Statement lock: the integer-vanishing engine. -/
+example {M : ℤ} {N : ℕ} (h1 : (2 : ℤ) ^ N ∣ M) (h2 : |M| < (2 : ℤ) ^ N) : M = 0 :=
+  exclusion_integer h1 h2
+
+/-- Statement lock: the exact four-term `[2/7, 5/7)` cage. -/
+example (x : ℚ) (h0 : 2 / 7 ≤ x) (h1 : x < 5 / 7)
+    (a1 : 2 / 7 ≤ Tq x) (b1 : Tq x < 5 / 7)
+    (a2 : 2 / 7 ≤ Tq (Tq x)) (b2 : Tq (Tq x) < 5 / 7)
+    (a3 : 2 / 7 ≤ Tq (Tq (Tq x))) (b3 : Tq (Tq (Tq x)) < 5 / 7) : False :=
+  cage_two_sevenths x h0 h1 ⟨a1, b1, a2, b2, a3, b3⟩
+
+/-- Numeric anchor: `Tcup (4/19) = 6/19`. -/
+example : Tcup (4 / 19) = 6 / 19 := by
+  unfold Tcup
+  norm_num
+
+/-- Numeric anchor: the exact three-cycle return. -/
+example : Tcup (Tcup (Tcup (4 / 19))) = 4 / 19 := by
+  unfold Tcup
+  norm_num
+
+end SpecCheck.NewModules
 
 end

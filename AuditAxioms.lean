@@ -31,9 +31,22 @@ public section
 #print axioms Mahler32.ArnoldTongue7State.countPaths7_zero
 
 #print axioms Mahler32.DAGBoundedGap.dag_bounded_gap
+#print axioms Mahler32.DAGBoundedGap.zStepNat_add_128
+#print axioms Mahler32.DAGBoundedGap.S7_iff_hits
 
 #print axioms Mahler32.TwoWorldPadeCriterion.two_world_identity
 #print axioms Mahler32.TwoWorldPadeCriterion.integer_divisibility_bound
+#print axioms Mahler32.TwoWorldPadeCriterion.two_world_iff
+#print axioms Mahler32.TwoWorldPadeCriterion.two_pow_dvd_eq_zero
+
+#print axioms Mahler32.ArnoldTongue5State.T_false_maps
+#print axioms Mahler32.ArnoldTongue7State.T_true_maps
+
+#print axioms Mahler32.ZeroEntropyCages.exclusion_integer
+#print axioms Mahler32.ZeroEntropyCages.cage_two_sevenths
+
+#print axioms Mahler32.DiscreteFluidCertificates.cup_cycle
+#print axioms Mahler32.DiscreteFluidCertificates.cup_period_three
 
 #print axioms Mahler32.Fib11Free.fib_count
 #print axioms Mahler32.Fib11Free.survivors_four

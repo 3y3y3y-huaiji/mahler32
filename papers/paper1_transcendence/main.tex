@@ -1,0 +1,217 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\fract}[1]{\left\{#1\right\}}
+\newcommand{\lean}[1]{\texttt{#1}}
+
+\title{A Two-World Pad\'e Criterion for Base $\tfrac32$ and the Algebraic--Pair Branch}
+\author{Su MingKai}
+\date{2026}
+
+\begin{document}
+
+\begin{abstract}
+We isolate a \emph{two-world} Pad\'e comparison for expansions in base $\tfrac32$: a single
+identity that is simultaneously a $2$-adic divisibility statement and an Archimedean size bound.
+Combined with an integer-vanishing lemma, it forces the ``minimal word'' remainder to be exactly
+zero.  The algebraic--pair branch of Stephan's program is formalised in Lean 4 with Mathlib,
+conditionally on Schlickewei's $p$-adic subspace theorem; the two-world comparison and its
+integer engine are proved unconditionally.  We do \emph{not} claim Mahler's original
+$\xi(3/2)^n \bmod 1$ conjecture; the transcendence statement below is a conditional reduction and
+is labelled as such.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+Mahler's problem asks for the distribution of $\fract{\xi(3/2)^n}$ and is open; the state of the
+art is surveyed in \citep{stephan2026subspace,stephan2026minimal,stephan2026third}.  A point
+$\xi$ is a \emph{Z-number} when $\fract{\xi(3/2)^n}\in[0,\tfrac12)$ for every $n$; Strauch
+\citep{strauch1997} constructed Z-numbers with prescribed maps, and the combinatorial side is
+developed in \citep{lagarias2003,andrieu2026,cassaigne2026}.  Recent work of Cook
+\citep{cook2026} pushes the arithmetic envelope of base $\tfrac32$ congruences, while the
+denominator and equidistribution barriers are those of \citep{calegari2025,elmv}.  Pad\'e
+constructions have also proved effective in the two-expanding-place setting
+\citep{dedeo2026}, and the failure of naive positivity obstructions is illustrated by the
+``unforced singularity'' theme of \citep{tao2026}.
+
+The contribution here is narrow and checkable.  We show that two classical Pad\'e
+approximations---one attached to the analytic world, one to the $2$-adic world---differ by a
+single rational expression, and that the ``two worlds agree'' locus is exactly the degenerate
+parameter $c=0$.  This gives a clean route from ``an infinite family of words survives'' to
+``an integer is divisible by every power of $2$ and smaller than every power of $2$'', hence is
+$0$.
+
+\paragraph{Scope and honesty.}
+Section~\ref{sec:padeworlds}--\ref{sec:engine} contain unconditional, machine-checked results.
+Section~\ref{sec:algpair} records the algebraic--pair branch exactly as formalised: it depends on
+the explicitly declared axiom \lean{schlickewei\_subspace\_Q3}, and we say so.  No statement
+below asserts the Mahler conjecture.
+
+\section{Two Pad\'e worlds}
+\label{sec:padeworlds}
+
+Let $e,c\in\Q$ and consider the generating series $S(z)=e\,(1+z+z^2+\cdots)=e/(1-z)$, whose
+diagonal Pad\'e approximants in the two worlds are the depth-$1$ and depth-$2$ truncations
+\begin{equation}
+  P_{1,1}(z)=e\,\frac{1}{1-z}\Big|_{\text{ord }2},
+  \qquad
+  P_{2,2}(z)=e\,\frac{1}{1-z}\Big|_{\text{ord }4}.
+\end{equation}
+Concretely the Lean definitions take the closed rational forms
+\begin{equation}
+  \lean{pade12}(e,c)=\frac{e}{1-c},
+  \qquad
+  \lean{pade11}(e,c)=e\,(1+c).
+\end{equation}
+These are the two ``worlds'': the first is the analytic diagonal, the second the carry-truncated
+diagonal of base $\tfrac32$.
+
+\begin{proposition}[Two-world identity]
+\label{prop:identity}
+For all $e,c\in\Q$ with $c\neq 1$,
+\begin{equation}
+  \lean{pade12}(e,c)-\lean{pade11}(e,c)=\frac{e\,c^{2}}{1-c}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Expand the right-hand side: $e\bigl(\tfrac{1}{1-c}-(1+c)\bigr)
+= e\cdot\tfrac{c^2}{1-c}$.  Machine-checked as
+\lean{Mahler32.TwoWorldPadeCriterion.two\_world\_identity}.
+\end{proof}
+
+The sign structure is then transparent, and the two worlds coincide only at $c=0$.
+
+\begin{theorem}[Agreement criterion]
+\label{thm:iff}
+Let $e,c\in\Q$ with $e\neq 0$ and $c\neq 1$.  Then
+\[
+  \lean{pade12}(e,c)=\lean{pade11}(e,c)\iff c=0 .
+\]
+\end{theorem}
+
+\begin{proof}
+By Proposition~\ref{prop:identity} the difference is $e c^2/(1-c)$.  If it vanishes, then
+$e c^2=0$ (as $c\neq 1$), hence $c^2=0$ (as $e\neq 0$), hence $c=0$.  Conversely $c=0$ gives
+$e= e$.  Machine-checked as \lean{Mahler32.TwoWorldPadeCriterion.two\_world\_iff}.
+\end{proof}
+
+\begin{remark}
+The rational strictness certificates used to separate the worlds numerically,
+$(140/99)^2<2$ and $(17/12)^2>2$, are also machine-checked
+(\lean{sqrt\_two\_gt\_140\_99}, \lean{sqrt\_two\_lt\_17\_12}).
+\end{remark}
+
+\section{The integer engine}
+\label{sec:engine}
+
+The following elementary lemma is the whole content of the ``$2$-adic squeeze''.  Let
+$M=D\cdot 3^{d}\cdot\bigl(Q(2/3)S(2/3)-P(2/3)\bigr)$ be the integralised remainder of a
+two-world comparison.  The $2$-adic world provides $2^{N}\mid M$ for every $N$; the Archimedean
+world provides $|M|<2^{N}$.
+
+\begin{lemma}[Integer exclusion]
+\label{lem:engine}
+If $M\in\Z$, $N\in\N$, $2^{N}\mid M$ and $|M|<2^{N}$, then $M=0$.
+\end{lemma}
+
+\begin{proof}
+Write $M=2^{N}k$.  Then $2^{N}|k|<2^{N}$, so $|k|<1$ and $k=0$.
+Machine-checked as \lean{Mahler32.TwoWorldPadeCriterion.two\_pow\_dvd\_eq\_zero}
+(and again as \lean{Mahler32.ZeroEntropyCages.exclusion\_integer}).
+\end{proof}
+
+\begin{corollary}[Remainder vanishes]
+If a minimal word produces a nonzero integer $M$ as above and every $2$-adic world divides it
+while the Archimedean bound holds, then the analytic remainder at $z=2/3$ is zero, i.e.\
+$R_{\infty}(2/3)=c\,\xi\,Q(2/3)=0$.
+\end{corollary}
+
+Lemma~\ref{lem:engine} is deliberately free of analysis: it takes the two worlds as hypotheses.
+The remaining work, which is not formalised here, is to derive the divisibility and the bound from
+a specific word family.
+
+\section{The algebraic--pair branch}
+\label{sec:algpair}
+
+Stephan's program splits the surviving words into rational and algebraic-pair cases
+\citep{stephan2026subspace,stephan2026third}.  In the repository this branch is the module
+\lean{Mahler32Conditional.AlgebraicPairBranch}.  It establishes the finite algebraic-pair
+statement under a hypothesis on algebraic points of $\Q^3$.
+
+\begin{theorem}[Algebraic pair, conditional]
+\label{thm:algpair}
+Assume Schlickewei's $p$-adic subspace theorem in the form recorded in the module as the axiom
+\lean{schlickewei\_subspace\_Q3}.  Then the algebraic-pair branch is finite: there are only
+finitely many algebraic-pair surviving words of bounded degree.
+\end{theorem}
+
+\begin{remark}[Read this before citing]
+Theorem~\ref{thm:algpair} is \emph{conditional}.  The Lean development is zero-axiom for every
+unconditional result in this paper, but \lean{AlgebraicPairBranch} imports exactly one declared
+axiom, and the CI axiom audit therefore excludes it from the unconditional count.  We make no
+claim that this branch, or the Mahler problem, is settled.
+\end{remark}
+
+\section{What is and is not claimed}
+\label{sec:claims}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Unconditional and machine-checked.} Proposition~\ref{prop:identity},
+        Theorem~\ref{thm:iff}, Lemma~\ref{lem:engine}, and the rational strictness bounds.
+  \item \textbf{Conditional and machine-checked.} Theorem~\ref{thm:algpair}, modulo the single
+        declared axiom.
+  \item \textbf{Human-level, not formalised.} The derivation of the $2$-adic divisibility and
+        Archimedean bound for the full word family, and any quantitative
+        $(\log n)^{1/4}$-type criterion.  These are stated in the literature
+        \citep{stephan2026subspace} and are not re-proved here.
+  \item \textbf{Not claimed at all.} Mahler's original conjecture, the unbounded-denominators
+        conjecture, and any unconditional transcendence of a Z-number.
+\end{itemize}
+
+\section{Formalisation traceability}
+
+All Lean names below live in the repository at commit time and are exercised by
+\texttt{scripts/verify\_all.sh}.  The axiom audit prints only the standard
+\lean{propext}, \lean{Quot.sound}, \lean{Classical.choice}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Result & Lean declaration & Status\\
+\midrule
+Two-world identity & \lean{TwoWorldPadeCriterion.two\_world\_identity} & proved\\
+Agreement criterion & \lean{TwoWorldPadeCriterion.two\_world\_iff} & proved\\
+Integer exclusion & \lean{TwoWorldPadeCriterion.two\_pow\_dvd\_eq\_zero} & proved\\
+$\sqrt2>140/99$ & \lean{sqrt\_two\_gt\_140\_99} & proved\\
+$\sqrt2<17/12$ & \lean{sqrt\_two\_lt\_17\_12} & proved\\
+Algebraic pair (cond.) & \lean{Mahler32Conditional.algebraic\_pair\_branch\_finite} & axiom-dependent\\
+\bottomrule
+\end{tabular}
+\caption{Theorem-to-Lean map for Paper~1.}
+\end{table}
+
+\bibliography{refs}
+
+\end{document}

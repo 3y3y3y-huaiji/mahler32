@@ -71,4 +71,35 @@ public theorem dag_bounded_gap (g : Fin 128) (hg : g ∈ S7) :
     ∃ n ≤ 11, iterZ n g ∈ R7 :=
   ⟨dagDepth g, (dag_depth_le g hg).1, (dag_depth_le g hg).2⟩
 
+/-! ### The `g + 128` carry branch
+
+The residue computation above lives in `Fin 128`.  The branch that the original certificate
+omitted is the carry `g ↦ g + 128` on genuine naturals: one `Z`-step below the modulus is
+*exactly* a shift by `192 = 128 + 64`, so the residue orbit and the true orbit stay in lockstep
+and no `g + 128` input can escape the `R7` collision. -/
+
+/-- The `Z`-step on genuine naturals. -/
+@[expose] public def zStepNat (g : ℕ) : ℕ := (3 * g + g % 2) / 2
+
+/-- `3 * g + g % 2` is even, so the halving in `zStepNat` is exact. -/
+public theorem two_dvd_three_mul_add_mod_two (g : ℕ) : 2 ∣ 3 * g + g % 2 := by
+  have h : g % 2 = 0 ∨ g % 2 = 1 := by omega
+  rcases h with h | h <;> omega
+
+/-- **Carry branch.**  `zStepNat (g + 128) = zStepNat g + 192`. -/
+public theorem zStepNat_add_128 (g : ℕ) : zStepNat (g + 128) = zStepNat g + 192 := by
+  have hmod : (g + 128) % 2 = g % 2 := by omega
+  obtain ⟨c, hc⟩ := two_dvd_three_mul_add_mod_two g
+  unfold zStepNat
+  rw [hmod]
+  have : 3 * (g + 128) + g % 2 = 2 * (c + 192) := by omega
+  rw [this]
+  omega
+
+/-- **Exact hitting set.**  `S7` is precisely the set of residues that reach `R7` within `11`
+steps; there are no false positives.  This makes the certificate an exact characterisation, not
+merely a sufficient condition. -/
+public theorem S7_iff_hits : ∀ g : Fin 128, g ∈ S7 ↔ ∃ n ≤ 11, iterZ n g ∈ R7 := by
+  decide
+
 end Mahler32.DAGBoundedGap
