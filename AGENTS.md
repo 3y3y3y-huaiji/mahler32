@@ -72,6 +72,11 @@ that bypasses the hook still cannot merge green. `git commit --no-verify` exists
 and is allowed only when the hook itself is broken, never to push a file past
 it; say so in the commit message if you use it.
 
+Lightweight gates (`check_no_secrets.py`, `verify_ssot.py`,
+`generate_certificates.py`, `actionlint`) are cheap enough to run locally on
+every change; the heavy Lean work (`lake build`, `#lint`, `leanchecker`, nanoda)
+is left to GitHub Actions rather than run in the sandbox.
+
 ## 5. SSOT 强联动表 — 改一个 Lean 模块，就同时改这四处
 
 `scripts/verify_ssot.py` 在 CI 里机械校验下表；缺一处即红。它不是提醒，是门禁。
