@@ -37,6 +37,12 @@ jobs:
       - name: Refuse credentials and scratch files
         run: python3 scripts/check_no_secrets.py --tree
 
+      # Single-source-of-truth gate: lean-toolchain vs formalization.yaml/README,
+      # module inventory (imported + audited + locked + registered), stale-claim
+      # blacklist and repository-internal link integrity.  Cheap, no Lean needed.
+      - name: SSOT gate
+        run: python3 scripts/verify_ssot.py
+
   build:
     name: Build and Verify
     needs: guards
@@ -50,7 +56,7 @@ jobs:
           curl -sSfL --retry 5 --retry-connrefused https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
           sh elan-init.sh -y --default-toolchain none
           rm elan-init.sh
-          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
       - name: Verify Lean & Lake Toolchain
         run: |
@@ -174,6 +180,16 @@ jobs:
           lake env lean -D warningAsError=true SpecCheck.lean
           lake env lean -D warningAsError=true SpecCheckConditional.lean
 
+      # Lint the workflows themselves (expression syntax, shellcheck on `run:`, action
+      # pinning).  Pinned to a release, not `main`.
+      - name: actionlint
+        run: |
+          set -euo pipefail
+          curl -sSfL --retry 5 --retry-connrefused -o "$RUNNER_TEMP/actionlint.tar.gz" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_linux_amd64.tar.gz
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color
+
       # Independent kernel replay via the standalone `leanchecker` shipped with the toolchain.
       - name: Kernel replay (leanchecker)
         run: |
@@ -185,6 +201,8 @@ jobs:
             Mahler32.TwoWorldPadeCriterion \
             Mahler32.Fib11Free Mahler32.WalshZeroCorr \
             Mahler32.HInvariance Mahler32.SyracuseBijection \
+            Mahler32.ZeroEntropyCages Mahler32.DiscreteFluidCertificates \
+            Mahler32.Model94Obstructions \
             Mahler32.Basic Mahler32Core \
             Mahler32Conditional.AlgebraicPairBranch; do
             echo "::group::leanchecker $m"

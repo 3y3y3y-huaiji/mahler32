@@ -24,3 +24,9 @@ jobs:
 
       - name: Refuse credentials and scratch files
         run: python3 scripts/check_no_secrets.py --tree
+
+      # This workflow has no `paths-ignore`, so it also covers documentation-only
+      # changes (README/AGENTS/docs) that `lean_build.yml` skips.  The SSOT gate is
+      # cheap and needs no Lean toolchain.
+      - name: SSOT gate
+        run: python3 scripts/verify_ssot.py

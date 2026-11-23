@@ -26,6 +26,49 @@ the sibling file `SpecCheckConditional.lean`.
 
 public section
 
+/-! ## Core — `Mahler32.Basic` -/
+
+namespace SpecCheck.Basic
+
+open Mahler32
+
+/-- Lock: `step x = x + (x+1)/2`. -/
+example (x : ℕ) : step x = x + (x + 1) / 2 := rfl
+
+/-- Statement lock: the next parity is the second binary digit. -/
+example (x : ℕ) : step x % 2 = x / 2 % 2 := step_parity x
+
+/-- Numeric anchor: `step 7 = 11`. -/
+example : step 7 = 11 := by decide
+
+end SpecCheck.Basic
+
+/-! ## Core — `Mahler32.QuiverMonotone` (mathlib4#44885 mirror) -/
+
+namespace SpecCheck.QuiverMonotone
+
+universe u v
+
+/-- Lock: `Quiver.Monotone f` is exactly arrowwise `≤`. -/
+example {V : Type u} [Quiver V] {α : Type v} [Preorder α] (f : V → α) :
+    Quiver.Monotone f ↔ ∀ ⦃a b : V⦄, (a ⟶ b) → f a ≤ f b := Iff.rfl
+
+/-- Lock: `Quiver.StrictMono f` is exactly arrowwise `<`. -/
+example {V : Type u} [Quiver V] {α : Type v} [Preorder α] (f : V → α) :
+    Quiver.StrictMono f ↔ ∀ ⦃a b : V⦄, (a ⟶ b) → f a < f b := Iff.rfl
+
+/-- Statement lock: strict monotonicity implies monotonicity. -/
+example {V : Type u} [Quiver V] {α : Type v} [Preorder α] {f : V → α}
+    (hf : Quiver.StrictMono f) : Quiver.Monotone f :=
+  hf.monotone
+
+/-- Statement lock: `Reachable` is a partial order under a strictly monotone potential. -/
+example {V : Type u} [Quiver V] {α : Type v} [Preorder α] {f : V → α}
+    (hf : Quiver.StrictMono f) : IsPartialOrder V Quiver.Reachable :=
+  Quiver.StrictMono.isPartialOrder_reachable hf
+
+end SpecCheck.QuiverMonotone
+
 /-! ## Task 1 — `Mahler32.Base6LightCone` -/
 
 namespace SpecCheck.Base6LightCone
@@ -201,6 +244,15 @@ example : CarryStep (embed128 127) (embed128 127) := carry_self_loop_127
 
 /-- Statement lock: no uniform `≤ 11` bound holds on genuine `ℕ` orbits (counterexample `28`). -/
 example : ¬ (∀ g : ℕ, ∃ n ≤ 11, iterZNat n g % 128 ∈ R7Nat) := nat_uniform_eleven_fails
+
+/-- Lock: `gapPot` is the order-dual depth `OrderDual.toDual (dagDepth ·)`. -/
+example (v : GapV) : gapPot v = OrderDual.toDual (dagDepth v.1) := rfl
+
+/-- Lock: `CarryStep g h` is membership in the two-branch carry successor set. -/
+example (g h : Fin 128) : CarryStep g h ↔ h ∈ carrySucc g := Iff.rfl
+
+/-- Lock: `carrySucc g = {zStep g, zStep g + 64}`. -/
+example (g : Fin 128) : carrySucc g = {zStep g, embed128 ((zStep g).val + 64)} := rfl
 
 end SpecCheck.DAGBoundedGap
 
@@ -454,22 +506,78 @@ example : (1 / 16 : ℚ) < loTile 4 := by norm_num [loTile]
 
 end SpecCheck.SyracuseBijection
 
-/-! ### `ZeroEntropyCages` and `DiscreteFluidCertificates` -/
+/-! ### `ZeroEntropyCages` — the two-branch joint relation and its orbits -/
 
-namespace SpecCheck.NewModules
+namespace SpecCheck.ZeroEntropyCages
 
-open Mahler32.ZeroEntropyCages Mahler32.DiscreteFluidCertificates
+open Mahler32.ZeroEntropyCages
+
+/-- Lock: the joint relation is *exactly* `y = T0 x ∨ y = T1 x`. -/
+example (x y : ℚ) : Step x y ↔ y = T0 x ∨ y = T1 x := Iff.rfl
+
+/-- Lock: `Tq` is the single conditional subtraction `{3x/2}`. -/
+example (x : ℚ) :
+    Tq x = (if (3 * x) / 2 < 1 then (3 * x) / 2 else (3 * x) / 2 - 1) := rfl
+
+/-- Lock: the `[2/7,5/7)` cage predicate. -/
+example (x : ℚ) : cage27 x ↔ 2 / 7 ≤ x ∧ x < 5 / 7 := Iff.rfl
+
+/-- Lock: the holed cage `[5/24,11/24) ∪ [13/24,19/24)`. -/
+example (x : ℚ) :
+    holedCage x ↔ (5 / 24 ≤ x ∧ x < 11 / 24) ∨ (13 / 24 ≤ x ∧ x < 19 / 24) := Iff.rfl
 
 /-- Statement lock: the integer-vanishing engine. -/
 example {M : ℤ} {N : ℕ} (h1 : (2 : ℤ) ^ N ∣ M) (h2 : |M| < (2 : ℤ) ^ N) : M = 0 :=
   exclusion_integer h1 h2
 
-/-- Statement lock: the exact four-term `[2/7, 5/7)` cage. -/
+/-- Statement lock: the exact four-term deterministic `[2/7, 5/7)` cage. -/
 example (x : ℚ) (h0 : 2 / 7 ≤ x) (h1 : x < 5 / 7)
     (a1 : 2 / 7 ≤ Tq x) (b1 : Tq x < 5 / 7)
     (a2 : 2 / 7 ≤ Tq (Tq x)) (b2 : Tq (Tq x) < 5 / 7)
     (a3 : 2 / 7 ≤ Tq (Tq (Tq x))) (b3 : Tq (Tq (Tq x)) < 5 / 7) : False :=
   cage_two_sevenths x h0 h1 ⟨a1, b1, a2, b2, a3, b3⟩
+
+/-- Statement lock: the six-term joint `Step`-orbit inside `[2/7,5/7)`. -/
+example :
+    Step (3 / 7) (9 / 14) ∧ Step (9 / 14) (13 / 28) ∧
+      Step (13 / 28) (39 / 56) ∧ Step (39 / 56) (61 / 112) ∧
+      Step (61 / 112) (71 / 224) ∧
+      cage27 (3 / 7) ∧ cage27 (9 / 14) ∧ cage27 (13 / 28) ∧
+      cage27 (39 / 56) ∧ cage27 (61 / 112) ∧ cage27 (71 / 224) :=
+  joint_orbit_two_sevenths
+
+/-- Statement lock: the genuine joint `2`-cycle `2/5 ↔ 3/5`. -/
+example :
+    Step (2 / 5) (3 / 5) ∧ Step (3 / 5) (2 / 5) ∧
+      cage27 (2 / 5) ∧ cage27 (3 / 5) :=
+  joint_cycle_two_fifths
+
+/-- Statement lock: the genuine joint `4`-cycle `4/13 ↦ 6/13 ↦ 9/13 ↦ 7/13 ↦ 4/13`. -/
+example :
+    Step (4 / 13) (6 / 13) ∧ Step (6 / 13) (9 / 13) ∧
+      Step (9 / 13) (7 / 13) ∧ Step (7 / 13) (4 / 13) ∧
+      cage27 (4 / 13) ∧ cage27 (6 / 13) ∧ cage27 (9 / 13) ∧ cage27 (7 / 13) :=
+  joint_cycle_four_thirteenths
+
+/-- Statement lock: the holed cage contains the `2/5 ↔ 3/5` joint cycle. -/
+example :
+    Step (2 / 5) (3 / 5) ∧ Step (3 / 5) (2 / 5) ∧
+      holedCage (2 / 5) ∧ holedCage (3 / 5) :=
+  holed_cage_two_cycle
+
+/-- Statement lock: the two holed-cage transients `4/15 ↦ 2/5` and `11/15 ↦ 3/5`. -/
+example :
+    Step (4 / 15) (2 / 5) ∧ Step (11 / 15) (3 / 5) ∧
+      holedCage (4 / 15) ∧ holedCage (11 / 15) :=
+  holed_cage_transients
+
+end SpecCheck.ZeroEntropyCages
+
+/-! ### `DiscreteFluidCertificates` — the exact cup `3`-cycle -/
+
+namespace SpecCheck.DiscreteFluidCertificates
+
+open Mahler32.DiscreteFluidCertificates
 
 /-- Numeric anchor: `Tcup (4/19) = 6/19`. -/
 example : Tcup (4 / 19) = 6 / 19 := by
@@ -481,6 +589,54 @@ example : Tcup (Tcup (Tcup (4 / 19))) = 4 / 19 := by
   unfold Tcup
   norm_num
 
-end SpecCheck.NewModules
+end SpecCheck.DiscreteFluidCertificates
+
+/-! ### `Model94Obstructions` — the `9/4` finite-roof model -/
+
+namespace SpecCheck.Model94Obstructions
+
+open Mahler32.Model94Obstructions
+
+/-- Lock: `step94` is the explicit `9/4` branch rule on `g % 4 ∈ {1, 2}`. -/
+example (g : ℕ) :
+    step94 g =
+      (match g % 4 with
+        | 1 => some ((9 * g + 3) / 4)
+        | 2 => some ((9 * g + 2) / 4)
+        | _ => none) := rfl
+
+/-- Lock: `iter94` base case. -/
+example (g : ℕ) : iter94 0 g = some g := rfl
+
+/-- Lock: `iter94` successor case. -/
+example (k g : ℕ) : iter94 (k + 1) g = (step94 g).bind (iter94 k) := rfl
+
+/-- Lock: `survives94 k g` is exactly `iter94 k g ≠ none`. -/
+example (k g : ℕ) : survives94 k g ↔ iter94 k g ≠ none := Iff.rfl
+
+/-- Statement lock: survival is periodic with period `4^k` in the input. -/
+example (k t g : ℕ) : survives94 k (g + 4 ^ k * t) ↔ survives94 k g :=
+  survives94_add_four_pow k t g
+
+/-- Statement lock: at most three of every Klein-`4` quadruple survive, for **every odd**
+`N ≥ 3`. -/
+example {N g δ : ℕ} (hN : 3 ≤ N) (hodd : N % 2 = 1) (hg : g < 4 ^ (N - 1))
+    (hδ1 : 1 ≤ δ) (hδ3 : δ ≤ 3) :
+    ¬ (survives94 (N + 1) g ∧ survives94 (N + 1) (g + δ * 4 ^ (N - 1)) ∧
+       survives94 (N + 1) (4 ^ N - 1 - g) ∧
+       survives94 (N + 1) (4 ^ N - 1 - (g + δ * 4 ^ (N - 1)))) :=
+  odd_rung_klein4_no_four hN hodd hg hδ1 hδ3
+
+/-- Statement lock: the kernel-checked `N = 3` instance of the odd-rung Klein-`4` exclusion. -/
+example :
+    ((List.range 16).all (fun g =>
+        ([1, 2, 3] : List ℕ).all (fun δ =>
+          if g + δ * 16 < 64 then
+            decide ((({g, g + δ * 16, 63 - g, 63 - (g + δ * 16)} : Finset ℕ).filter
+              (fun x => survives94 4 x)).card ≤ 3)
+          else true))) = true :=
+  odd_rung_klein4_exclusion
+
+end SpecCheck.Model94Obstructions
 
 end

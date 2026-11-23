@@ -84,4 +84,10 @@ public section
 #print axioms Mahler32.Model94Obstructions.base9_digit_sum_conservation
 #print axioms Mahler32.Model94Obstructions.finite_roof_block_certificate
 
+-- `Mahler32.Basic` (imported transitively by every task module above) and
+-- `Mahler32.QuiverMonotone` (the mathlib4#44885 mirror consumed by `Mahler32.DAGBoundedGap`)
+-- are audited here directly, so the module inventory of `scripts/verify_ssot.py` is complete.
+#print axioms Mahler32.step_parity
+#print axioms Quiver.StrictMono.isPartialOrder_reachable
+
 end

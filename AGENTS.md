@@ -72,7 +72,25 @@ that bypasses the hook still cannot merge green. `git commit --no-verify` exists
 and is allowed only when the hook itself is broken, never to push a file past
 it; say so in the commit message if you use it.
 
-## 5. Lean work
+## 5. SSOT 强联动表 — 改一个 Lean 模块，就同时改这四处
+
+`scripts/verify_ssot.py` 在 CI 里机械校验下表；缺一处即红。它不是提醒，是门禁。
+
+| 你改了什么 | 必须同时更新 | 校验点 |
+| :-- | :-- | :-- |
+| 新增/重命名 `Mahler32/*.lean` | `Mahler32Core.lean`（import） | 从 `Mahler32Core` 可传递到达 |
+| 同上 | `AuditAxioms.lean`（`#print axioms` + 模块名） | 每个模块都被审计 |
+| 同上 | `SpecCheck.lean`（`example … := rfl/exact`） | 每个模块都有定义/签名锁 |
+| 同上 | `README.md`（模块清单表） | 每个 `Mahler32/*.lean` 路径都登记 |
+| 改 `lean-toolchain` | `formalization.yaml`、`README.md` | 两处版本号与 `lean-toolchain` 完全一致 |
+| 改任何被论文引用的定理名 | `papers/*/main.tex` 的 theorem-to-Lean 表 | 论文追踪表与 `#print axioms` 同名 |
+| 纠偏旧误判 | 同步 `README.md`、`papers/` | `STALE_PHRASES` 黑名单不得命中 |
+
+论文追踪表是 `papers/paper1_transcendence/main.tex` 与
+`papers/paper2_zero_entropy_fluid/main.tex` 末尾的 Lean 声明表；改了定理名却不改它，
+等于把未验证的声明留在论文里。
+
+## 6. Lean work
 
 The Lean-specific rules (proof golfing, `snake_case`/`UpperCamelCase`, the style
 script, `lake build -KwarningAsError=true`) are unchanged and are documented in

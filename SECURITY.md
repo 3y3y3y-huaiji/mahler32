@@ -11,8 +11,8 @@ Report it privately in one of these ways:
 
 1. Open a private security advisory:
    <https://github.com/3y3y3y-huaiji/mahler32/security/advisories/new>
-2. Or email the maintainer (Su MingKai) via the address on
-   <https://orcid.org/0009-0008-2312-6913>, with `mahler32 security` in the subject.
+2. Or email the maintainer (Su MingKai) at **<sumingkai1@outlook.com>** (also listed on
+   <https://orcid.org/0009-0008-2312-6913>), with `mahler32 security` in the subject.
 
 Please include: the affected file or workflow, a reproduction (command or link), and the
 potential impact. We aim to acknowledge reports within a few days.
