@@ -18,17 +18,26 @@ Mahler map `T x = {3x/2}` on `[0, 1)`.  Three layers are distinguished:
   "all-real exclusion" argument: an orbit that is eventually periodic produces an integer
   divisible by arbitrarily high powers of `2`, hence equal to `0`.
 
-* **The exact cage** (`cage_two_sevenths`): the interval `[2/7, 5/7)` has *no* four-term orbit
-  at all.  If `x, Tx, T²x, T³x` all lie in `[2/7, 5/7)`, contradiction.  This is proved by exact
-  rational interval arithmetic, with no numerical approximation and no `native_decide`.
+* **The exact cage** (`cage_two_sevenths`): for the *even* branch `T0` of the Mahler circle map,
+  the interval `[2/7, 5/7)` has *no* four-term orbit.  If `x, T0x, T0²x, T0³x` all lie in
+  `[2/7, 5/7)`, contradiction.  This is proved by exact rational interval arithmetic, with no
+  numerical approximation and no `native_decide`.
+
+* **The two branches** (`T0`, `T1`): the Mahler circle map is studied through its two monotone
+  branches `T0 x = {3x/2}` (even) and `T1 x = {3x/2 + 1/2}` (odd).  `cage_two_sevenths` is the
+  even-branch statement; the companion odd-branch cage empties at the *same* finite depth, which is
+  certified by `scripts/generate_certificates.py` (both branches are checked there) rather than
+  re-proved here.
 
 * **Width bookkeeping** (`width_three_sevenths`, `width_four_sevenths`): the widths that make
   the single-interval and the holed `4/7` barriers interesting.
 
 The stronger claims for the other barrier sets quoted in `papers/paper2_zero_entropy_fluid`
-(the `31`-state `[2/7,5/7)` automaton, the `128`-state holed `4/7` cage, the `δ* = 8/57`
-left-side asymmetry) are *computational certificates*, reproduced by
-`scripts/generate_certificates.py`; they are not asserted here as Lean theorems.
+(the `31`-state `[2/7,5/7)` automaton, the `128`-state holed `4/7` cage) are *computational
+certificates*, reproduced by `scripts/generate_certificates.py`; they are not asserted here as
+Lean theorems.  The constant `8/57 = T0⁻¹(4/19)` is an exact preimage of the cup `3`-cycle
+`4/19 ↦ 6/19 ↦ 9/19`; exact computation shows it is *not* a critical emptying threshold for the
+left-hole family `[δ, 1/2)`, which empties for every `δ > 0` tested.
 -/
 
 public section
@@ -48,6 +57,14 @@ public theorem Tq_of_lt {x : ℚ} (h : (3 * x) / 2 < 1) : Tq x = (3 * x) / 2 := 
 /-- Rewrite rule for the wrapping branch. -/
 public theorem Tq_of_ge {x : ℚ} (h : ¬ (3 * x) / 2 < 1) : Tq x = (3 * x) / 2 - 1 := by
   simp [Tq, h]
+
+/-- The **even branch** of the Mahler circle map, `T0 x = {3x/2}` (the map `Tq`). -/
+public def T0 (x : ℚ) : ℚ := Tq x
+
+/-- The **odd branch** of the Mahler circle map, `T1 x = {3x/2 + 1/2}`. -/
+@[expose] public def T1 (x : ℚ) : ℚ :=
+  let y := (3 * x) / 2 + 1 / 2
+  if y < 1 then y else if y < 2 then y - 1 else y - 2
 
 /-! ### The arithmetic engine -/
 
@@ -69,9 +86,10 @@ public theorem exclusion_integer {M : ℤ} {N : ℕ}
 
 /-! ### The exact `[2/7, 5/7)` cage -/
 
-/-- **The `[2/7, 5/7)` cage has no four-term orbit.**  There is no rational `x` with
-`x, Tx, T²x, T³x` all in `[2/7, 5/7)`.  The proof tracks the exact image interval step by step:
-`[2/7,5/7) → [3/7,5/7) → [9/14,5/7)`, and the fourth image misses the cage entirely. -/
+/-- **The even-branch `[2/7, 5/7)` cage has no four-term orbit.**  For the even branch `T0 = Tq`
+there is no rational `x` with `x, T0x, T0²x, T0³x` all in `[2/7, 5/7)`.  The proof tracks the exact
+image interval step by step: `[2/7,5/7) → [3/7,5/7) → [9/14,5/7)`, and the fourth image misses the
+cage entirely. -/
 public theorem cage_two_sevenths : ∀ x : ℚ,
     2 / 7 ≤ x → x < 5 / 7 →
     ¬ (2 / 7 ≤ Tq x ∧ Tq x < 5 / 7 ∧

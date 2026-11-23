@@ -60,4 +60,15 @@ public section
 #print axioms Mahler32.SyracuseBijection.syracuse_bijective
 #print axioms Mahler32.SyracuseBijection.force_b_ge_five
 
+-- Task 2: the `9/4` finite-roof arithmetic obstruction (seven theorem groups)
+#print axioms Mahler32.Model94Obstructions.mirror_conservation_94
+#print axioms Mahler32.Model94Obstructions.even_rung_mirror_annihilation
+#print axioms Mahler32.Model94Obstructions.forbidden_sum_c2_mod4
+#print axioms Mahler32.Model94Obstructions.odd_rung_klein4_exclusion
+#print axioms Mahler32.Model94Obstructions.sum_shadow_exact
+#print axioms Mahler32.Model94Obstructions.diff_shadow_exact
+#print axioms Mahler32.Model94Obstructions.base9_transducer_exact
+#print axioms Mahler32.Model94Obstructions.base9_digit_sum_conservation
+#print axioms Mahler32.Model94Obstructions.finite_roof_block_certificate
+
 end

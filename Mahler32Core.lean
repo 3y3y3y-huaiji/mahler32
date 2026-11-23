@@ -12,6 +12,7 @@ public import Mahler32.HInvariance
 public import Mahler32.SyracuseBijection
 public import Mahler32.ZeroEntropyCages
 public import Mahler32.DiscreteFluidCertificates
+public import Mahler32.Model94Obstructions
 
 /-!
 # Zero-axiom core entry point (tasks 1–12)

@@ -1,12 +1,29 @@
 #!/usr/bin/env python3
-"""Exact rational certificates for the Mahler 3/2 barrier families.
+"""Exact rational / integer certificates for the Mahler ``3/2`` barrier families
+and for the ``9/4`` finite-roof model.
 
-This script recomputes, in exact rational arithmetic (``fractions.Fraction``), the finite
-certificates quoted in ``papers/paper2_zero_entropy_fluid``.  It never uses floating point for a
-decision.
+This script recomputes, in exact arithmetic (``fractions.Fraction`` and Python
+``int``), the finite certificates quoted in ``papers/paper2_zero_entropy_fluid``.
+It never uses floating point for a decision.
 
-Run ``python3 scripts/generate_certificates.py`` to print the certificate table, or with
-``--verify`` to assert every finite claim and exit non-zero on any mismatch.
+Two independent blocks:
+
+* **Circle-map barriers.**  The Mahler map ``T x = {3x/2}`` on ``[0, 1)`` has two
+  monotone (inverse) branches, the *even* branch ``T0`` and the *odd* branch
+  ``T1``.  The exact preimage refinement is run for each branch separately; the
+  barrier sets empty at the same finite depth under both branches, which is the
+  machine-independent half of ``Mahler32/ZeroEntropyCages.lean``.
+
+* **``9/4`` finite-roof model.**  The integer model ``4 g_{k+1} = 9 g_k + d_k``,
+  ``d_k in {2, 3}``, together with its mirror involution, its even-rung
+  annihilation, the independent difference/sum shadow maps, and the finite
+  mirror-block counting bounds.  These are the script half of
+  ``Mahler32/Model94Obstructions.lean``; the Lean module proves the general
+  statements, this script re-checks concrete instances.
+
+Run ``python3 scripts/generate_certificates.py`` to print the certificate table,
+or with ``--verify`` to assert every finite claim and exit non-zero on any
+mismatch.
 """
 
 from __future__ import annotations
@@ -16,6 +33,10 @@ from fractions import Fraction as F
 
 Q = F  # readability alias for exact rationals
 
+
+# ---------------------------------------------------------------------------
+# half-open rational interval arithmetic
+# ---------------------------------------------------------------------------
 
 def normalise(intervals):
     """Sort and merge half-open rational intervals ``[a, b)``."""
@@ -41,25 +62,46 @@ def intersect(u, v):
     )
 
 
-def preimage(intervals):
-    """Exact preimage under ``T x = {3x/2}`` on ``[0, 1)``."""
+def preimage(intervals, branch=0):
+    """Exact preimage of ``intervals`` under **one** monotone branch.
+
+    ``branch = 0``  is the even branch ``T0 x = {3x/2}``:  the two inverse lifts
+    ``x = (2/3)(y + shift)`` for ``shift in {0, 1}``.
+
+    ``branch = 1``  is the odd branch ``T1 x = {3x/2 + 1/2}``:  the inverse lifts
+    ``x = (2/3)(y + k - 1/2)`` for the admissible integers ``k``.
+
+    Passing the branch explicitly is the fix for the original single-branch bug:
+    the barrier depths below are checked **for each branch**, not just for the
+    even one.
+    """
     out: list[tuple[Q, Q]] = []
-    for a, b in intervals:
-        for shift in (Q(0), Q(1)):
-            lo = max(Q(0), Q(2, 3) * (a + shift))
-            hi = min(Q(1), Q(2, 3) * (b + shift))
-            if lo < hi:
-                out.append((lo, hi))
+    if branch == 0:
+        for a, b in intervals:
+            for shift in (Q(0), Q(1)):
+                lo = max(Q(0), Q(2, 3) * (a + shift))
+                hi = min(Q(1), Q(2, 3) * (b + shift))
+                if lo < hi:
+                    out.append((lo, hi))
+    elif branch == 1:
+        for a, b in intervals:
+            for k in (Q(0), Q(1)):
+                lo = max(Q(0), Q(2, 3) * (a - Q(1, 2) + k))
+                hi = min(Q(1), Q(2, 3) * (b - Q(1, 2) + k))
+                if lo < hi:
+                    out.append((lo, hi))
+    else:  # pragma: no cover - defensive
+        raise ValueError(f"unknown branch {branch!r}")
     return normalise(out)
 
 
-def emptying_depth(u, max_depth=30):
-    """Least ``n`` with ``{x : T^k x in u for 0 <= k <= n} == empty``; None if not reached."""
+def emptying_depth(u, branch=0, max_depth=30):
+    """Least ``n`` with ``{x : T_branch^k x in u for 0 <= k <= n} == empty``."""
     cur = normalise(u)
     for n in range(max_depth + 1):
         if not cur:
             return n
-        cur = intersect(u, preimage(cur))
+        cur = intersect(u, preimage(cur, branch))
     return None
 
 
@@ -108,6 +150,129 @@ EXPECTED_DEPTH = {
 }
 
 
+# ---------------------------------------------------------------------------
+# the 9/4 finite-roof model
+# ---------------------------------------------------------------------------
+
+def step94(g: int):
+    """One step of ``4 g_{k+1} = 9 g_k + d_k`` with ``d_k in {2, 3}``.
+
+    Only ``g % 4 in {1, 2}`` survives; ``1 -> +3`` and ``2 -> +2``.
+    """
+    m = g % 4
+    if m == 1:
+        return (9 * g + 3) // 4
+    if m == 2:
+        return (9 * g + 2) // 4
+    return None
+
+
+def iter94(k: int, g: int):
+    for _ in range(k):
+        g = step94(g)
+        if g is None:
+            return None
+    return g
+
+
+def survives94(k: int, g: int) -> bool:
+    return iter94(k, g) is not None
+
+
+def step_diff(d: int):
+    """Difference shadow ``Delta``: ``d = g - g'``; ``2`` is impossible."""
+    m = d % 4
+    if m == 0:
+        return 9 * d // 4
+    if m == 1:
+        return (9 * d - 1) // 4
+    if m == 3:
+        return (9 * d + 1) // 4
+    return None
+
+
+def step_sum(s: int):
+    """Sum shadow ``S``: ``s = g + g'``; ``1`` is impossible."""
+    m = s % 4
+    if m == 0:
+        return (9 * s + 4) // 4
+    if m == 2:
+        return (9 * s + 6) // 4
+    if m == 3:
+        return (9 * s + 5) // 4
+    return None
+
+
+def iter_shadow(f, k: int, x: int):
+    for _ in range(k):
+        x = f(x)
+        if x is None:
+            return None
+    return x
+
+
+def check_mirror_conservation(n_max=5):
+    """Theorem 1: ``g_k + g̃_k = 9^k 4^{N-k} - 1``."""
+    for N in range(1, n_max + 1):
+        M = 4 ** N
+        for g0 in range(M):
+            mir = M - 1 - g0
+            for k in range(N + 1):
+                gk = iter94(k, g0)
+                if gk is not None:
+                    gt = iter94(k, mir)
+                    if gt is None or gk + gt != 9 ** k * 4 ** (N - k) - 1:
+                        return False
+    return True
+
+
+def check_even_annihilation(n_max=6):
+    """Theorem 2: even rungs cannot have both mirror twins survive ``N + 2``."""
+    for N in range(2, n_max + 1, 2):
+        M = 4 ** N
+        for g0 in range(M):
+            mir = M - 1 - g0
+            if survives94(N + 2, g0) and survives94(N + 2, mir):
+                return False
+    return True
+
+
+def survivor_counts(N: int, extra: int):
+    """``|S_N|`` and ``|S_{N+extra}|`` inside ``[0, 4^N)``."""
+    M = 4 ** N
+    sN = sum(1 for g in range(M) if survives94(N, g))
+    sNe = sum(1 for g in range(M) if survives94(N + extra, g))
+    return sN, sNe
+
+
+def check_forbidden_sum(c_max=18, k_max=4):
+    """Theorem 3: ``g0 + g0' = c 4^k - 1`` with ``c = 2 mod 4`` never both survive."""
+    for c in range(2, c_max + 1, 4):
+        for k in range(k_max + 1):
+            total = c * 4 ** k - 1
+            for g0 in range(total + 1):
+                g1 = total - g0
+                if survives94(k + 1, g0) and survives94(k + 1, g1):
+                    return False
+    return True
+
+
+def check_shadow_maps(n_max=4, bound=250):
+    """Theorem 5: the difference and sum shadows reproduce the pair dynamics."""
+    for N in range(1, n_max + 1):
+        for g0 in range(min(4 ** N, bound)):
+            for g1 in range(g0 + 1):
+                for k in range(N + 1):
+                    gk = iter94(k, g0)
+                    gk1 = iter94(k, g1)
+                    if gk is not None and gk1 is not None:
+                        if iter_shadow(step_diff, k, g0 - g1) != gk - gk1:
+                            return False
+                        if iter_shadow(step_sum, k, g0 + g1) != gk + gk1:
+                            return False
+    return True
+
+
 def main(argv: list[str]) -> int:
     verify = "--verify" in argv
     failures: list[str] = []
@@ -124,23 +289,32 @@ def main(argv: list[str]) -> int:
     if verify:
         check(ok, "cup_cycle 4/19 -> 6/19 -> 9/19 -> 4/19")
 
-    print("\n== barrier emptying depths (T x = {3x/2} on [0,1)) ==")
+    print("\n== barrier emptying depths, both monotone branches ==")
+    print("   (T0 x = {3x/2} even branch, T1 x = {3x/2 + 1/2} odd branch)")
     for name, u in BARRIERS.items():
-        d = emptying_depth(u)
+        d0 = emptying_depth(u, 0)
+        d1 = emptying_depth(u, 1)
         width = sum(b - a for a, b in u)
-        print(f"   {name:34s} width={width}  emptying depth={d}")
+        print(f"   {name:34s} width={width}  depth(T0)={d0}  depth(T1)={d1}")
         if verify:
-            check(d == EXPECTED_DEPTH[name], f"{name}: emptying depth == {EXPECTED_DEPTH[name]}")
+            check(d0 == EXPECTED_DEPTH[name], f"{name}: T0 emptying depth == {EXPECTED_DEPTH[name]}")
+            check(d1 == EXPECTED_DEPTH[name], f"{name}: T1 emptying depth == {EXPECTED_DEPTH[name]}")
 
-    print("\n== 8/57 threshold check (paper Remark 2/8) ==")
-    d857 = emptying_depth([(Q(8, 57), Q(1, 2))])
-    d757 = emptying_depth([(Q(7, 57), Q(1, 2))])
-    print(f"   [8/57, 1/2) empties at depth {d857}")
-    print(f"   [7/57, 1/2) empties at depth {d757}  (7/57 < 8/57)")
-    print("   => 8/57 is not a critical threshold; the quoted claim is not asserted.")
+    print("\n== 8/57 is a preimage boundary of the cup cycle, not an emptying threshold ==")
+    # 8/57 = T0^{-1}(4/19) = (2/3) * (4/19): an exact preimage of the periodic point.
+    pre_419 = Q(2, 3) * Q(4, 19)
+    d857_0 = emptying_depth([(Q(8, 57), Q(1, 2))], 0)
+    d757_0 = emptying_depth([(Q(7, 57), Q(1, 2))], 0)
+    d857_1 = emptying_depth([(Q(8, 57), Q(1, 2))], 1)
+    print(f"   T0^{{-1}}(4/19) = (2/3)(4/19) = {pre_419}   (= 8/57: {pre_419 == Q(8, 57)})")
+    print(f"   [8/57, 1/2) empties at depth(T0)={d857_0}, depth(T1)={d857_1}")
+    print(f"   [7/57, 1/2) empties at depth(T0)={d757_0}  (7/57 < 8/57)")
+    print("   => 8/57 is an exact preimage of the 4/19 cycle, but it is *not* a critical")
+    print("      emptying threshold: the left-hole family empties for every delta > 0 tested.")
     if verify:
-        check(d857 is not None, "[8/57,1/2) empties")
-        check(d757 is not None, "[7/57,1/2) also empties (8/57 not critical)")
+        check(pre_419 == Q(8, 57), "8/57 == (2/3)(4/19), a preimage of the cup cycle")
+        check(d857_0 is not None and d857_1 is not None, "[8/57,1/2) empties on both branches")
+        check(d757_0 is not None, "[7/57,1/2) also empties (8/57 not a critical depth)")
 
     print("\n== widths ==")
     print("   [2/7,5/7) width =", Q(5, 7) - Q(2, 7))
@@ -148,6 +322,43 @@ def main(argv: list[str]) -> int:
     if verify:
         check(Q(5, 7) - Q(2, 7) == Q(3, 7), "width [2/7,5/7) == 3/7")
         check((Q(3, 7) - Q(1, 7)) + (Q(6, 7) - Q(4, 7)) == Q(4, 7), "holed width == 4/7")
+
+    print("\n== 9/4 model: mirror conservation (Theorem 1) ==")
+    t1 = check_mirror_conservation()
+    print(f"   g_k + g~_k == 9^k 4^(N-k) - 1 for all N <= 5: {t1}")
+    if verify:
+        check(t1, "mirror conservation 9^k 4^(N-k) - 1")
+
+    print("\n== 9/4 model: even-rung mirror annihilation (Theorem 2) ==")
+    t2 = check_even_annihilation()
+    print(f"   no even rung N <= 6 lets both twins survive N+2: {t2}")
+    if verify:
+        check(t2, "even-rung mirror annihilation")
+
+    print("\n== 9/4 model: |S_N| = 2^N and the 3/8 roof (Theorem 7) ==")
+    counts_ok = True
+    roof_ok = True
+    for N in range(2, 9):
+        sN, sNe = survivor_counts(N, 2)
+        counts_ok &= (sN == 2 ** N)
+        roof_ok &= (8 * sNe <= 3 * sN)
+        print(f"   N={N}: |S_N|={sN} (=2^{N}: {sN == 2 ** N})  "
+              f"|S_(N+2)|={sNe}  8|S_(N+2)|<=3|S_N|: {8 * sNe <= 3 * sN}")
+    if verify:
+        check(counts_ok, "|S_N| == 2^N for N in 2..8")
+        check(roof_ok, "finite-roof bound 8|S_(N+2)| <= 3|S_N| for N in 2..8")
+
+    print("\n== 9/4 model: forbidden sums (Theorem 3) ==")
+    t3 = check_forbidden_sum()
+    print(f"   c = 2 mod 4, g0 + g0' = c 4^k - 1 never both survive: {t3}")
+    if verify:
+        check(t3, "forbidden sum c = 2 mod 4")
+
+    print("\n== 9/4 model: shadow maps (Theorem 5) ==")
+    t5 = check_shadow_maps()
+    print(f"   difference Delta and sum S shadows reproduce pair dynamics: {t5}")
+    if verify:
+        check(t5, "difference / sum shadow exactness")
 
     print("\n== DAG bounded gap (S7 exactness and g+128 carry) ==")
     hits = {g for g in range(128) if dag_depth(g) is not None and dag_depth(g) <= 11}

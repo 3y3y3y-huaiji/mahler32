@@ -66,10 +66,11 @@ Section~\ref{sec:algpair} records the algebraic--pair branch exactly as formalis
 the explicitly declared axiom \lean{schlickewei\_subspace\_Q3}, and we say so.  No statement
 below asserts the Mahler conjecture.
 
-\section{Two Pad\'e worlds}
+\section{Preliminary tool: two Pad\'e worlds}
 \label{sec:padeworlds}
 
-Let $e,c\in\Q$ and consider the generating series $S(z)=e\,(1+z+z^2+\cdots)=e/(1-z)$, whose
+The algebraic--pair theorem of Section~\ref{sec:algpair} is the main result of this paper; the
+material below is the elementary tool it needs.  Let $e,c\in\Q$ and consider the generating series $S(z)=e\,(1+z+z^2+\cdots)=e/(1-z)$, whose
 diagonal Pad\'e approximants in the two worlds are the depth-$1$ and depth-$2$ truncations
 \begin{equation}
   P_{1,1}(z)=e\,\frac{1}{1-z}\Big|_{\text{ord }2},
@@ -150,26 +151,61 @@ Lemma~\ref{lem:engine} is deliberately free of analysis: it takes the two worlds
 The remaining work, which is not formalised here, is to derive the divisibility and the bound from
 a specific word family.
 
-\section{The algebraic--pair branch}
+\section{Core theorem: the algebraic--pair branch}
 \label{sec:algpair}
 
-Stephan's program splits the surviving words into rational and algebraic-pair cases
-\citep{stephan2026subspace,stephan2026third}.  In the repository this branch is the module
-\lean{Mahler32Conditional.AlgebraicPairBranch}.  It establishes the finite algebraic-pair
-statement under a hypothesis on algebraic points of $\Q^3$.
+Stephan's program splits the surviving words into a rational case and an algebraic-pair case
+\citep{stephan2026subspace,stephan2026third}.  The module
+\lean{Mahler32Conditional.AlgebraicPairBranch} closes the gap left open in
+\citep{stephan2026subspace}, \S4.4: for an algebraic \emph{irrational} multiplier $\delta$ the
+violating pairs $(a,c)$, $2\le a<c$, with distinct gaps $c-a$, are finite.
+
+\paragraph{Proof idea.}
+The only input beyond the two-world identity is Schlickewei's $p$-adic subspace theorem on
+$\Q^3$.  An infinite family with distinct gaps yields, via the subspace theorem, one nontrivial
+rational linear relation among $(3/2)^c$, $(3/2)^a$ and the integer $n_p$.  If the integer
+coefficient $C$ vanishes, the relation pins $(3/2)^{c-a}$ to a constant, contradicting strict
+monotonicity of $s\mapsto(3/2)^s$ and injectivity of the gap map.  If $C\ne0$, solving for $n_p$
+and dividing by $(3/2)^c$ drives $\delta$ to a rational limit, contradicting irrationality.  This
+is the rational / algebraic split made precise in Lemmas~\ref{lem:Czero}--\ref{lem:Cne}.
 
 \begin{theorem}[Algebraic pair, conditional]
 \label{thm:algpair}
-Assume Schlickewei's $p$-adic subspace theorem in the form recorded in the module as the axiom
-\lean{schlickewei\_subspace\_Q3}.  Then the algebraic-pair branch is finite: there are only
-finitely many algebraic-pair surviving words of bounded degree.
+Assume Schlickewei's $p$-adic subspace theorem in the form recorded as the axiom
+\lean{schlickewei\_subspace\_Q3}.  Then for an algebraic irrational $\delta$ and
+$\vartheta\in(0,1)$, the set $T$ of pairs $2\le a<c$ with distinct gaps on which
+$\delta((3/2)^c-(3/2)^a)$ is within $\vartheta^c$ of an integer is finite.
+Machine-checked: \lean{algebraic\_pair\_branch\_finite}.
 \end{theorem}
 
+\begin{proof}
+Split the subspace relation $A(3/2)^c+B(3/2)^a+C\,n_p=0$ on whether $C=0$.
+\textbf{Rational case $C=0$.}  Lemma~\ref{lem:Czero} rules it out: the relation is homogeneous, so
+$(3/2)^{c-a}$ is constant on the infinite family, contradicting distinct gaps.
+\textbf{Algebraic-irrational case $C\ne0$.}  Lemma~\ref{lem:Cne} solves for $n_p$; the one-step
+bound $|\delta-\alpha|\le|\delta+\beta|(2/3)^{c-a}+(2\vartheta/3)^c$ together with unbounded gaps
+drives $|\delta-\alpha|\to0$, forcing $\delta\in\Q$.
+\end{proof}
+
+\begin{lemma}[Rational case vanishes]
+\label{lem:Czero}
+If an infinite family of pairs with distinct gaps satisfies the homogeneous relation
+$A(3/2)^c+B(3/2)^a=0$ with $(A,B)\ne(0,0)$, then contradiction.
+Machine-checked: \lean{lemma1\_no\_C\_zero}.
+\end{lemma}
+
+\begin{lemma}[Algebraic case forces $\delta\in\Q$]
+\label{lem:Cne}
+If an irrational $\delta$ is approximated, up to $\vartheta^c$, by rational linear forms
+$\alpha(3/2)^c+\beta(3/2)^a$ on an infinite family with distinct gaps, then contradiction.
+Machine-checked: \lean{lemma2\_no\_C\_ne\_zero}.
+\end{lemma}
+
 \begin{remark}[Read this before citing]
-Theorem~\ref{thm:algpair} is \emph{conditional}.  The Lean development is zero-axiom for every
-unconditional result in this paper, but \lean{AlgebraicPairBranch} imports exactly one declared
-axiom, and the CI axiom audit therefore excludes it from the unconditional count.  We make no
-claim that this branch, or the Mahler problem, is settled.
+Theorem~\ref{thm:algpair} is \emph{conditional} on the single declared axiom
+\lean{schlickewei\_subspace\_Q3}; every other result in this paper is zero-axiom.  The CI axiom
+audit therefore excludes it from the unconditional count, and we make no claim that the Mahler
+problem is settled.
 \end{remark}
 
 \section{What is and is not claimed}
@@ -206,6 +242,8 @@ Agreement criterion & \lean{TwoWorldPadeCriterion.two\_world\_iff} & proved\\
 Integer exclusion & \lean{TwoWorldPadeCriterion.two\_pow\_dvd\_eq\_zero} & proved\\
 $\sqrt2>140/99$ & \lean{sqrt\_two\_gt\_140\_99} & proved\\
 $\sqrt2<17/12$ & \lean{sqrt\_two\_lt\_17\_12} & proved\\
+Rational case $C=0$ & \lean{Mahler32Conditional.lemma1\_no\_C\_zero} & proved (no axiom)\\
+Algebraic case $C\ne0$ & \lean{Mahler32Conditional.lemma2\_no\_C\_ne\_zero} & proved (no axiom)\\
 Algebraic pair (cond.) & \lean{Mahler32Conditional.algebraic\_pair\_branch\_finite} & axiom-dependent\\
 \bottomrule
 \end{tabular}

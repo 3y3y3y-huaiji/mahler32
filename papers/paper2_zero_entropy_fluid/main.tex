@@ -52,11 +52,11 @@ formalisation without numerical analysis.
 
 \paragraph{Scope and honesty.}
 Section~\ref{sec:cages}--\ref{sec:fluid} contain machine-checked results.  The quantitative
-claims about chaos onset, spectral gaps, Hausdorff dimension, the ``$8/57$ threshold'', and the
-cosine-product bound are \emph{empirical}: they are reported in Section~\ref{sec:empirical} with
-explicit warnings, and the accompanying script recomputes the finite certificates but does not
-turn those numbers into theorems.  In one case (the $8/57$ threshold) our own computation
-contradicts the quoted value; see Remark~\ref{rem:857}.
+claims about chaos onset, spectral gaps, Hausdorff dimension and the cosine-product bound are
+\emph{empirical}: they are reported in Section~\ref{sec:empirical} with explicit warnings, and the
+accompanying script recomputes the finite certificates but does not turn those numbers into
+theorems.  The ``$8/57$'' constant is identified as the exact preimage $T_0^{-1}(4/19)$ of the cup
+cycle, not as a critical emptying threshold (Remark~\ref{rem:857}).
 
 \section{Zero-entropy cages}
 \label{sec:cages}
@@ -160,17 +160,23 @@ $[1/5,7/15)\cup[8/15,4/5)$ & $4$\\
 
 These are \emph{stronger} than the ``$31$-state / $128$-state zero-entropy automaton'' descriptions
 in the working notes: the automaton counts depend on the choice of partition, whereas the
-emptying depth is partition-free.  Only the first row is promoted to a Lean theorem
-(Theorem~\ref{thm:cage}); the rest are reproduced by the script.
+emptying depth is partition-free.  Each depth is recomputed for \emph{both} monotone branches
+$T_0 x = \{3x/2\}$ and $T_1 x = \{3x/2+1/2\}$; the two branches agree in every row.  Only the first
+row is promoted to a Lean theorem (Theorem~\ref{thm:cage}, the even branch); the rest are
+reproduced by the script.
 
-\begin{remark}[The $8/57$ threshold]
+\begin{remark}[The constant $8/57$]
 \label{rem:857}
-The working notes state that $\delta^\ast=8/57$ is critical for the left hole family
-$[\delta,\tfrac12)$.  This does not survive exact computation: $[\delta,\tfrac12)$ already empties
-for every $\delta\ge 8/57$ \emph{and} for much smaller $\delta$; a bisection in the accompanying
-script drives the critical value to $0$ to machine precision.  We therefore do \emph{not} state
-an $8/57$ theorem.  This is a correction, not a weakening: the family appears to have empty
-survivor set for every $\delta>0$, with $\{0\}$ as the only survivor at $\delta=0$.
+The working notes call $\delta^\ast=8/57$ the critical value of the left-hole family
+$[\delta,\tfrac12)$.  Exact computation identifies the arithmetic origin of the constant:
+\[
+  8/57 \;=\; \tfrac{2}{3}\cdot\tfrac{4}{19} \;=\; T_0^{-1}(4/19),
+\]
+the exact preimage, under the even branch, of the cup $3$-cycle point $4/19\mapsto6/19\mapsto9/19$.
+It is, however, \emph{not} an emptying threshold.  On both monotone branches $T_0$ and $T_1$ the
+family $[\delta,\tfrac12)$ empties at a finite depth for every $\delta>0$ tested, and values
+$\delta<8/57$ empty exactly as well.  We therefore assert the preimage identity together with the
+branch-wise emptying depths (all script-certified) and claim no critical-threshold theorem.
 \end{remark}
 
 \section{Discrete fluid on the Mahler cup}
@@ -237,9 +243,46 @@ The following numbers appear in the working notes and are \emph{reported}, not p
   \item a three-step cosine-product bound $\le 0.7409$.
 \end{itemize}
 They require the Fourier/transfer-operator analysis of the map, which is outside the formalised
-core.  The $8/57$ threshold is, additionally, contradicted by exact computation
-(Remark~\ref{rem:857}).  We list these as open: any of them could be made a theorem with a
-suitable analytic development, but none is asserted here.
+core.  The constant $8/57$ is the exact preimage $T_0^{-1}(4/19)$ of the cup cycle
+(Remark~\ref{rem:857}), not a threshold.  We list these as open: any of them could be made a
+theorem with a suitable analytic development, but none is asserted here.
+
+\section{Finite-roof mirror-block exclusion and carry-free base-9 conservation}
+\label{sec:model94}
+
+The integer model $4g_{k+1}=9g_k+d_k$, $d_k\in\{2,3\}$, keeps only $g_k\bmod 4\in\{1,2\}$ (a
+residue $1$ adds $3$, a residue $2$ adds $2$).  The module \lean{Mahler32.Model94Obstructions}
+formalises seven groups of results with no \lean{sorry}, no \lean{native\_decide} and no custom
+axiom; the kernel audit prints only \lean{propext}, \lean{Quot.sound}, \lean{Classical.choice}.
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Mirror conservation} (\lean{mirror\_conservation\_94}).  For $g_0<4^N$ and $k\le N$,
+        if $g_0$ survives $k$ steps to $g_k$, its mirror twin $4^N-1-g_0$ survives to
+        $\tilde g_k$ with the exact identity $g_k+\tilde g_k=9^k4^{N-k}-1$.
+  \item \textbf{Even-rung annihilation} (\lean{even\_rung\_mirror\_annihilation}).  For even
+        $N=2m$, no $g_0$ has both $g_0$ and its mirror twin surviving $N+2$ steps.
+  \item \textbf{Forbidden sums} (\lean{forbidden\_sum\_c2\_mod4}).  If $c\equiv2\pmod4$ and
+        $g_0+g_0'=c\,4^k-1$, the two cannot both survive $k+1$ steps.
+  \item \textbf{Odd-rung Klein-4} (\lean{odd\_rung\_klein4\_exclusion}).  At the odd rung $N=3$ a
+        \lean{decide}-checked enumeration shows at most $3$ of each sibling/mirror quadruple survive
+        $N+1$ steps; the general odd $N$ is a script certificate.
+  \item \textbf{Shadow dynamics} (\lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact}).  The
+        single-variable maps $\Delta$ and $S$ reproduce the pair difference and sum exactly, and
+        $\Delta$ preserves the order.
+  \item \textbf{Carry-free base-9} (\lean{base9\_transducer\_exact},
+        \lean{base9\_digit\_sum\_conservation}).  The left-to-right transducer obeys the exact
+        per-position identity $4a'+r'=9r+a$; over a whole word,
+        $4\cdot(\text{output sum})=8\cdot(\text{remainder sum})+(\text{digit sum})+r_0-r_{\text{final}}$.
+  \item \textbf{Finite-roof block} (\lean{finite\_roof\_block\_certificate}).  A \lean{decide} check
+        in the $4^4=256$ window gives $8\,|S_{N+2}|\le3\,|S_N|$, breaking the $1/2$ mirror bound.
+        Larger moduli ($4^6,4^7,4^9$) are script certificates, not Lean theorems.
+\end{itemize}
+
+\paragraph{Lean versus script.}
+Groups 1--3 and 5--6 are theorems over all $N$; groups 4 and 7 are kernel \lean{decide} checks at a
+fixed small modulus, with their wider-modulus companions in
+\texttt{scripts/generate\_certificates.py}.  Nothing here claims the Mahler $3/2$ conjecture or the
+$9/4$ conjecture.
 
 \section{Formalisation traceability}
 
@@ -258,8 +301,15 @@ $4/19$ cycle & \lean{cup\_cycle}, \lean{cup\_period\_three} & proved\\
 Expansion & \lean{Tcup\_dist} & proved\\
 $2{:}1$ split & \lean{two\_one\_split}, \lean{scale\_two\_thirds} & proved\\
 All-real exclusion & Proposition~\ref{prop:allreal} & not formalised\\
-$8/57$ threshold & --- & contradicted (Remark~\ref{rem:857})\\
+$8/57$ preimage & $8/57=(2/3)(4/19)=T_0^{-1}(4/19)$ & script (Remark~\ref{rem:857})\\
 Spectral / dimension / cosine & --- & empirical only\\
+Mirror conservation & \lean{Model94Obstructions.mirror\_conservation\_94} & proved\\
+Even-rung annihilation & \lean{Model94Obstructions.even\_rung\_mirror\_annihilation} & proved\\
+Forbidden sums & \lean{Model94Obstructions.forbidden\_sum\_c2\_mod4} & proved\\
+Shadow dynamics & \lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact} & proved\\
+Carry-free base-9 & \lean{base9\_transducer\_exact}, \lean{base9\_digit\_sum\_conservation} & proved\\
+Odd-rung Klein-4 & \lean{odd\_rung\_klein4\_exclusion} & \lean{decide} ($N=3$)\\
+Finite-roof block & \lean{finite\_roof\_block\_certificate} & \lean{decide} ($4^4$)\\
 \bottomrule
 \end{tabular}
 \caption{Theorem-to-Lean map for Paper~2.}
