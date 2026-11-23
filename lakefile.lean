@@ -31,3 +31,15 @@ CI verifies this library against the whitelist
 `propext, Classical.choice, Quot.sound, schlickewei_subspace_Q3`. -/
 lean_lib «Mahler32Conditional» where
   roots := #[`Mahler32Conditional.AlgebraicPairBranch]
+
+/-- The definition / statement lock for tasks 1–10.  It contains only `example`s: verbatim
+definition locks (`rfl`), exact theorem-type restatements (`exact`), and concrete numeric
+anchors (`by decide`).  It is not a default target, but CI compiles it with `warningAsError`,
+so a weakened definition or a weakened final theorem fails the build. -/
+lean_lib «SpecCheck» where
+  roots := #[`SpecCheck]
+
+/-- The task-11 lock.  Kept separate from `SpecCheck` so the zero-axiom core never imports the
+conditional module (and therefore never sees `schlickewei_subspace_Q3`). -/
+lean_lib «SpecCheckConditional» where
+  roots := #[`SpecCheckConditional]
