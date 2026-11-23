@@ -183,6 +183,25 @@ example (g : Fin 128) (hg : g ∈ S7) : ∃ n ≤ 11, iterZ n g ∈ R7 :=
 /-- Numeric anchor: `0` is already a collision residue, so its depth is `0`. -/
 example : dagDepth ⟨0, by norm_num⟩ = 0 := by decide
 
+/-- Statement lock: the deterministic residue potential is `Quiver.StrictMono`
+(mathlib4#44885 `Quiver.StrictMono`). -/
+example : Quiver.StrictMono gapPot := gapPot_strictMono
+
+/-- Statement lock: the deterministic residue graph is acyclic, via
+`Quiver.StrictMono.path_eq_nil`. -/
+example {a : GapV} (p : Quiver.Path a a) : p = .nil := gap_acyclic p
+
+/-- Statement lock: `Quiver.Reachable` is a partial order, via
+`Quiver.StrictMono.isPartialOrder_reachable`. -/
+example : IsPartialOrder GapV Quiver.Reachable := gap_reachable_isPartialOrder
+
+/-- Statement lock: the naive two-branch carry relation has a self-loop at `127`, so it is *not*
+a DAG. -/
+example : CarryStep (embed128 127) (embed128 127) := carry_self_loop_127
+
+/-- Statement lock: no uniform `≤ 11` bound holds on genuine `ℕ` orbits (counterexample `28`). -/
+example : ¬ (∀ g : ℕ, ∃ n ≤ 11, iterZNat n g % 128 ∈ R7Nat) := nat_uniform_eleven_fails
+
 end SpecCheck.DAGBoundedGap
 
 /-! ## Task 6 — `Mahler32.TwoWorldPadeCriterion` -/

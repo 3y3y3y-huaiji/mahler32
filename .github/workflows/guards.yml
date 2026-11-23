@@ -2,10 +2,13 @@ name: Secret and layout gate
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, 'trae/**' ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Refuse credentials and scratch files
         run: python3 scripts/check_no_secrets.py --tree

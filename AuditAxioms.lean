@@ -33,6 +33,11 @@ public section
 #print axioms Mahler32.DAGBoundedGap.dag_bounded_gap
 #print axioms Mahler32.DAGBoundedGap.zStepNat_add_128
 #print axioms Mahler32.DAGBoundedGap.S7_iff_hits
+#print axioms Mahler32.DAGBoundedGap.gapPot_strictMono
+#print axioms Mahler32.DAGBoundedGap.gap_acyclic
+#print axioms Mahler32.DAGBoundedGap.gap_reachable_isPartialOrder
+#print axioms Mahler32.DAGBoundedGap.carry_self_loop_127
+#print axioms Mahler32.DAGBoundedGap.nat_uniform_eleven_fails
 
 #print axioms Mahler32.TwoWorldPadeCriterion.two_world_identity
 #print axioms Mahler32.TwoWorldPadeCriterion.integer_divisibility_bound
