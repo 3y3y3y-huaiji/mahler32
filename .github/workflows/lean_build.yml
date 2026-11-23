@@ -128,3 +128,50 @@ jobs:
           python3 scripts/check_axioms.py \
             AuditAxiomsConditional.lean \
             propext,Quot.sound,Classical.choice,Mahler32Conditional.schlickewei_subspace_Q3
+
+      # ---------------------------------------------------------------------------------
+      # SpecCheck: definition / statement / value lock.
+      #
+      # `SpecCheck.lean` re-states the verbatim task-sheet definitions (`example … := rfl`),
+      # the exact final theorem types (`example … := exact theTheorem`), and concrete numeric
+      # anchors (`example … := by decide`).  It compiles *only* if the implementation still
+      # matches the sheet: a weakened definition breaks `rfl`, a weaker theorem breaks
+      # `exact`, and an abstract/hollow replacement breaks the `decide` anchors.
+      # `SpecCheckConditional.lean` does the same for the one permitted task-11 axiom.
+      # Neither file is a default target, so `lake build` stays warning-clean; CI compiles
+      # them explicitly with warnings-as-errors.
+      # ---------------------------------------------------------------------------------
+      - name: SpecCheck (definition, statement and value lock)
+        run: |
+          set -euo pipefail
+          lake env lean -D warningAsError=true SpecCheck.lean
+          lake env lean -D warningAsError=true SpecCheckConditional.lean
+
+      # ---------------------------------------------------------------------------------
+      # Independent kernel replay.
+      #
+      # `leanchecker` is the standalone kernel checker shipped with the toolchain.  It
+      # re-checks the compiled `.olean` declarations through the kernel, independently of
+      # the elaborator and tactics, so a forged/tampered `.olean` (or an unsound tactic that
+      # nonetheless produced a term) is caught.  It is version-matched to v4.36 by
+      # construction; `leanprover/lean4checker` does not yet build against v4.36.
+      #
+      # A second, fully independent kernel (nanoda, written in Rust) runs in
+      # `.github/workflows/independent-kernel.yml`, and in the Palomar preflight, which
+      # invokes `comparator` with `enable_nanoda: true`.
+      # ---------------------------------------------------------------------------------
+      - name: Kernel replay (leanchecker)
+        run: |
+          set -euo pipefail
+          for m in \
+            Mahler32.Base6LightCone Mahler32.SyracuseGates \
+            Mahler32.ArnoldTongue5State Mahler32.ArnoldTongue7State \
+            Mahler32.DAGBoundedGap Mahler32.TwoWorldPadeCriterion \
+            Mahler32.Fib11Free Mahler32.WalshZeroCorr \
+            Mahler32.HInvariance Mahler32.SyracuseBijection \
+            Mahler32.Basic Mahler32Core \
+            Mahler32Conditional.AlgebraicPairBranch; do
+            echo "::group::leanchecker $m"
+            lake env leanchecker "$m"
+            echo "::endgroup::"
+          done

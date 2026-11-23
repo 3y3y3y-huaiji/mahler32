@@ -1,0 +1,145 @@
+name: Independent kernel (nanoda)
+
+# The community's *second*, fully independent kernel: `lean4export` serialises the compiled
+# environment to the portable export format, and `nanoda_lib` (written in Rust, a complete
+# re-implementation of the Lean kernel) type-checks that export from scratch.  A proof that
+# survives both the Lean kernel (lake build + leanchecker) and nanoda cannot be resting on a
+# bug or a forged `.olean` in the Lean implementation.
+#
+# Scope: because the core modules import Mathlib, the export closure is large, so this job is
+# deliberately *not* on every push.  It runs weekly, on demand, on every push to `main`, and on
+# a PR carrying the `run-independent-kernel` label.  The fast, per-PR kernel replay lives in
+# `lean_build.yml` (`leanchecker`), and the release-grade comparator pipeline (which also
+# enables nanoda) lives in `palomar-preflight.yml`.
+#
+# Axiom discipline is enforced separately by `scripts/check_axioms.py` and `comparator.json`;
+# here nanoda's role is the independent *type check*, so all axioms are admitted to the
+# environment (`unsafe_permit_all_axioms`) and the axiom whitelist is left to those gates.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+    types: [ labeled ]
+  schedule:
+    - cron: '0 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pinned to the commits validated against Lean v4.36.0 (export format 3.1.0).
+  LEAN4EXPORT_REV: df81913eee5519d5a88ae5b0fd701b5298cc29ab
+  NANODA_REV: 0da9f98feadd3a0a2ef4b3dbcf52a298a6fef929
+
+jobs:
+  nanoda:
+    name: nanoda independent kernel
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.label.name == 'run-independent-kernel'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install elan
+        run: |
+          curl -sSfL --retry 5 --retry-connrefused https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          rm elan-init.sh
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Verify Lean & Lake Toolchain
+        run: |
+          lean --version
+          lake --version
+
+      - name: Fetch Mathlib Cache
+        run: lake exe cache get
+
+      - name: Lake Build
+        run: lake build -KwarningAsError=true
+
+      # ---------------------------------------------------------------------------------
+      # Build the exporter against *this* toolchain, then build the Rust kernel.
+      # ---------------------------------------------------------------------------------
+      - name: Build lean4export
+        run: |
+          set -euo pipefail
+          git clone https://github.com/leanprover/lean4export.git "$RUNNER_TEMP/lean4export"
+          cd "$RUNNER_TEMP/lean4export"
+          git checkout "$LEAN4EXPORT_REV"
+          cp "$GITHUB_WORKSPACE/lean-toolchain" lean-toolchain
+          lake build
+          echo "LEAN4EXPORT_BIN=$RUNNER_TEMP/lean4export/.lake/build/bin/lean4export" >> "$GITHUB_ENV"
+
+      - name: Build nanoda_lib
+        run: |
+          set -euo pipefail
+          git clone https://github.com/ammkrn/nanoda_lib.git "$RUNNER_TEMP/nanoda_lib"
+          cd "$RUNNER_TEMP/nanoda_lib"
+          git checkout "$NANODA_REV"
+          cargo build --release
+          echo "NANODA_BIN=$RUNNER_TEMP/nanoda_lib/target/release/nanoda_bin" >> "$GITHUB_ENV"
+
+      # ---------------------------------------------------------------------------------
+      # Export the zero-axiom core (tasks 1–10) and the conditional module (task 11).
+      # ---------------------------------------------------------------------------------
+      - name: Export Mahler32Core
+        run: |
+          set -euo pipefail
+          lake env "$LEAN4EXPORT_BIN" Mahler32Core > "$RUNNER_TEMP/core.export"
+          head -c 200 "$RUNNER_TEMP/core.export"; echo
+          ls -lh "$RUNNER_TEMP/core.export"
+
+      - name: Export Mahler32Conditional
+        run: |
+          set -euo pipefail
+          lake env "$LEAN4EXPORT_BIN" Mahler32Conditional.AlgebraicPairBranch > "$RUNNER_TEMP/conditional.export"
+          head -c 200 "$RUNNER_TEMP/conditional.export"; echo
+          ls -lh "$RUNNER_TEMP/conditional.export"
+
+      # ---------------------------------------------------------------------------------
+      # Independent type check.  `unsafe_permit_all_axioms` only *admits* axiom constants to
+      # nanoda's environment; every proof term is still re-type-checked from scratch.  The
+      # axiom whitelist itself is enforced by check_axioms.py and comparator.json.
+      # ---------------------------------------------------------------------------------
+      - name: nanoda check (core)
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/nanoda-core.json" <<JSON
+          {
+            "export_file_path": "$RUNNER_TEMP/core.export",
+            "use_stdin": false,
+            "num_threads": 4,
+            "unsafe_permit_all_axioms": true,
+            "unpermitted_axiom_hard_error": false,
+            "nat_extension": true,
+            "string_extension": true
+          }
+          JSON
+          "$NANODA_BIN" "$RUNNER_TEMP/nanoda-core.json"
+
+      - name: nanoda check (conditional task 11)
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/nanoda-conditional.json" <<JSON
+          {
+            "export_file_path": "$RUNNER_TEMP/conditional.export",
+            "use_stdin": false,
+            "num_threads": 4,
+            "unsafe_permit_all_axioms": true,
+            "unpermitted_axiom_hard_error": false,
+            "nat_extension": true,
+            "string_extension": true
+          }
+          JSON
+          "$NANODA_BIN" "$RUNNER_TEMP/nanoda-conditional.json"
