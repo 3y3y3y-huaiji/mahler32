@@ -44,6 +44,11 @@ public section
 
 #print axioms Mahler32.ZeroEntropyCages.exclusion_integer
 #print axioms Mahler32.ZeroEntropyCages.cage_two_sevenths
+#print axioms Mahler32.ZeroEntropyCages.joint_orbit_two_sevenths
+#print axioms Mahler32.ZeroEntropyCages.joint_cycle_two_fifths
+#print axioms Mahler32.ZeroEntropyCages.joint_cycle_four_thirteenths
+#print axioms Mahler32.ZeroEntropyCages.holed_cage_two_cycle
+#print axioms Mahler32.ZeroEntropyCages.holed_cage_transients
 
 #print axioms Mahler32.DiscreteFluidCertificates.cup_cycle
 #print axioms Mahler32.DiscreteFluidCertificates.cup_period_three
@@ -65,6 +70,9 @@ public section
 #print axioms Mahler32.Model94Obstructions.even_rung_mirror_annihilation
 #print axioms Mahler32.Model94Obstructions.forbidden_sum_c2_mod4
 #print axioms Mahler32.Model94Obstructions.odd_rung_klein4_exclusion
+#print axioms Mahler32.Model94Obstructions.odd_rung_klein4_no_four
+#print axioms Mahler32.Model94Obstructions.survives94_add_four_pow
+#print axioms Mahler32.Model94Obstructions.iter94_add_four_pow
 #print axioms Mahler32.Model94Obstructions.sum_shadow_exact
 #print axioms Mahler32.Model94Obstructions.diff_shadow_exact
 #print axioms Mahler32.Model94Obstructions.base9_transducer_exact

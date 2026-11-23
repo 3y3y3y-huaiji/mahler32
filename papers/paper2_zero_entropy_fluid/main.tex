@@ -32,8 +32,9 @@
 We study two complementary obstructions for the Mahler map $T x=\fract{3x/2}$: interval
 \emph{cages} that admit no long orbit, and a \emph{discrete fluid} picture in which mass is
 transported by the piecewise-affine branches.  The exact finite content is machine-checked in
-Lean 4 with Mathlib: the integer-vanishing engine, an exact four-term cage for
-$[2/7,5/7)$, the exact three-cycle $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$ of the
+Lean 4 with Mathlib: the integer-vanishing engine, an exact four-term cage for the
+\emph{deterministic} even branch on $[2/7,5/7)$, the two-branch joint relation and its genuine
+periodic survivors, the exact three-cycle $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$ of the
 $\bmod\,\tfrac12$ cup map, piecewise expansion by $\tfrac32$, and the $2{:}1$ mass split.  The
 ``all real numbers are excluded'' statement is isolated as a human-level proposition; the
 analytic and spectral numbers sometimes quoted for it are reported as empirical and explicitly
@@ -77,12 +78,16 @@ Lemma~\ref{lem:engine2} is the arithmetic half of every exclusion argument: an e
 periodic orbit produces an integer divisible by all powers of $2$, and the Archimedean bound
 kills it.
 
-\subsection{The exact $[2/7,5/7)$ cage}
+\subsection{The exact deterministic $[2/7,5/7)$ cage}
 
 Write $Tq$ for the Lean implementation of $T$ on $\Q$,
-$Tq(x)=\tfrac{3x}{2}$ if $\tfrac{3x}{2}<1$ and $\tfrac{3x}{2}-1$ otherwise.
+$Tq(x)=\tfrac{3x}{2}$ if $\tfrac{3x}{2}<1$ and $\tfrac{3x}{2}-1$ otherwise.  The two monotone
+branches are $T_0 x=\{3x/2\}$ (equal to $Tq$) and $T_1 x=\{3x/2+1/2\}$; a real Mahler orbit may
+switch branches at every step, so the honest object is the \emph{joint relation}
+$\mathrm{Step}(x,y)\iff y=T_0x\ \text{or}\ y=T_1x$.  The theorem below concerns $Tq$ alone and
+must not be read as an exclusion statement for $\mathrm{Step}$.
 
-\begin{theorem}[No four-term orbit]
+\begin{theorem}[No four-term orbit for $Tq$]
 \label{thm:cage}
 There is no $x\in\Q$ with $x,Tq x,Tq^{2}x,Tq^{3}x$ all in $[2/7,5/7)$; equivalently, if the
 first three lie in the interval then the fourth does not.
@@ -97,10 +102,23 @@ $Tq z=\tfrac{27x}{8}-1<\tfrac1{14}<\tfrac27$.  Either way $Tq^{3}x\notin[2/7,5/7
 Machine-checked: \lean{Mahler32.ZeroEntropyCages.cage\_two\_sevenths}.
 \end{proof}
 
-\begin{remark}
-Theorem~\ref{thm:cage} is strictly stronger than ``zero entropy'' for this interval: it says the
-survivor set has no point with four consecutive hits, so it is empty.  In particular there is no
-$\xi>0$ whose orbit stays in $[2/7,5/7)$.
+\begin{remark}[The single-branch theorem does not exclude joint orbits]
+\label{rem:joint}
+Theorem~\ref{thm:cage} says that the \emph{deterministic} map $Tq$ has no point with four
+consecutive hits in $[2/7,5/7)$, so its survivor set is empty.  It does \emph{not} exclude orbits
+of the two-branch relation $\mathrm{Step}$.  Indeed
+\[
+  \tfrac37 \xrightarrow{T_0} \tfrac9{14} \xrightarrow{T_1} \tfrac{13}{28}
+  \xrightarrow{T_0} \tfrac{39}{56} \xrightarrow{T_1} \tfrac{61}{112}
+  \xrightarrow{T_1} \tfrac{71}{224}
+\]
+is a six-term $\mathrm{Step}$-orbit inside $[2/7,5/7)$ (machine-checked:
+\lean{joint\_orbit\_two\_sevenths}), and $2/5\leftrightarrow 3/5$ and
+$4/13\mapsto6/13\mapsto9/13\mapsto7/13\mapsto4/13$ are genuine $\mathrm{Step}$-cycles inside the
+same interval (\lean{joint\_cycle\_two\_fifths}, \lean{joint\_cycle\_four\_thirteenths}).  The
+survivor set of $\mathrm{Step}$ on $[2/7,5/7)$ is therefore \emph{non-empty}; the script computes
+it as an infinite Cantor-like set of sub-exponential cylinder growth (zero topological entropy),
+not a finite union of cycles.
 \end{remark}
 
 \begin{proposition}[Zero-entropy exclusion, human-level]
@@ -138,32 +156,42 @@ Direct arithmetic.  Machine-checked: \lean{width\_three\_sevenths},
 \section{Chaos onset and the holed $4/7$ cage}
 \label{sec:onset}
 
-For each finite union $U$ of rational intervals one may ask for the least depth at which exact
-preimage refinement empties, i.e.\ the least $n$ with $\bigcap_{k\le n}T^{-k}U=\varnothing$.  The
-script \texttt{scripts/generate\_certificates.py} computes this exactly in rational arithmetic
-for the barrier families quoted in the literature.  All of the following empty within five
-steps:
+For a barrier set $U$ the honest object is the \emph{joint survivor sequence} of the two-branch
+relation,
+\[
+  V_0=U,\qquad V_{n+1}=U\cap\bigl(T_0^{-1}V_n\cup T_1^{-1}V_n\bigr),
+\]
+which is a finite union of rational half-open intervals for every $n$.  The script
+\texttt{scripts/generate\_certificates.py} computes $V_n$ exactly, together with a finite-depth
+rational Markov partition, its SCC/branching structure, and the exact rational periodic
+$\mathrm{Step}$-cycles inside $U$.  The results replace the earlier (and incorrect) ``single-branch
+emptying depth'' reading.
 
 \begin{center}
-\begin{tabular}{@{}lc@{}}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-Barrier set $U$ & exact emptying depth\\
+Barrier set $U$ & $T_0$-alone depth & joint survivor & structure\\
 \midrule
-$[2/7,5/7)$ & $3$\\
-$[1/7,3/7)\cup[4/7,6/7)$ & $5$\\
-$[28/97,69/97)$ & $3$\\
-$[5/24,11/24)\cup[13/24,19/24)$ & $3$\\
-$[1/5,7/15)\cup[8/15,4/5)$ & $4$\\
+$[2/7,5/7)$ & $3$ & infinite & Cantor-like, cubically growing cylinder count\\
+$[1/7,3/7)\cup[4/7,6/7)$ & $5$ & infinite & Cantor-like, sub-exponential growth\\
+$[28/97,69/97)$ & $3$ & infinite & exactly $2k$ components at depth $k$\\
+$[5/24,11/24)\cup[13/24,19/24)$ & $3$ & finite & $\{4/15,2/5,3/5,11/15\}$, one $2$-cycle\\
+$[1/5,7/15)\cup[8/15,4/5)$ & $4$ & infinite & linearly growing component count\\
 \bottomrule
 \end{tabular}
 \end{center}
 
-These are \emph{stronger} than the ``$31$-state / $128$-state zero-entropy automaton'' descriptions
-in the working notes: the automaton counts depend on the choice of partition, whereas the
-emptying depth is partition-free.  Each depth is recomputed for \emph{both} monotone branches
-$T_0 x = \{3x/2\}$ and $T_1 x = \{3x/2+1/2\}$; the two branches agree in every row.  Only the first
-row is promoted to a Lean theorem (Theorem~\ref{thm:cage}, the even branch); the rest are
-reproduced by the script.
+The single-branch depths (iterating $T_0$ alone) are listed only to emphasise that they are
+\emph{not} joint emptying depths: every non-trivial barrier keeps a non-empty joint survivor set,
+and the ``depth $3$'' of $[2/7,5/7)$ says nothing about the relation $\mathrm{Step}$
+(Remark~\ref{rem:joint}).  The survivor cylinder count grows sub-exponentially in each infinite
+row (zero topological entropy), but it is infinite, so ``finitely many cycles'' would be false; the
+one barrier whose joint survivor set is genuinely finite is the holed cage
+$[5/24,11/24)\cup[13/24,19/24)$, whose survivor set is exactly $\{4/15,2/5,3/5,11/15\}$ with the
+$2$-cycle $2/5\leftrightarrow3/5$ and the transients $4/15\mapsto2/5$, $11/15\mapsto3/5$.  The Lean
+module \lean{Mahler32.ZeroEntropyCages} proves the existence of these cycles and transients
+(\lean{holed\_cage\_two\_cycle}, \lean{holed\_cage\_transients}) and the joint orbit witnesses; the
+full survivor-count and SCC analysis is the script certificate.
 
 \begin{remark}[The constant $8/57$]
 \label{rem:857}
@@ -173,10 +201,20 @@ $[\delta,\tfrac12)$.  Exact computation identifies the arithmetic origin of the 
   8/57 \;=\; \tfrac{2}{3}\cdot\tfrac{4}{19} \;=\; T_0^{-1}(4/19),
 \]
 the exact preimage, under the even branch, of the cup $3$-cycle point $4/19\mapsto6/19\mapsto9/19$.
-It is, however, \emph{not} an emptying threshold.  On both monotone branches $T_0$ and $T_1$ the
-family $[\delta,\tfrac12)$ empties at a finite depth for every $\delta>0$ tested, and values
-$\delta<8/57$ empty exactly as well.  We therefore assert the preimage identity together with the
-branch-wise emptying depths (all script-certified) and claim no critical-threshold theorem.
+Under the cup map $F$ --- the restriction of the joint relation to $[0,\tfrac12)$, i.e.\
+$F(x)=T_0(x)$ on $[0,\tfrac13)$ and $F(x)=T_1(x)$ on $[\tfrac13,\tfrac12)$ --- the family
+$[\delta,\tfrac12)$ has three exact regimes, verified in exact rational arithmetic:
+\begin{itemize}[leftmargin=1.4em]
+  \item $\delta>4/19$: $[\delta,\tfrac12)$ empties in finitely many steps;
+  \item $8/57<\delta\le 4/19$: it does \emph{not} empty --- the $3$-cycle
+        $4/19\mapsto6/19\mapsto9/19\mapsto4/19$ survives --- but the survivor set is finite, hence of
+        zero topological entropy;
+  \item $\delta<8/57$: the fold $T_1\circ T_0^3$ sends $[8/81,8/57)$ into $[0,4/19)$ (indeed
+        $T_1(T_0^3(8/57))=4/19$ and $T_1(T_0^3(8/81))=0$), creating a feedback loop and positive
+        topological entropy.
+\end{itemize}
+Thus $8/57$ is a genuine threshold \emph{for the cup map}, but the mechanism is the fold
+$T_1\circ T_0^3$ and the resulting feedback, not a ``single-branch emptying'' phenomenon.
 \end{remark}
 
 \section{Discrete fluid on the Mahler cup}
@@ -263,9 +301,16 @@ axiom; the kernel audit prints only \lean{propext}, \lean{Quot.sound}, \lean{Cla
         $N=2m$, no $g_0$ has both $g_0$ and its mirror twin surviving $N+2$ steps.
   \item \textbf{Forbidden sums} (\lean{forbidden\_sum\_c2\_mod4}).  If $c\equiv2\pmod4$ and
         $g_0+g_0'=c\,4^k-1$, the two cannot both survive $k+1$ steps.
-  \item \textbf{Odd-rung Klein-4} (\lean{odd\_rung\_klein4\_exclusion}).  At the odd rung $N=3$ a
-        \lean{decide}-checked enumeration shows at most $3$ of each sibling/mirror quadruple survive
-        $N+1$ steps; the general odd $N$ is a script certificate.
+  \item \textbf{Odd-rung Klein-4} (\lean{odd\_rung\_klein4\_no\_four}).  For \emph{every} odd
+        $N\ge3$, $g<4^{N-1}$ and $\delta\in\{1,2,3\}$, the four sibling/mirror points
+        $g,\ g+\delta4^{N-1},\ 4^N-1-g,\ 4^N-1-(g+\delta4^{N-1})$ cannot all survive $N+1$
+        steps; at most three survive.  The proof is uniform in $N$: mirror conservation at level
+        $N$ forces the two $N$-th iterates of each mirror pair to be $\equiv2\pmod4$, and the
+        difference shadow gives $b_N-a_N=\operatorname{stepDiff}(\delta9^{N-1})$, whose residue
+        modulo $4$ is $2$ (for $\delta=1$), undefined (for $\delta=2$) or $3$ (for $\delta=3$)
+        when $N$ is odd --- never $0$.  The $N=3$ \lean{decide} instance
+        \lean{odd\_rung\_klein4\_exclusion} is retained as a kernel witness; the script verifies
+        odd $N\le9$ directly.
   \item \textbf{Shadow dynamics} (\lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact}).  The
         single-variable maps $\Delta$ and $S$ reproduce the pair difference and sum exactly, and
         $\Delta$ preserves the order.
@@ -273,14 +318,21 @@ axiom; the kernel audit prints only \lean{propext}, \lean{Quot.sound}, \lean{Cla
         \lean{base9\_digit\_sum\_conservation}).  The left-to-right transducer obeys the exact
         per-position identity $4a'+r'=9r+a$; over a whole word,
         $4\cdot(\text{output sum})=8\cdot(\text{remainder sum})+(\text{digit sum})+r_0-r_{\text{final}}$.
-  \item \textbf{Finite-roof block} (\lean{finite\_roof\_block\_certificate}).  A \lean{decide} check
-        in the $4^4=256$ window gives $8\,|S_{N+2}|\le3\,|S_N|$, breaking the $1/2$ mirror bound.
-        Larger moduli ($4^6,4^7,4^9$) are script certificates, not Lean theorems.
+  \item \textbf{Finite-roof block and general lifting} (\lean{finite\_roof\_block\_certificate},
+        \lean{step94\_add\_four\_pow}, \lean{iter94\_add\_four\_pow},
+        \lean{survives94\_add\_four\_pow}).  A \lean{decide} check in the $4^4=256$ window gives
+        $8\,|S_{N+2}|\le3\,|S_N|$, breaking the $1/2$ mirror bound.  The general lifting engine
+        proves that survival to any fixed horizon $k$ is periodic with period $4^k$: adding
+        $4^k t$ shifts the $k$-th iterate by $9^k t$, so the finite window $[0,4^k)$ exhausts all
+        survival patterns at horizon $k$.  The roof ratio at larger moduli ($4^6,4^7,4^9$) is a
+        script certificate.
 \end{itemize}
 
 \paragraph{Lean versus script.}
-Groups 1--3 and 5--6 are theorems over all $N$; groups 4 and 7 are kernel \lean{decide} checks at a
-fixed small modulus, with their wider-modulus companions in
+Groups 1--3 and 5--6 are theorems over all $N$; group 4 is now a uniform-in-odd-$N$ theorem
+(\lean{odd\_rung\_klein4\_no\_four}) with the $N=3$ \lean{decide} instance kept as a witness; group 7
+combines the $4^4$ kernel \lean{decide} check with the general lifting engine
+(\lean{survives94\_add\_four\_pow}), whose wider-modulus companions live in
 \texttt{scripts/generate\_certificates.py}.  Nothing here claims the Mahler $3/2$ conjecture or the
 $9/4$ conjecture.
 
@@ -294,21 +346,25 @@ $9/4$ conjecture.
 Result & Lean declaration & Status\\
 \midrule
 Integer exclusion & \lean{ZeroEntropyCages.exclusion\_integer} & proved\\
-$[2/7,5/7)$ cage & \lean{ZeroEntropyCages.cage\_two\_sevenths} & proved\\
+$[2/7,5/7)$ deterministic cage & \lean{ZeroEntropyCages.cage\_two\_sevenths} & proved\\
+Joint `Step`-orbit in $[2/7,5/7)$ & \lean{joint\_orbit\_two\_sevenths} & proved\\
+Joint `Step`-cycles & \lean{joint\_cycle\_two\_fifths}, \lean{joint\_cycle\_four\_thirteenths} & proved\\
+Holed-cage $2$-cycle / transients & \lean{holed\_cage\_two\_cycle}, \lean{holed\_cage\_transients} & proved\\
 Widths & \lean{width\_three\_sevenths}, \lean{width\_four\_sevenths} & proved\\
 Cup self-map & \lean{DiscreteFluidCertificates.Tcup\_mem} & proved\\
 $4/19$ cycle & \lean{cup\_cycle}, \lean{cup\_period\_three} & proved\\
 Expansion & \lean{Tcup\_dist} & proved\\
 $2{:}1$ split & \lean{two\_one\_split}, \lean{scale\_two\_thirds} & proved\\
 All-real exclusion & Proposition~\ref{prop:allreal} & not formalised\\
-$8/57$ preimage & $8/57=(2/3)(4/19)=T_0^{-1}(4/19)$ & script (Remark~\ref{rem:857})\\
+$8/57$ regimes & $8/57=(2/3)(4/19)$, fold $T_1\circ T_0^3$ & script (Remark~\ref{rem:857})\\
 Spectral / dimension / cosine & --- & empirical only\\
 Mirror conservation & \lean{Model94Obstructions.mirror\_conservation\_94} & proved\\
 Even-rung annihilation & \lean{Model94Obstructions.even\_rung\_mirror\_annihilation} & proved\\
 Forbidden sums & \lean{Model94Obstructions.forbidden\_sum\_c2\_mod4} & proved\\
+Odd-rung Klein-4 & \lean{Model94Obstructions.odd\_rung\_klein4\_no\_four} & proved (all odd $N\ge3$)\\
 Shadow dynamics & \lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact} & proved\\
 Carry-free base-9 & \lean{base9\_transducer\_exact}, \lean{base9\_digit\_sum\_conservation} & proved\\
-Odd-rung Klein-4 & \lean{odd\_rung\_klein4\_exclusion} & \lean{decide} ($N=3$)\\
+Finite-window lifting & \lean{survives94\_add\_four\_pow} (period $4^k$) & proved (all $k$)\\
 Finite-roof block & \lean{finite\_roof\_block\_certificate} & \lean{decide} ($4^4$)\\
 \bottomrule
 \end{tabular}

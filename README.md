@@ -127,7 +127,7 @@ Beyond the core parity development, the following task modules are built and aud
 | `Mahler32/ArnoldTongue5State.lean` | the `5`-state count, **plus** exact windows where the real `T` branches stay in `[1/3, 11/15)` (`T_false_maps`, `T_true_maps`) |
 | `Mahler32/ArnoldTongue7State.lean` | the `7`-state count, **plus** the exact `T` windows on `[7/24, 17/24)` |
 | `Mahler32/DAGBoundedGap.lean` | bounded gap; exact hitting set `S7_iff_hits`; the `g + 128` carry branch (`zStepNat_add_128`) |
-| `Mahler32/ZeroEntropyCages.lean` | integer exclusion; the even-branch four-term cage `cage_two_sevenths`; the two branches `T0`, `T1`; width bookkeeping |
+| `Mahler32/ZeroEntropyCages.lean` | integer exclusion; the **deterministic** even-branch four-term cage `cage_two_sevenths`; the two-branch joint relation `Step`; genuine `Step`-orbits/cycles in `[2/7,5/7)` (`joint_orbit_two_sevenths`, `joint_cycle_two_fifths`, `joint_cycle_four_thirteenths`); the finite-state holed cage `[5/24,11/24) ∪ [13/24,19/24)` with survivor set `{4/15,2/5,3/5,11/15}` and `2`-cycle `2/5 ↔ 3/5` |
 | `Mahler32/DiscreteFluidCertificates.lean` | cup map self-map; exact `4/19 → 6/19 → 9/19 → 4/19` three-cycle; `3/2` expansion; `2 : 1` mass split |
 | `Mahler32/Model94Obstructions.lean` | `9/4` finite-roof arithmetic obstruction: mirror conservation, even-rung annihilation, forbidden sums, odd-rung Klein-4, sum/difference shadow maps, carry-free base-9 conservation, finite-roof block bound |
 
@@ -138,13 +138,21 @@ Two companion papers live in `papers/`:
 - `papers/paper2_zero_entropy_fluid/` — *Zero-Entropy Cages and Discrete Fluid for the Mahler
   3/2 Map*
 
-Both carry a theorem-to-Lean traceability table.  Two honesty caveats are stated there rather
-than hidden: the general “all real `ξ` excluded” statement is a human-level proposition whose
-only machine-checked ingredients are the integer engine and the concrete `[2/7,5/7)` cage; and the
-quoted “`δ* = 8/57`” constant is the exact preimage `T0⁻¹(4/19) = (2/3)(4/19)` of the cup cycle, not a
-critical emptying threshold — the family `[δ,1/2)` empties for every `δ > 0` we tested, including
-`7/57`, on both monotone branches.  Nothing here claims Mahler's original conjecture, nor the `9/4`
-conjecture.
+Both carry a theorem-to-Lean traceability table.  Three honesty caveats are stated there rather
+than hidden.  First, the general “all real `ξ` excluded” statement is a human-level proposition
+whose only machine-checked ingredients are the integer engine and the concrete deterministic
+`[2/7,5/7)` cage.  Second, the two-branch **joint** relation `Step x y ↔ y = T0 x ∨ y = T1 x` is
+*not* emptied on `[2/7,5/7)` (an explicit six-term `Step`-orbit is proved in
+`ZeroEntropyCages.joint_orbit_two_sevenths`), so the single-branch emptying depth `3` of the
+deterministic map says nothing about the joint relation; `scripts/generate_certificates.py`
+computes the exact joint survivor sets, the finite-depth Markov/SCC structure and the rational
+cycles, and the holed cage `[5/24,11/24) ∪ [13/24,19/24)` is the finite-state core where the
+survivor set is exactly `{4/15,2/5,3/5,11/15}`.  Third, the constant `δ* = 8/57` is the exact
+preimage `T0⁻¹(4/19) = (2/3)(4/19)` of the cup cycle; under the cup map `F` (the branch-restricted
+joint map on `[0,1/2)`) the left-hole family `[δ,1/2)` has the three exact regimes verified in the
+script: `δ > 4/19` empties, `8/57 < δ ≤ 4/19` keeps a finite (zero-entropy) survivor set containing
+the `3`-cycle, and `δ < 8/57` has positive entropy via the fold `T1 ∘ T0³` sending `[8/81,8/57)`
+into `[0,4/19)`.  Nothing here claims Mahler's original conjecture, nor the `9/4` conjecture.
 
 ## Build
 
