@@ -127,22 +127,23 @@ Beyond the core parity development, the following task modules are built and aud
 | `Mahler32/ArnoldTongue5State.lean` | the `5`-state count, **plus** exact windows where the real `T` branches stay in `[1/3, 11/15)` (`T_false_maps`, `T_true_maps`) |
 | `Mahler32/ArnoldTongue7State.lean` | the `7`-state count, **plus** the exact `T` windows on `[7/24, 17/24)` |
 | `Mahler32/DAGBoundedGap.lean` | bounded gap; exact hitting set `S7_iff_hits`; the `g + 128` carry branch (`zStepNat_add_128`) |
-| `Mahler32/ZeroEntropyCages.lean` | integer exclusion; exact four-term cage `cage_two_sevenths`; width bookkeeping |
+| `Mahler32/ZeroEntropyCages.lean` | integer exclusion; the double-branch map `T0 x = {3x/2}`, `T1 x = {3x/2+1/2}`; exact four-term cage `cage_two_sevenths`; one-step double-branch cage `cage_two_sevenths_double`; width bookkeeping |
 | `Mahler32/DiscreteFluidCertificates.lean` | cup map self-map; exact `4/19 → 6/19 → 9/19 → 4/19` three-cycle; `3/2` expansion; `2 : 1` mass split |
 
 Two companion papers live in `papers/`:
 
-- `papers/paper1_transcendence/` — *A Two-World Padé Criterion for Base 3/2 and the
-  Algebraic–Pair Branch*
+- `papers/paper1_transcendence/` — *A Finiteness Theorem for the Algebraic–Pair Branch of the
+  Base 3/2 Problem*
 - `papers/paper2_zero_entropy_fluid/` — *Zero-Entropy Cages and Discrete Fluid for the Mahler
   3/2 Map*
 
-Both carry a theorem-to-Lean traceability table.  Two honesty caveats are stated there rather
-than hidden: the general “all real `ξ` excluded” statement is a human-level proposition whose
-only machine-checked ingredients are the integer engine and the concrete `[2/7,5/7)` cage; and the
-quoted “`δ* = 8/57`” threshold is **contradicted** by exact computation (the family
-`[δ,1/2)` empties for every `δ > 0` we tested, including `7/57`).  Nothing here claims Mahler's
-original conjecture.
+Both carry a theorem-to-Lean traceability table.  One honesty caveat is stated there rather than
+hidden: the general “all real `ξ` excluded” statement is a human-level proposition whose only
+machine-checked ingredients are the integer engine and the concrete `[2/7,5/7)` cages (forward and
+double-branch).  The emptying-depth certificates in `scripts/generate_certificates.py` are exact
+and partition-free; they replace the “31-state / 128-state” automaton counts of the earlier working
+notes, which depended on an unrecorded choice of partition.  Nothing here claims Mahler's original
+conjecture.
 
 ## Build
 

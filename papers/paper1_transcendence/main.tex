@@ -15,6 +15,7 @@
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{axiom}[theorem]{Axiom}
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 
@@ -23,179 +24,273 @@
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\fract}[1]{\left\{#1\right\}}
 \newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\gap}{\operatorname{gap}}
 
-\title{A Two-World Pad\'e Criterion for Base $\tfrac32$ and the Algebraic--Pair Branch}
+\title{A Finiteness Theorem for the Algebraic--Pair Branch of the Base $\tfrac32$ Problem}
 \author{Su MingKai}
 \date{2026}
 
 \begin{document}
 
 \begin{abstract}
-We isolate a \emph{two-world} Pad\'e comparison for expansions in base $\tfrac32$: a single
-identity that is simultaneously a $2$-adic divisibility statement and an Archimedean size bound.
-Combined with an integer-vanishing lemma, it forces the ``minimal word'' remainder to be exactly
-zero.  The algebraic--pair branch of Stephan's program is formalised in Lean 4 with Mathlib,
-conditionally on Schlickewei's $p$-adic subspace theorem; the two-world comparison and its
-integer engine are proved unconditionally.  We do \emph{not} claim Mahler's original
-$\xi(3/2)^n \bmod 1$ conjecture; the transcendence statement below is a conditional reduction and
-is labelled as such.
+We give a complete proof of the algebraic--pair finiteness theorem for the base $\tfrac32$ Mahler
+problem, following the program of Stephan.  For an algebraic irrational multiplier $\delta$ there
+are only finitely many ``violating'' pairs $(a,c)$, $2\le a<c$, with distinct gaps $c-a$, for
+which $\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)$ is within $\vartheta^{c}$ of an integer.  The only
+external input is Schlickewei's $p$-adic subspace theorem on $\Q^{3}$, recorded in the formalisation
+as a single declared axiom; everything else is proved.  The argument splits the rational linear
+relation produced by the subspace theorem into two complementary cases: $C=0$, excluded by strict
+monotonicity of $s\mapsto(3/2)^{s}$ together with injectivity of the gap map; and $C\neq0$, which
+forces the algebraic irrational $\delta$ to be rational.  We formalise the whole reduction in Lean~4
+with Mathlib.  We do \emph{not} claim Mahler's original conjecture; this is the algebraic--pair
+branch of a conditional strategy and is labelled as such.
 \end{abstract}
 
 \tableofcontents
 
 \section{Introduction}
 
-Mahler's problem asks for the distribution of $\fract{\xi(3/2)^n}$ and is open; the state of the
+Mahler's problem asks for the distribution of $\fract{\xi(3/2)^{n}}$ and is open; the state of the
 art is surveyed in \citep{stephan2026subspace,stephan2026minimal,stephan2026third}.  A point
-$\xi$ is a \emph{Z-number} when $\fract{\xi(3/2)^n}\in[0,\tfrac12)$ for every $n$; Strauch
+$\xi$ is a \emph{Z-number} when $\fract{\xi(3/2)^{n}}\in[0,\tfrac12)$ for every $n$; Strauch
 \citep{strauch1997} constructed Z-numbers with prescribed maps, and the combinatorial side is
 developed in \citep{lagarias2003,andrieu2026,cassaigne2026}.  Recent work of Cook
 \citep{cook2026} pushes the arithmetic envelope of base $\tfrac32$ congruences, while the
-denominator and equidistribution barriers are those of \citep{calegari2025,elmv}.  Pad\'e
-constructions have also proved effective in the two-expanding-place setting
-\citep{dedeo2026}, and the failure of naive positivity obstructions is illustrated by the
-``unforced singularity'' theme of \citep{tao2026}.
+denominator and equidistribution barriers are those of \citep{calegari2025,elmv}.
 
-The contribution here is narrow and checkable.  We show that two classical Pad\'e
-approximations---one attached to the analytic world, one to the $2$-adic world---differ by a
-single rational expression, and that the ``two worlds agree'' locus is exactly the degenerate
-parameter $c=0$.  This gives a clean route from ``an infinite family of words survives'' to
-``an integer is divisible by every power of $2$ and smaller than every power of $2$'', hence is
-$0$.
+Stephan's program splits the surviving ``minimal words'' into a rational case and an
+\emph{algebraic--pair} case \citep{stephan2026subspace,stephan2026third}.  The purpose of this
+paper is to give the algebraic--pair branch in full: a self-contained proof that, for an algebraic
+irrational multiplier, only finitely many pairs can carry a near-integer value.  This is the content
+of Theorem~\ref{thm:main}; Sections~\ref{sec:setup}--\ref{sec:main} develop it, and
+Section~\ref{sec:algpair-C0}--\ref{sec:algpair-Cne0} treat the two cases that the proof separates.
 
 \paragraph{Scope and honesty.}
-Section~\ref{sec:padeworlds}--\ref{sec:engine} contain unconditional, machine-checked results.
-Section~\ref{sec:algpair} records the algebraic--pair branch exactly as formalised: it depends on
-the explicitly declared axiom \lean{schlickewei\_subspace\_Q3}, and we say so.  No statement
-below asserts the Mahler conjecture.
+The only non-elementary input is Schlickewei's $p$-adic subspace theorem on $\Q^{3}$
+(Bombieri--Gubler Ch.~7; Evertse's lecture notes), declared in the formalisation as the single axiom
+\lean{schlickewei\_subspace\_Q3}.  Every other result in this paper is unconditional and
+machine-checked with zero axioms beyond \lean{propext}, \lean{Quot.sound}, \lean{Classical.choice}.
+No statement below asserts the Mahler conjecture.
 
-\section{Two Pad\'e worlds}
-\label{sec:padeworlds}
+\section{Setup, hypotheses, and the subspace input}
+\label{sec:setup}
 
-Let $e,c\in\Q$ and consider the generating series $S(z)=e\,(1+z+z^2+\cdots)=e/(1-z)$, whose
-diagonal Pad\'e approximants in the two worlds are the depth-$1$ and depth-$2$ truncations
-\begin{equation}
-  P_{1,1}(z)=e\,\frac{1}{1-z}\Big|_{\text{ord }2},
-  \qquad
-  P_{2,2}(z)=e\,\frac{1}{1-z}\Big|_{\text{ord }4}.
-\end{equation}
-Concretely the Lean definitions take the closed rational forms
-\begin{equation}
-  \lean{pade12}(e,c)=\frac{e}{1-c},
-  \qquad
-  \lean{pade11}(e,c)=e\,(1+c).
-\end{equation}
-These are the two ``worlds'': the first is the analytic diagonal, the second the carry-truncated
-diagonal of base $\tfrac32$.
+A \emph{pair} is an element $p=(a,c)\in\N^{2}$ with $a<c$; its \emph{gap} is $\gap(p)=c-a$.  We
+work with an infinite set $T\subseteq\N^{2}$ of pairs on which the gap map is injective, each pair
+satisfies $2\le a<c$, and a fixed integer-valued function $n\colon\N^{2}\to\Z$ approximates a
+multiple of $\delta$ to exponential accuracy.
 
-\begin{proposition}[Two-world identity]
-\label{prop:identity}
-For all $e,c\in\Q$ with $c\neq 1$,
-\begin{equation}
-  \lean{pade12}(e,c)-\lean{pade11}(e,c)=\frac{e\,c^{2}}{1-c}.
-\end{equation}
-\end{proposition}
-
-\begin{proof}[Proof sketch]
-Expand the right-hand side: $e\bigl(\tfrac{1}{1-c}-(1+c)\bigr)
-= e\cdot\tfrac{c^2}{1-c}$.  Machine-checked as
-\lean{Mahler32.TwoWorldPadeCriterion.two\_world\_identity}.
-\end{proof}
-
-The sign structure is then transparent, and the two worlds coincide only at $c=0$.
-
-\begin{theorem}[Agreement criterion]
-\label{thm:iff}
-Let $e,c\in\Q$ with $e\neq 0$ and $c\neq 1$.  Then
+\begin{definition}[Approximation hypothesis]
+\label{def:hyp}
+Let $\delta\in\R$, $\vartheta\in\Q$ with $0<\vartheta<1$, and $n\colon\N^{2}\to\Z$.  The pair set
+$T$ satisfies $(\mathrm{H})$ if
 \[
-  \lean{pade12}(e,c)=\lean{pade11}(e,c)\iff c=0 .
+  \bigl|\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)-n(p)\bigr|\le\vartheta^{c}
+  \qquad\text{for all }p=(a,c)\in T .
 \]
-\end{theorem}
+\end{definition}
 
-\begin{proof}
-By Proposition~\ref{prop:identity} the difference is $e c^2/(1-c)$.  If it vanishes, then
-$e c^2=0$ (as $c\neq 1$), hence $c^2=0$ (as $e\neq 0$), hence $c=0$.  Conversely $c=0$ gives
-$e= e$.  Machine-checked as \lean{Mahler32.TwoWorldPadeCriterion.two\_world\_iff}.
-\end{proof}
+The engine of the proof is the following classical theorem, used verbatim.
 
-\begin{remark}
-The rational strictness certificates used to separate the worlds numerically,
-$(140/99)^2<2$ and $(17/12)^2>2$, are also machine-checked
-(\lean{sqrt\_two\_gt\_140\_99}, \lean{sqrt\_two\_lt\_17\_12}).
-\end{remark}
+\begin{axiom}[Schlickewei $p$-adic subspace theorem on $\Q^{3}$]
+\label{ax:schlickewei}
+Let $\delta\in\R$ be algebraic over $\Q$, let $0<\vartheta<1$ be rational, and let
+$T\subseteq\N^{2}$ be infinite with $2\le a<c$ for all $(a,c)\in T$ and $(\mathrm{H})$ satisfied by
+some $n$.  Then there is an infinite subset $T'\subseteq T$ and a nonzero rational triple
+$(A,B,C)\neq(0,0,0)$ with
+\[
+  A\,(3/2)^{c}+B\,(3/2)^{a}+C\,n(p)=0
+  \qquad\text{for all }p=(a,c)\in T'.
+\]
+\end{axiom}
 
-\section{The integer engine}
-\label{sec:engine}
+The three Archimedean, $2$-adic and $3$-adic product estimates of the task card cancel exactly to
+produce the height bound $\vartheta^{c}$ that the subspace theorem requires; we take the conclusion
+as the single black box.
 
-The following elementary lemma is the whole content of the ``$2$-adic squeeze''.  Let
-$M=D\cdot 3^{d}\cdot\bigl(Q(2/3)S(2/3)-P(2/3)\bigr)$ be the integralised remainder of a
-two-world comparison.  The $2$-adic world provides $2^{N}\mid M$ for every $N$; the Archimedean
-world provides $|M|<2^{N}$.
+\section{The case $C=0$}
+\label{sec:algpair-C0}
 
-\begin{lemma}[Integer exclusion]
-\label{lem:engine}
-If $M\in\Z$, $N\in\N$, $2^{N}\mid M$ and $|M|<2^{N}$, then $M=0$.
+We first exclude the degenerate relation, in which only $(3/2)^{a}$ and $(3/2)^{c}$ appear.
+
+\begin{lemma}[Strict monotonicity]
+\label{lem:mono}
+The map $s\mapsto(3/2)^{s}$ is strictly increasing on $\N$.
 \end{lemma}
 
 \begin{proof}
-Write $M=2^{N}k$.  Then $2^{N}|k|<2^{N}$, so $|k|<1$ and $k=0$.
-Machine-checked as \lean{two\_pow\_dvd\_eq\_zero} in \lean{TwoWorldPadeCriterion}
-(and again as \lean{exclusion\_integer} in \lean{ZeroEntropyCages}).
+Since $(3/2)>1$, $m<n$ implies $(3/2)^{m}<(3/2)^{n}$.
+Machine-checked inside the module as \lean{pow\_three\_halves\_strictMono}.
 \end{proof}
 
-\begin{corollary}[Remainder vanishes]
-If a minimal word produces a nonzero integer $M$ as above and every $2$-adic world divides it
-while the Archimedean bound holds, then the analytic remainder at $z=2/3$ is zero, i.e.\
-$R_{\infty}(2/3)=c\,\xi\,Q(2/3)=0$.
-\end{corollary}
+\begin{lemma}[An infinite set has two distinct points]
+\label{lem:twopoints}
+If $S$ is infinite, there exist $p,q\in S$ with $p\neq q$.
+\end{lemma}
 
-Lemma~\ref{lem:engine} is deliberately free of analysis: it takes the two worlds as hypotheses.
-The remaining work, which is not formalised here, is to derive the divisibility and the bound from
-a specific word family.
+\begin{proof}
+Otherwise $S$ would be a subsingleton, hence finite, contradicting infinitude.
+\end{proof}
 
-\section{The algebraic--pair branch}
-\label{sec:algpair}
-
-Stephan's program splits the surviving words into rational and algebraic-pair cases
-\citep{stephan2026subspace,stephan2026third}.  In the repository this branch is the module
-\lean{Mahler32Conditional.AlgebraicPairBranch}.  It establishes the finite algebraic-pair
-statement under a hypothesis on algebraic points of $\Q^3$.
-
-\begin{theorem}[Algebraic pair, conditional]
-\label{thm:algpair}
-Assume Schlickewei's $p$-adic subspace theorem in the form recorded in the module as the axiom
-\lean{schlickewei\_subspace\_Q3}.  Then the algebraic-pair branch is finite: there are only
-finitely many algebraic-pair surviving words of bounded degree.
+\begin{theorem}[No $C=0$ relation]
+\label{thm:C0}
+Let $T'$ be infinite, with injective gap map and $a<c$ on $T'$.  If $A,B\in\Q$, not both zero,
+satisfy
+\[
+  A\,(3/2)^{c}+B\,(3/2)^{a}=0\qquad\text{for all }p=(a,c)\in T',
+\]
+then contradiction.
 \end{theorem}
 
+\begin{proof}
+$A\neq0$: if $A=0$ then $B\neq0$ and $B(3/2)^{a}=0$ at any $p\in T'$, impossible since
+$(3/2)^{a}>0$.  Dividing the relation by $A(3/2)^{a}$ gives
+\[
+  (3/2)^{c-a}=-\frac{B}{A}\qquad\text{for all }p=(a,c)\in T'.
+\]
+Thus $(3/2)^{\gap(p)}$ is the fixed constant $-B/A$ on $T'$.  Taking two distinct points
+$p\neq q$ of $T'$ (Lemma~\ref{lem:twopoints}) gives
+$(3/2)^{\gap(p)}=(3/2)^{\gap(q)}$, so by Lemma~\ref{lem:mono} the exponents agree,
+$\gap(p)=\gap(q)$.  Since the gap map is injective on $T'$, this forces $p=q$, a contradiction.
+Machine-checked: \lean{Mahler32Conditional.lemma1\_no\_C\_zero}.
+\end{proof}
+
+\section{The case $C\neq0$}
+\label{sec:algpair-Cne0}
+
+Now assume the relation genuinely involves $n(p)$.  Solving it for $n(p)$ turns the approximation
+hypothesis into an approximation of $\delta$ by a fixed rational, which we then push to the limit.
+
+\begin{lemma}[One-step bound]
+\label{lem:single}
+Let $a<c$ and suppose
+\[
+  \bigl|\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)-\bigl(\alpha(3/2)^{c}+\beta(3/2)^{a}\bigr)\bigr|
+  \le\vartheta^{c}
+\]
+with $\alpha,\beta\in\Q$.  Then, writing $X=3/2$,
+\[
+  \bigl|\delta-\alpha\bigr|\le\bigl|\delta+\beta\bigr|\,(2/3)^{c-a}+(2\vartheta/3)^{c}.
+\]
+\end{lemma}
+
+\begin{proof}
+Rearranging the hypothesis,
+\[
+  \bigl|X^{c}(\delta-\alpha)-X^{a}(\delta+\beta)\bigr|\le\vartheta^{c}
+\]
+because $\delta(X^{c}-X^{a})-(\alpha X^{c}+\beta X^{a})=X^{c}(\delta-\alpha)-X^{a}(\delta+\beta)$.
+The reverse triangle inequality gives
+$X^{c}|\delta-\alpha|\le X^{a}|\delta+\beta|+\vartheta^{c}$.  Multiplying by $(2/3)^{c}$ and using
+$(2/3)^{c}X^{c}=1$,
+\[
+  |\delta-\alpha|\le|\delta+\beta|\,(2/3)^{c}X^{a}+(2/3)^{c}\vartheta^{c}.
+\]
+Finally $(2/3)^{c}X^{a}=(2/3)^{c-a}(2/3)^{a}X^{a}=(2/3)^{c-a}$ and
+$(2/3)^{c}\vartheta^{c}=(2\vartheta/3)^{c}$.  This is the stated bound.
+\end{proof}
+
+\begin{lemma}[The gap is unbounded]
+\label{lem:gapunbounded}
+If $T'$ is infinite and the gap map is injective on $T'$, then for every $N$ there is $p\in T'$ with
+$\gap(p)\ge N$.
+\end{lemma}
+
+\begin{proof}
+If all gaps were $<N$, then $T'$ would be the union over the finitely many values
+$s\in\{0,\dots,N-1\}$ of the set $\{p\in T':\gap(p)=s\}$, each of which has at most one element by
+injectivity.  Hence $T'$ would be finite, a contradiction.
+Machine-checked inside the module as \lean{gap\_unbounded}.
+\end{proof}
+
+\begin{theorem}[No $C\neq0$ relation]
+\label{thm:Cne0}
+Let $\delta$ be irrational, $0<\vartheta<1$, and $T'$ infinite with injective gap map and $a<c$ on
+$T'$.  If $\alpha,\beta\in\Q$ satisfy
+\[
+  \bigl|\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)-\bigl(\alpha(3/2)^{c}+\beta(3/2)^{a}\bigr)\bigr|
+  \le\vartheta^{c}\qquad\text{for all }p=(a,c)\in T',
+\]
+then contradiction.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:single}, for every $p=(a,c)\in T'$,
+\[
+  |\delta-\alpha|\le|\delta+\beta|\,(2/3)^{\gap(p)}+(2\vartheta/3)^{c}.
+\]
+Let $\varepsilon>0$.  Since $0<2/3<1$ and $0<2\vartheta/3<2/3<1$, choose $N$ with
+$|\delta+\beta|(2/3)^{N}<\varepsilon/2$ and $(2\vartheta/3)^{N}<\varepsilon/2$.  By
+Lemma~\ref{lem:gapunbounded} pick $p\in T'$ with $\gap(p)\ge N$; then $c\ge\gap(p)\ge N$, so both
+terms are below $\varepsilon/2$ and $|\delta-\alpha|<\varepsilon$.  As $\varepsilon$ was arbitrary,
+$|\delta-\alpha|=0$, i.e.\ $\delta=\alpha\in\Q$, contradicting the irrationality of $\delta$.
+Machine-checked: \lean{Mahler32Conditional.lemma2\_no\_C\_ne\_zero}.
+\end{proof}
+
+\section{The finiteness theorem}
+\label{sec:main}
+
+We can now assemble the two cases.
+
+\begin{theorem}[Algebraic--pair finiteness, conditional on
+Schlickewei]\label{thm:main}
+Let $\delta$ be algebraic over $\Q$ and irrational, let $0<\vartheta<1$ be rational, and let
+$T\subseteq\N^{2}$ satisfy $2\le a<c$ on $T$, have injective gap map, and satisfy $(\mathrm{H})$ for
+some $n\colon\N^{2}\to\Z$.  Then $T$ is finite.
+\end{theorem}
+
+\begin{proof}
+Suppose, toward a contradiction, that $T$ is infinite.  Axiom~\ref{ax:schlickewei} yields an
+infinite $T'\subseteq T$ and a nonzero rational triple $(A,B,C)$ with
+\[
+  A\,(3/2)^{c}+B\,(3/2)^{a}+C\,n(p)=0\qquad\text{for all }p=(a,c)\in T'.
+\]
+\emph{Case $C=0$.}  Then $A(3/2)^{c}+B(3/2)^{a}=0$ on $T'$ with $(A,B)\neq(0,0)$; the hypotheses of
+Theorem~\ref{thm:C0} hold ($T'$ infinite, injective gaps, $a<c$), giving a contradiction.
+
+\emph{Case $C\neq0$.}  Set $\alpha=-A/C$ and $\beta=-B/C$, so the relation reads
+$n(p)=\alpha(3/2)^{c}+\beta(3/2)^{a}$ on $T'$.  Substituting into $(\mathrm{H})$,
+\[
+  \bigl|\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)-\bigl(\alpha(3/2)^{c}+\beta(3/2)^{a}\bigr)\bigr|
+  \le\vartheta^{c}\qquad\text{for all }p\in T',
+\]
+which is exactly the hypothesis of Theorem~\ref{thm:Cne0}; with $\delta$ irrational this is again a
+contradiction.
+
+Both cases are impossible, so $T$ is finite.
+Machine-checked: \lean{Mahler32Conditional.algebraic\_pair\_branch\_finite}, depending on the single
+axiom \lean{schlickewei\_subspace\_Q3}.
+\end{proof}
+
 \begin{remark}[Read this before citing]
-Theorem~\ref{thm:algpair} is \emph{conditional}.  The Lean development is zero-axiom for every
-unconditional result in this paper, but \lean{AlgebraicPairBranch} imports exactly one declared
-axiom, and the CI axiom audit therefore excludes it from the unconditional count.  We make no
-claim that this branch, or the Mahler problem, is settled.
+Theorem~\ref{thm:main} is \emph{conditional} on Axiom~\ref{ax:schlickewei}.  Every unconditional
+statement in this paper (Sections~\ref{sec:algpair-C0}--\ref{sec:algpair-Cne0}, and the assembly of
+Theorem~\ref{thm:main} apart from the one axiom application) is zero-axiom in the kernel.  The CI
+axiom audit lists \lean{schlickewei\_subspace\_Q3} explicitly and excludes it from the unconditional
+count.  We make no claim that the Mahler problem is settled.
 \end{remark}
 
 \section{What is and is not claimed}
 \label{sec:claims}
 
 \begin{itemize}[leftmargin=1.4em]
-  \item \textbf{Unconditional and machine-checked.} Proposition~\ref{prop:identity},
-        Theorem~\ref{thm:iff}, Lemma~\ref{lem:engine}, and the rational strictness bounds.
-  \item \textbf{Conditional and machine-checked.} Theorem~\ref{thm:algpair}, modulo the single
-        declared axiom.
-  \item \textbf{Human-level, not formalised.} The derivation of the $2$-adic divisibility and
-        Archimedean bound for the full word family, and any quantitative
-        $(\log n)^{1/4}$-type criterion.  These are stated in the literature
-        \citep{stephan2026subspace} and are not re-proved here.
+  \item \textbf{Unconditional and machine-checked.} The $C=0$ exclusion
+        (Theorem~\ref{thm:C0}), the one-step bound (Lemma~\ref{lem:single}), and the $C\neq0$
+        exclusion (Theorem~\ref{thm:Cne0}).
+  \item \textbf{Conditional and machine-checked.} Theorem~\ref{thm:main}, modulo the single
+        declared axiom \lean{schlickewei\_subspace\_Q3}.
+  \item \textbf{Human-level, not formalised.} The $p$-adic product estimates that produce the
+        height bound $\vartheta^{c}$ and hence the hypothesis of the subspace theorem.  These are
+        taken from the literature \citep{stephan2026subspace} and are not re-proved here.
   \item \textbf{Not claimed at all.} Mahler's original conjecture, the unbounded-denominators
         conjecture, and any unconditional transcendence of a Z-number.
 \end{itemize}
 
 \section{Formalisation traceability}
 
-All Lean names below live in the repository at commit time and are exercised by
-\texttt{scripts/verify\_all.sh}.  The axiom audit prints only the standard
-\lean{propext}, \lean{Quot.sound}, \lean{Classical.choice}.
+All Lean names below live in the repository and are exercised by \texttt{scripts/verify\_all.sh}.
+The axiom audit prints only \lean{propext}, \lean{Quot.sound}, \lean{Classical.choice} for the
+unconditional results; the conditional theorem additionally reports \lean{schlickewei\_subspace\_Q3}.
 
 \begin{table}[h]
 \centering
@@ -204,12 +299,11 @@ All Lean names below live in the repository at commit time and are exercised by
 \toprule
 Result & Lean declaration & Status\\
 \midrule
-Two-world identity & \lean{TwoWorldPadeCriterion.two\_world\_identity} & proved\\
-Agreement criterion & \lean{TwoWorldPadeCriterion.two\_world\_iff} & proved\\
-Integer exclusion & \lean{TwoWorldPadeCriterion.two\_pow\_dvd\_eq\_zero} & proved\\
-$\sqrt2>140/99$ & \lean{sqrt\_two\_gt\_140\_99} & proved\\
-$\sqrt2<17/12$ & \lean{sqrt\_two\_lt\_17\_12} & proved\\
-Algebraic pair (cond.) & \lean{Mahler32Conditional.algebraic\_pair\_branch\_finite} & axiom-dependent\\
+$C=0$ exclusion & \lean{Mahler32Conditional.lemma1\_no\_C\_zero} & proved\\
+One-step bound & inside \lean{Mahler32Conditional.lemma2\_no\_C\_ne\_zero} & proved\\
+$C\neq0$ exclusion & \lean{Mahler32Conditional.lemma2\_no\_C\_ne\_zero} & proved\\
+Finiteness (cond.) & \lean{Mahler32Conditional.algebraic\_pair\_branch\_finite} & axiom-dependent\\
+Subspace input & \lean{Mahler32Conditional.schlickewei\_subspace\_Q3} & declared axiom\\
 \bottomrule
 \end{tabular}
 \caption{Theorem-to-Lean map for Paper~1.}

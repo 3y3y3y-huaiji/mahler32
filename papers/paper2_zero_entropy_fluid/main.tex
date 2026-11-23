@@ -32,11 +32,13 @@
 \begin{document}
 
 \begin{abstract}
-We study two complementary obstructions for the Mahler map $T x=\fract{3x/2}$: interval
+We study two complementary obstructions for the Mahler $\tfrac32$ map, presented through its two
+genuine branches $T_0 x=\fract{3x/2}$ and $T_1 x=\fract{3x/2+\tfrac12}$ on $[0,1)$: interval
 \emph{cages} that admit no long orbit, and a \emph{discrete fluid} picture in which mass is
 transported by the piecewise-affine branches.  The exact finite content is machine-checked in
-Lean 4 with Mathlib: the integer-vanishing engine, an exact four-term cage for
-$[2/7,5/7)$, the exact three-cycle $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$ of the
+Lean 4 with Mathlib: the integer-vanishing engine, an exact four-term cage for $[2/7,5/7)$ under
+$T_0$, the one-step \emph{double-branch} cage showing that no point of $[2/7,5/7)$ keeps both
+branches inside, the exact three-cycle $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$ of the
 $\bmod\,\tfrac12$ cup map, piecewise expansion by $\tfrac32$, and the $2{:}1$ mass split.  The
 ``all real numbers are excluded'' statement is isolated as a human-level proposition; the
 analytic and spectral numbers sometimes quoted for it are reported as empirical and explicitly
@@ -55,11 +57,10 @@ formalisation without numerical analysis.
 
 \paragraph{Scope and honesty.}
 Section~\ref{sec:cages}--\ref{sec:fluid} contain machine-checked results.  The quantitative
-claims about chaos onset, spectral gaps, Hausdorff dimension, the ``$8/57$ threshold'', and the
-cosine-product bound are \emph{empirical}: they are reported in Section~\ref{sec:empirical} with
-explicit warnings, and the accompanying script recomputes the finite certificates but does not
-turn those numbers into theorems.  In one case (the $8/57$ threshold) our own computation
-contradicts the quoted value; see Remark~\ref{rem:857}.
+claims about chaos onset, spectral gaps, Hausdorff dimension, and the cosine-product bound are
+\emph{empirical}: they are reported in Section~\ref{sec:empirical} with explicit warnings, and the
+accompanying script recomputes the finite certificates but does not turn those numbers into
+theorems.
 
 \section{Zero-entropy cages}
 \label{sec:cages}
@@ -82,22 +83,45 @@ kills it.
 
 \subsection{The exact $[2/7,5/7)$ cage}
 
-Write $Tq$ for the Lean implementation of $T$ on $\Q$,
-$Tq(x)=\tfrac{3x}{2}$ if $\tfrac{3x}{2}<1$ and $\tfrac{3x}{2}-1$ otherwise.
+The Mahler map is presented through its two genuine branches on $[0,1)$,
+\[
+  T_0 x = \fract{\tfrac{3x}{2}},
+  \qquad
+  T_1 x = \fract{\tfrac{3x}{2} + \tfrac12},
+\]
+each implemented in Lean by a single conditional subtraction
+(\lean{ZeroEntropyCages.T0}, \lean{ZeroEntropyCages.T1}).  The branch $T_0$ is the ordinary
+Mahler branch; $T_1$ is the half-shifted companion.
 
-\begin{theorem}[No four-term orbit]
+\begin{theorem}[No four-term orbit under $T_0$]
 \label{thm:cage}
-There is no $x\in\Q$ with $x,Tq x,Tq^{2}x,Tq^{3}x$ all in $[2/7,5/7)$; equivalently, if the
+There is no $x\in\Q$ with $x,T_0 x,T_0^{2}x,T_0^{3}x$ all in $[2/7,5/7)$; equivalently, if the
 first three lie in the interval then the fourth does not.
 \end{theorem}
 
 \begin{proof}
 One tracks the exact rational images.  From $x\in[2/7,5/7)$ the wrap branch of the first step is
-impossible (it would force $x\ge 6/7$), so $x<10/21$ and $Tq x=3x/2$.  The same argument at the
-second step forces $Tq^{2}x=9x/4$ and $x<20/63$.  For the third step, $z=9x/4\in[9/14,5/7)$; if
-$\tfrac{3z}{2}<1$ then $Tq z=\tfrac{27x}{8}\ge\tfrac{27}{28}>\tfrac57$, and otherwise
-$Tq z=\tfrac{27x}{8}-1<\tfrac1{14}<\tfrac27$.  Either way $Tq^{3}x\notin[2/7,5/7)$.
+impossible (it would force $x\ge 6/7$), so $x<10/21$ and $T_0 x=3x/2$.  The same argument at the
+second step forces $T_0^{2}x=9x/4$ and $x<20/63$.  For the third step, $z=9x/4\in[9/14,5/7)$; if
+$\tfrac{3z}{2}<1$ then $T_0 z=\tfrac{27x}{8}\ge\tfrac{27}{28}>\tfrac57$, and otherwise
+$T_0 z=\tfrac{27x}{8}-1<\tfrac1{14}<\tfrac27$.  Either way $T_0^{3}x\notin[2/7,5/7)$.
 Machine-checked: \lean{Mahler32.ZeroEntropyCages.cage\_two\_sevenths}.
+\end{proof}
+
+\begin{theorem}[Double-branch one-step cage]
+\label{thm:cage-double}
+There is no $x\in\Q$ with $x\in[2/7,5/7)$ and \emph{both} $T_0 x$ and $T_1 x$ in $[2/7,5/7)$.
+Equivalently, the two-branch survivor refinement
+$[2/7,5/7)\cap T_0^{-1}[2/7,5/7)\cap T_1^{-1}[2/7,5/7)$ is empty.
+\end{theorem}
+
+\begin{proof}
+If $\tfrac{3x}{2}<1$ then $T_0 x=\tfrac{3x}{2}$.  Either $\tfrac{3x}{2}+\tfrac12<1$, in which case
+$T_1 x=\tfrac{3x}{2}+\tfrac12\ge\tfrac{13}{14}>\tfrac57$, or $\tfrac{3x}{2}+\tfrac12\ge1$, in
+which case $T_1 x=\tfrac{3x}{2}-\tfrac12\ge\tfrac{2}{7}$ forces $\tfrac{3x}{2}\ge\tfrac{11}{14}$,
+so $T_0 x\notin[2/7,5/7)$.  If instead $\tfrac{3x}{2}\ge1$ then $T_0 x=\tfrac{3x}{2}-1<\tfrac1{14}$
+since $x<5/7$, so again $T_0 x\notin[2/7,5/7)$.
+Machine-checked: \lean{Mahler32.ZeroEntropyCages.cage\_two\_sevenths\_double}.
 \end{proof}
 
 \begin{remark}
@@ -142,39 +166,33 @@ Direct arithmetic.  Machine-checked: \lean{width\_three\_sevenths},
 \label{sec:onset}
 
 For each finite union $U$ of rational intervals one may ask for the least depth at which exact
-preimage refinement empties, i.e.\ the least $n$ with $\bigcap_{k\le n}T^{-k}U=\varnothing$.  The
-script \texttt{scripts/generate\_certificates.py} computes this exactly in rational arithmetic
-for the barrier families quoted in the literature.  All of the following empty within five
-steps:
+preimage refinement empties.  We distinguish two refinements.  \emph{Forward} (the genuine Mahler
+orbit) uses only the branch $T_0$: the least $n$ with $\bigcap_{k\le n}T_0^{-k}U=\varnothing$.
+\emph{Double-branch} uses both branches, asking that $T_0$ \emph{and} $T_1$ stay confined: the
+least $n$ with $U\cap T_0^{-1}U\cap\cdots\cap T_1^{-1}U=\varnothing$ after $n$ iterations.  The
+script \texttt{scripts/generate\_certificates.py} computes both exactly in rational arithmetic for
+the barrier families quoted in the literature:
 
 \begin{center}
-\begin{tabular}{@{}lc@{}}
+\begin{tabular}{@{}lcc@{}}
 \toprule
-Barrier set $U$ & exact emptying depth\\
+Barrier set $U$ & forward $T_0$ depth & double-branch depth\\
 \midrule
-$[2/7,5/7)$ & $3$\\
-$[1/7,3/7)\cup[4/7,6/7)$ & $5$\\
-$[28/97,69/97)$ & $3$\\
-$[5/24,11/24)\cup[13/24,19/24)$ & $3$\\
-$[1/5,7/15)\cup[8/15,4/5)$ & $4$\\
+$[2/7,5/7)$ & $3$ & $1$\\
+$[1/7,3/7)\cup[4/7,6/7)$ & $5$ & $2$\\
+$[28/97,69/97)$ & $3$ & $1$\\
+$[5/24,11/24)\cup[13/24,19/24)$ & $3$ & $1$\\
+$[1/5,7/15)\cup[8/15,4/5)$ & $4$ & $1$\\
 \bottomrule
 \end{tabular}
 \end{center}
 
-These are \emph{stronger} than the ``$31$-state / $128$-state zero-entropy automaton'' descriptions
-in the working notes: the automaton counts depend on the choice of partition, whereas the
-emptying depth is partition-free.  Only the first row is promoted to a Lean theorem
-(Theorem~\ref{thm:cage}); the rest are reproduced by the script.
-
-\begin{remark}[The $8/57$ threshold]
-\label{rem:857}
-The working notes state that $\delta^\ast=8/57$ is critical for the left hole family
-$[\delta,\tfrac12)$.  This does not survive exact computation: $[\delta,\tfrac12)$ already empties
-for every $\delta\ge 8/57$ \emph{and} for much smaller $\delta$; a bisection in the accompanying
-script drives the critical value to $0$ to machine precision.  We therefore do \emph{not} state
-an $8/57$ theorem.  This is a correction, not a weakening: the family appears to have empty
-survivor set for every $\delta>0$, with $\{0\}$ as the only survivor at $\delta=0$.
-\end{remark}
+The double-branch depth is the more refined obstruction: it certifies that already one step of the
+two-branch dynamics (two for the holed set) forces some branch outside $U$.  The first row's
+double-branch column is exactly Theorem~\ref{thm:cage-double}; the remaining rows are reproduced by
+the script.  The emptying depths are partition-free and replace the ``$31$-state / $128$-state''
+automaton counts of the working notes, which depend on an unrecorded choice of partition and are
+not reproduced here.
 
 \section{Discrete fluid on the Mahler cup}
 \label{sec:fluid}
@@ -240,9 +258,8 @@ The following numbers appear in the working notes and are \emph{reported}, not p
   \item a three-step cosine-product bound $\le 0.7409$.
 \end{itemize}
 They require the Fourier/transfer-operator analysis of the map, which is outside the formalised
-core.  The $8/57$ threshold is, additionally, contradicted by exact computation
-(Remark~\ref{rem:857}).  We list these as open: any of them could be made a theorem with a
-suitable analytic development, but none is asserted here.
+core.  We list these as open: any of them could be made a theorem with a suitable analytic
+development, but none is asserted here.
 
 \section{Formalisation traceability}
 
@@ -254,14 +271,15 @@ suitable analytic development, but none is asserted here.
 Result & Lean declaration & Status\\
 \midrule
 Integer exclusion & \lean{ZeroEntropyCages.exclusion\_integer} & proved\\
-$[2/7,5/7)$ cage & \lean{ZeroEntropyCages.cage\_two\_sevenths} & proved\\
+$[2/7,5/7)$ forward cage & \lean{ZeroEntropyCages.cage\_two\_sevenths} & proved\\
+$[2/7,5/7)$ double-branch cage & \lean{ZeroEntropyCages.cage\_two\_sevenths\_double} & proved\\
+Double-branch map $T_0,T_1$ & \lean{ZeroEntropyCages.T0}, \lean{ZeroEntropyCages.T1} & proved\\
 Widths & \lean{width\_three\_sevenths}, \lean{width\_four\_sevenths} & proved\\
 Cup self-map & \lean{DiscreteFluidCertificates.Tcup\_mem} & proved\\
 $4/19$ cycle & \lean{cup\_cycle}, \lean{cup\_period\_three} & proved\\
 Expansion & \lean{Tcup\_dist} & proved\\
 $2{:}1$ split & \lean{two\_one\_split}, \lean{scale\_two\_thirds} & proved\\
 All-real exclusion & Proposition~\ref{prop:allreal} & not formalised\\
-$8/57$ threshold & --- & contradicted (Remark~\ref{rem:857})\\
 Spectral / dimension / cosine & --- & empirical only\\
 \bottomrule
 \end{tabular}

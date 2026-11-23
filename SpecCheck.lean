@@ -445,12 +445,27 @@ open Mahler32.ZeroEntropyCages Mahler32.DiscreteFluidCertificates
 example {M : ℤ} {N : ℕ} (h1 : (2 : ℤ) ^ N ∣ M) (h2 : |M| < (2 : ℤ) ^ N) : M = 0 :=
   exclusion_integer h1 h2
 
-/-- Statement lock: the exact four-term `[2/7, 5/7)` cage. -/
+/-- Definition lock: the double-branch map is `T0 x = {3x/2}`, `T1 x = {3x/2 + 1/2}`. -/
+example (x : ℚ) : T0 x =
+    if (3 * x) / 2 < 1 then (3 * x) / 2 else (3 * x) / 2 - 1 := rfl
+
+/-- Definition lock: the half-shifted branch `T1 x = {3x/2 + 1/2}`. -/
+example (x : ℚ) : T1 x =
+    if (3 * x) / 2 + 1 / 2 < 1 then (3 * x) / 2 + 1 / 2
+      else (3 * x) / 2 + 1 / 2 - 1 := rfl
+
+/-- Statement lock: the exact four-term `[2/7, 5/7)` forward cage for `T0`. -/
 example (x : ℚ) (h0 : 2 / 7 ≤ x) (h1 : x < 5 / 7)
-    (a1 : 2 / 7 ≤ Tq x) (b1 : Tq x < 5 / 7)
-    (a2 : 2 / 7 ≤ Tq (Tq x)) (b2 : Tq (Tq x) < 5 / 7)
-    (a3 : 2 / 7 ≤ Tq (Tq (Tq x))) (b3 : Tq (Tq (Tq x)) < 5 / 7) : False :=
+    (a1 : 2 / 7 ≤ T0 x) (b1 : T0 x < 5 / 7)
+    (a2 : 2 / 7 ≤ T0 (T0 x)) (b2 : T0 (T0 x) < 5 / 7)
+    (a3 : 2 / 7 ≤ T0 (T0 (T0 x))) (b3 : T0 (T0 (T0 x)) < 5 / 7) : False :=
   cage_two_sevenths x h0 h1 ⟨a1, b1, a2, b2, a3, b3⟩
+
+/-- Statement lock: the double-branch one-step `[2/7, 5/7)` cage. -/
+example (x : ℚ) (h0 : 2 / 7 ≤ x) (h1 : x < 5 / 7)
+    (a0 : 2 / 7 ≤ T0 x) (b0 : T0 x < 5 / 7)
+    (a1 : 2 / 7 ≤ T1 x) (b1 : T1 x < 5 / 7) : False :=
+  cage_two_sevenths_double x h0 h1 ⟨a0, b0, a1, b1⟩
 
 /-- Numeric anchor: `Tcup (4/19) = 6/19`. -/
 example : Tcup (4 / 19) = 6 / 19 := by

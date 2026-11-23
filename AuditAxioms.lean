@@ -44,6 +44,7 @@ public section
 
 #print axioms Mahler32.ZeroEntropyCages.exclusion_integer
 #print axioms Mahler32.ZeroEntropyCages.cage_two_sevenths
+#print axioms Mahler32.ZeroEntropyCages.cage_two_sevenths_double
 
 #print axioms Mahler32.DiscreteFluidCertificates.cup_cycle
 #print axioms Mahler32.DiscreteFluidCertificates.cup_period_three

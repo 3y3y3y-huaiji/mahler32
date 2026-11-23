@@ -11,43 +11,75 @@ public import Mathlib
 # Zero-entropy exclusion cages for the Mahler `3/2` map
 
 This module formalises the *finite, decidable* core of the "exclusion cage" story for the
-Mahler map `T x = {3x/2}` on `[0, 1)`.  Three layers are distinguished:
+Mahler map on `[0, 1)`, presented through its **two genuine branches**
+
+* `T0 x = {3x/2}`  (the branch that is active when no wrap occurs),
+* `T1 x = {3x/2 + 1/2}`  (the half-shifted branch),
+
+with `{·}` denoting the fractional part.  On `[0, 1)` each branch is a single conditional
+subtraction, which is how they are implemented below.
+
+Three layers are distinguished:
 
 * **The arithmetic engine** (`exclusion_integer`): an integer squeezed between a `2`-adic
   divisibility and an Archimedean size bound must vanish.  This is the `2`-adic half of every
   "all-real exclusion" argument: an orbit that is eventually periodic produces an integer
   divisible by arbitrarily high powers of `2`, hence equal to `0`.
 
-* **The exact cage** (`cage_two_sevenths`): the interval `[2/7, 5/7)` has *no* four-term orbit
-  at all.  If `x, Tx, T²x, T³x` all lie in `[2/7, 5/7)`, contradiction.  This is proved by exact
-  rational interval arithmetic, with no numerical approximation and no `native_decide`.
+* **The exact forward cage** (`cage_two_sevenths`): the interval `[2/7, 5/7)` has *no*
+  four-term orbit under the deterministic Mahler branch `T0`.  If `x, T0 x, T0²x, T0³x` all lie in
+  `[2/7, 5/7)`, contradiction.  This is proved by exact rational interval arithmetic, with no
+  numerical approximation and no `native_decide`.
+
+* **The double-branch one-step cage** (`cage_two_sevenths_double`): at the level of the full
+  two-branch system, *no* `x ∈ [2/7, 5/7)` has **both** branches `T0 x` and `T1 x` back inside
+  `[2/7, 5/7)`.  This is the exact statement that the double-branch survivor refinement of
+  `[2/7, 5/7)` empties after one step.
 
 * **Width bookkeeping** (`width_three_sevenths`, `width_four_sevenths`): the widths that make
   the single-interval and the holed `4/7` barriers interesting.
 
-The stronger claims for the other barrier sets quoted in `papers/paper2_zero_entropy_fluid`
-(the `31`-state `[2/7,5/7)` automaton, the `128`-state holed `4/7` cage, the `δ* = 8/57`
-left-side asymmetry) are *computational certificates*, reproduced by
-`scripts/generate_certificates.py`; they are not asserted here as Lean theorems.
+The emptying-depth table quoted in `papers/paper2_zero_entropy_fluid` for the barrier families is
+a *computational certificate*, reproduced exactly by `scripts/generate_certificates.py`; it is not
+asserted here as a Lean theorem.  The paper quotes only these exact, reproducible emptying depths
+(forward and double-branch); the earlier working-notes automaton counts and the `δ* = 8/57`
+threshold are not asserted.
 -/
 
 public section
 
 namespace Mahler32.ZeroEntropyCages
 
-/-- The Mahler map `T x = {3x/2}` on `[0, 1)`, written without `floor` (it is only ever used on
-`[0, 1)`, where `3x/2 < 3/2`, so a single conditional subtraction reproduces the fractional
-part exactly). -/
-@[expose] public def Tq (x : ℚ) : ℚ :=
+/-- The `0`-branch of the Mahler map, `T0 x = {3x/2}` on `[0, 1)`, written without `floor`
+(only ever used on `[0, 1)`, where `3x/2 < 3/2`, so a single conditional subtraction reproduces
+the fractional part exactly). -/
+@[expose] public def T0 (x : ℚ) : ℚ :=
   if (3 * x) / 2 < 1 then (3 * x) / 2 else (3 * x) / 2 - 1
 
-/-- Rewrite rule for the non-wrapping branch. -/
-public theorem Tq_of_lt {x : ℚ} (h : (3 * x) / 2 < 1) : Tq x = (3 * x) / 2 := by
-  simp [Tq, h]
+/-- The `1`-branch of the double-branch map, `T1 x = {3x/2 + 1/2}` on `[0, 1)`, again written
+without `floor` (on `[0, 1)` one has `3x/2 + 1/2 < 2`, so one conditional subtraction suffices). -/
+@[expose] public def T1 (x : ℚ) : ℚ :=
+  if (3 * x) / 2 + 1 / 2 < 1 then (3 * x) / 2 + 1 / 2 else (3 * x) / 2 + 1 / 2 - 1
 
-/-- Rewrite rule for the wrapping branch. -/
-public theorem Tq_of_ge {x : ℚ} (h : ¬ (3 * x) / 2 < 1) : Tq x = (3 * x) / 2 - 1 := by
-  simp [Tq, h]
+/-- Rewrite rule for the non-wrapping branch of `T0`. -/
+public theorem T0_of_lt {x : ℚ} (h : (3 * x) / 2 < 1) : T0 x = (3 * x) / 2 := by
+  simp [T0, h]
+
+/-- Rewrite rule for the wrapping branch of `T0`. -/
+public theorem T0_of_ge {x : ℚ} (h : ¬ (3 * x) / 2 < 1) : T0 x = (3 * x) / 2 - 1 := by
+  simp [T0, h]
+
+/-- Rewrite rule for the non-wrapping branch of `T1`. -/
+public theorem T1_of_lt {x : ℚ} (h : (3 * x) / 2 + 1 / 2 < 1) :
+    T1 x = (3 * x) / 2 + 1 / 2 := by
+  unfold T1
+  rw [ite_eq_left h]
+
+/-- Rewrite rule for the wrapping branch of `T1`. -/
+public theorem T1_of_ge {x : ℚ} (h : ¬ (3 * x) / 2 + 1 / 2 < 1) :
+    T1 x = (3 * x) / 2 + 1 / 2 - 1 := by
+  unfold T1
+  rw [ite_eq_right h]
 
 /-! ### The arithmetic engine -/
 
@@ -67,49 +99,68 @@ public theorem exclusion_integer {M : ℤ} {N : ℕ}
     omega
   rw [hk0, mul_zero]
 
-/-! ### The exact `[2/7, 5/7)` cage -/
+/-! ### The exact `[2/7, 5/7)` cage for the forward branch `T0` -/
 
 /-- **The `[2/7, 5/7)` cage has no four-term orbit.**  There is no rational `x` with
-`x, Tx, T²x, T³x` all in `[2/7, 5/7)`.  The proof tracks the exact image interval step by step:
-`[2/7,5/7) → [3/7,5/7) → [9/14,5/7)`, and the fourth image misses the cage entirely. -/
+`x, T0 x, T0²x, T0³x` all in `[2/7, 5/7)`.  The proof tracks the exact image interval step by
+step: `[2/7,5/7) → [3/7,5/7) → [9/14,5/7)`, and the fourth image misses the cage entirely. -/
 public theorem cage_two_sevenths : ∀ x : ℚ,
     2 / 7 ≤ x → x < 5 / 7 →
-    ¬ (2 / 7 ≤ Tq x ∧ Tq x < 5 / 7 ∧
-       2 / 7 ≤ Tq (Tq x) ∧ Tq (Tq x) < 5 / 7 ∧
-       2 / 7 ≤ Tq (Tq (Tq x)) ∧ Tq (Tq (Tq x)) < 5 / 7) := by
+    ¬ (2 / 7 ≤ T0 x ∧ T0 x < 5 / 7 ∧
+       2 / 7 ≤ T0 (T0 x) ∧ T0 (T0 x) < 5 / 7 ∧
+       2 / 7 ≤ T0 (T0 (T0 x)) ∧ T0 (T0 (T0 x)) < 5 / 7) := by
   intro x hx0 hx1
   rintro ⟨h1a, h1b, h2a, h2b, h3a, h3b⟩
-  -- Step 1: the wrap branch is impossible, so `x < 10/21` and `Tq x = 3x/2`.
+  -- Step 1: the wrap branch is impossible, so `x < 10/21` and `T0 x = 3x/2`.
   have hx10 : x < 10 / 21 := by
     by_cases hc : (3 * x) / 2 < 1
-    · rw [Tq_of_lt hc] at h1b
+    · rw [T0_of_lt hc] at h1b
       linarith
-    · rw [Tq_of_ge hc] at h1a
+    · rw [T0_of_ge hc] at h1a
       linarith
-  have hTx : Tq x = (3 * x) / 2 := by
-    apply Tq_of_lt
+  have hTx : T0 x = (3 * x) / 2 := by
+    apply T0_of_lt
     linarith
-  -- Step 2: again no wrap, so `Tq (Tq x) = 9x/4` and `x < 20/63`.
+  rw [hTx] at h1b
+  -- Step 2: again no wrap, so `T0 (T0 x) = 9x/4` and `x < 20/63`.
   have h9lt1 : 9 * x / 4 < 1 := by
     by_contra h
     have hge : ¬ (3 * (3 * x / 2)) / 2 < 1 := by
       intro hc
       linarith [not_lt.mp h]
-    rw [hTx, Tq_of_ge hge] at h2a
+    rw [hTx, T0_of_ge hge] at h2a
     linarith
-  have h2eq : Tq (Tq x) = 9 * x / 4 := by
-    rw [hTx, Tq_of_lt (by linarith [h9lt1] : (3 * (3 * x / 2)) / 2 < 1)]
+  have h2eq : T0 (T0 x) = 9 * x / 4 := by
+    rw [hTx, T0_of_lt (by linarith [h9lt1] : (3 * (3 * x / 2)) / 2 < 1)]
     ring
-  have hx20 : x < 20 / 63 := by
-    rw [h2eq] at h2b
-    linarith
-  -- Step 3: `Tq (Tq (Tq x)) = 27x/8` or `27x/8 - 1`, and both miss `[2/7, 5/7)`.
+  have h2b' : 9 * x / 4 < 5 / 7 := by
+    simpa [h2eq] using h2b
+  -- Step 3: `T0 (T0 (T0 x)) = 27x/8` or `27x/8 - 1`; both miss `[2/7, 5/7)`.
   by_cases hc : (3 * (9 * x / 4)) / 2 < 1
-  · rw [h2eq, Tq_of_lt hc] at h3b
-    -- `27x/8 < 5/7` contradicts `27x/8 ≥ 27/28`.
+  · rw [h2eq, T0_of_lt hc] at h3b
     linarith
-  · rw [h2eq, Tq_of_ge hc] at h3a
-    -- `27x/8 - 1 ≥ 2/7` contradicts `27x/8 - 1 < 1/14`.
+  · rw [h2eq, T0_of_ge hc] at h3a
+    linarith
+
+/-! ### The double-branch one-step cage -/
+
+/-- **The double-branch `[2/7, 5/7)` cage empties after one step.**  For no rational `x` in
+`[2/7, 5/7)` do *both* branches `T0 x` and `T1 x` land back in `[2/7, 5/7)`.  Equivalently the
+survivor refinement `U ∩ T0^{-1}U ∩ T1^{-1}U` of the two-branch system is empty already at the
+first step. -/
+public theorem cage_two_sevenths_double : ∀ x : ℚ,
+    2 / 7 ≤ x → x < 5 / 7 →
+    ¬ (2 / 7 ≤ T0 x ∧ T0 x < 5 / 7 ∧ 2 / 7 ≤ T1 x ∧ T1 x < 5 / 7) := by
+  intro x hx0 hx1
+  rintro ⟨h0a, h0b, h1a, h1b⟩
+  by_cases hb : (3 * x) / 2 < 1
+  · rw [T0_of_lt hb] at h0a h0b
+    by_cases hc : (3 * x) / 2 + 1 / 2 < 1
+    · rw [T1_of_lt hc] at h1a h1b
+      linarith
+    · rw [T1_of_ge hc] at h1a h1b
+      linarith
+  · rw [T0_of_ge hb] at h0a h0b
     linarith
 
 /-! ### Width bookkeeping -/
