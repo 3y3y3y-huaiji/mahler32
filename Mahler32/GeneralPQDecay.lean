@@ -642,7 +642,7 @@ private lemma tunnel_step_lt_of_mod (M : TunnelModelPQ) {g : ℕ}
         (g % M.q = M.r2 ∧ M.q * h1 = M.p * g + M.d0)) := by
   unfold TunnelModelPQ.step
   rcases h with h1 | h2
-  · rw [if_pos h1]
+  · rw [ite_eq_left h1]
     have hdvd : M.q ∣ (M.p * g + (M.d0 + 1)) := by
       have hm := Nat.dvd_of_mod_eq_zero M.hmod1
       rw [← Nat.mod_add_div g M.q, h1]
@@ -652,7 +652,7 @@ private lemma tunnel_step_lt_of_mod (M : TunnelModelPQ) {g : ℕ}
       exact dvd_add hm (dvd_mul_right _ _)
     exact ⟨_, rfl, Or.inl ⟨h1, Nat.mul_div_cancel' hdvd⟩⟩
   · have hne : g % M.q ≠ M.r1 := fun he => M.hr_ne (he.symm.trans h2)
-    rw [if_neg hne, if_pos h2]
+    rw [ite_eq_right hne, ite_eq_left h2]
     have hdvd : M.q ∣ (M.p * g + M.d0) := by
       have hm := Nat.dvd_of_mod_eq_zero M.hmod2
       rw [← Nat.mod_add_div g M.q, h2]

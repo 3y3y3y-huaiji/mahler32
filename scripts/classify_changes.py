@@ -39,6 +39,7 @@ LEAN_PATTERNS = (
 PAPERS_PATTERNS = (
     "papers/**",
     "scripts/check_latex.py",
+    "scripts/verify_refs.py",
     ".github/workflows/papers.yml",
 )
 DOCS_PATTERNS = (

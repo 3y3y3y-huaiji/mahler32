@@ -804,7 +804,7 @@ example {p q : ℕ} (hq : 1 ≤ q) (neg : Bool) {I J : RatInterval}
     (hI0 : 0 ≤ I.lo) (hI1 : I.hi ≤ 1) {x y : ℚ}
     (hx : I.mem x) (hy : J.mem y) (hstep : StepPQ p q neg x y) :
     hasBranchOverlap p q neg I J = true :=
-  hasBranchOverlap_sound hq neg hI0 hI1 hx hy hstep
+  hasBranchOverlap_sound hq hI0 hI1 hx hy hstep
 
 /-- Statement lock: zero topological entropy under topological SCC ordering + no internal branching. -/
 example {p q N M : ℕ} {neg : Bool} (A : ZeroEntropyAutomaton p q neg N M) :

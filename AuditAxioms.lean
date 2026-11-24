@@ -120,7 +120,7 @@ public section
 
 -- Issue #17: General (p, q) repetition exclusion, Fourier decay, Karp cycle bound, and automata
 -- (`Mahler32.RationalBaseDefs` contains pure definitions exercised via the modules below.)
-#print axioms Mahler32.RationalBaseDefs.qStarPQ
+#print axioms Mahler32.qStarPQ
 #print axioms Mahler32.GeneralPQDecay.qStarPQ_bounds
 #print axioms Mahler32.GeneralPQDecay.two_place_isolation_pq
 #print axioms Mahler32.GeneralPQDecay.no_eventually_periodic_pq

@@ -104,6 +104,7 @@ else
 fi
 
 python3 scripts/check_latex.py --source
+python3 scripts/verify_refs.py --offline
 
 if command -v latexmk >/dev/null 2>&1; then
   for d in papers/*/; do

@@ -32,5 +32,7 @@ jobs:
         run: python3 scripts/verify_ssot.py
 
       # LaTeX source & BibTeX quality gate.  Cheap, no TeX toolchain needed.
-      - name: LaTeX source gate
-        run: python3 scripts/check_latex.py --source
+      - name: LaTeX source & BibTeX gate
+        run: |
+          python3 scripts/check_latex.py --source
+          python3 scripts/verify_refs.py --offline
