@@ -101,6 +101,10 @@ K - a_n/(3/2)^n = Σ_{k≥n} ε_k (2/3)^{k+1} / 2  ≤  (2/3)^n ,
 - `#lint` 全文件扫描：`Found 0 errors in 108 declarations`（14 linters 全过）。
 - 风格审计（`.agents/skills/mathlib-style-and-naming`）：0 error / 0 warning，100% 合规。
 
+**证明策略**：本库的证明优先用 `grind` 闭合；只有在 `grind` 不适用、或 `omega` / `ring` / `simp`
+能以更轻量的方式直接结束目标时，才退回这些策略（例如纯线性算术交给 `omega`、纯环等式交给 `ring`）。
+历史上"以 `omega` / `ring` 为主力"的表述已经过时，不应再出现在文档或提交说明中。
+
 | 组 | 定理 | 内容 |
 | :-- | :-- | :-- |
 | 基本 | `step_eq` | `step x = (3x + x % 2)/2` |
