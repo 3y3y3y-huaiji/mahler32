@@ -2,7 +2,7 @@ name: Secret and layout gate
 
 on:
   push:
-    branches: [ main, master, 'trae/**' ]
+    branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
@@ -25,8 +25,14 @@ jobs:
       - name: Refuse credentials and scratch files
         run: python3 scripts/check_no_secrets.py --tree
 
-      # This workflow has no `paths-ignore`, so it also covers documentation-only
-      # changes (README/AGENTS/docs) that `lean_build.yml` skips.  The SSOT gate is
-      # cheap and needs no Lean toolchain.
+      # Single-source-of-truth gate: lean-toolchain vs formalization.yaml/README,
+      # module inventory (imported + audited + locked + registered), stale-claim
+      # blacklist and repository-internal link integrity.  Cheap, no Lean needed.
       - name: SSOT gate
         run: python3 scripts/verify_ssot.py
+
+      # LaTeX source & BibTeX quality gate.  Cheap, no TeX toolchain needed.
+      - name: LaTeX source & BibTeX gate
+        run: |
+          python3 scripts/check_latex.py --source
+          python3 scripts/verify_refs.py --offline

@@ -19,7 +19,8 @@ name: Independent kernel (nanoda)
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master, 'trae/**' ]
+    branches: [ main, master ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main, master ]
     types: [ labeled ]

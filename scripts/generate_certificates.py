@@ -33,7 +33,7 @@ Two independent blocks:
 
   The honest conclusions are recorded per barrier: ``[5/24,11/24) ∪
   [13/24,19/24)`` has the **finite** survivor set ``{4/15, 2/5, 3/5, 11/15}``
-  (a single 2-cycle plus two transients, i.e. a genuine finite-state cage),
+  (a single 2-cycle plus two transients, i.e. a genuine finite-state zero-entropy obstruction),
   while ``[2/7,5/7)`` and ``[28/97,69/97)`` have **infinite** zero-entropy
   survivor sets (the joint relation is *not* emptied; only its cylinder count
   grows sub-exponentially).  These are not "single-branch emptying" results.
@@ -610,18 +610,18 @@ def main(argv: list[str]) -> int:
               "[5/24,11/24) u [13/24,19/24): survivor stays at exactly 4 components")
         hcyc = set(sholed["cycles"])
         check({Q(2, 5), Q(3, 5)} <= hcyc and hcyc <= {Q(4, 15), Q(2, 5), Q(3, 5), Q(11, 15)},
-              "holed cage: periodic points are exactly the 2-cycle 2/5 <-> 3/5")
+              "holed obstruction: periodic points are exactly the 2-cycle 2/5 <-> 3/5")
         # the four survivor points and their exact forward step
         check(T0q(Q(2, 5)) == Q(3, 5) and T1q(Q(3, 5)) == Q(2, 5),
-              "holed cage 2-cycle: 2/5 --T0--> 3/5 --T1--> 2/5")
+              "holed obstruction 2-cycle: 2/5 --T0--> 3/5 --T1--> 2/5")
         check(T0q(Q(4, 15)) == Q(2, 5) and T1q(Q(11, 15)) == Q(3, 5),
-              "holed cage transients: 4/15 -> 2/5, 11/15 -> 3/5")
+              "holed obstruction transients: 4/15 -> 2/5, 11/15 -> 3/5")
 
     # ------------------------------------------------------------------
     # the old single-branch numbers, kept only to show they differ
     # ------------------------------------------------------------------
     print("\n== single-branch (T0-alone / T1-alone) emptying, for contrast only ==")
-    print("   (these are NOT the joint relation; the old 'cage' reading is retired)")
+    print("   (these are NOT the joint relation; the single-branch reading is retired)")
     for name, u in BARRIERS.items():
         d0 = cup_alone_depth(u, 0)
         d1 = cup_alone_depth(u, 1)
@@ -740,6 +740,21 @@ def main(argv: list[str]) -> int:
         check(max_depth <= 11, "all of S7 hits within 11 steps")
         check(carry_ok, "carry branch shift by 192")
 
+    print("\n== signed rational (p, q) zero-entropy SCC certificates (Issue #17) ==")
+    for cfg in PQ_ZERO_ENTROPY_CONFIGS:
+        res = analyze_pq_zero_entropy(
+            cfg["p"], cfg["q"], cfg["neg"], cfg["intervals"], cfg["depth"]
+        )
+        print(
+            f"   {cfg['label']:46s}: width={float(res['width']):.4f} "
+            f"cells={res['cells']} sccs={res['sccs']} max_intra={res['max_intra']}"
+        )
+        if verify:
+            check(res["width"] == cfg["expected_width"], f"{cfg['label']}: exact width")
+            check(res["cells"] == cfg["expected_cells"], f"{cfg['label']}: exact survivor cells")
+            check(res["sccs"] == cfg["expected_sccs"], f"{cfg['label']}: exact SCC count")
+            check(res["max_intra"] <= 1, f"{cfg['label']}: no internal SCC branching")
+
     print()
     if verify:
         if failures:
@@ -747,6 +762,130 @@ def main(argv: list[str]) -> int:
             return 1
         print("all finite certificates verified")
     return 0
+
+
+def pq_preimage(intervals: list[tuple[Q, Q]], p: int, q: int, neg: bool) -> list[tuple[Q, Q]]:
+    """Exact preimage under the multi-branch signed map ``x |-> {(+-p/q) x + k/q}``."""
+    out: list[tuple[Q, Q]] = []
+    alpha = Q(-p if neg else p, q)
+    for k in range(q):
+        shift = Q(k, q)
+        for m in range(-p - 1, p + 2):
+            for a, b in intervals:
+                if neg:
+                    lo = (b + m - shift) / alpha
+                    hi = (a + m - shift) / alpha
+                else:
+                    lo = (a + m - shift) / alpha
+                    hi = (b + m - shift) / alpha
+                lo = max(Q(0), lo)
+                hi = min(Q(1), hi)
+                if lo < hi:
+                    out.append((lo, hi))
+    return normalise(out)
+
+
+def pq_cells_overlap(p: int, q: int, neg: bool, cell_i: tuple[Q, Q], cell_j: tuple[Q, Q]) -> bool:
+    """Exact rational branch-image overlap test mirroring ``hasBranchOverlap`` in Lean."""
+    ai, bi = cell_i
+    aj, bj = cell_j
+    for k in range(q):
+        for m in range(-p - 1, p + 2):
+            shift = Q(k, q) - m
+            if neg:
+                lo_img = Q(-p, q) * bi + shift
+                hi_img = Q(-p, q) * ai + shift
+            else:
+                lo_img = Q(p, q) * ai + shift
+                hi_img = Q(p, q) * bi + shift
+            if lo_img < bj and aj <= hi_img:
+                return True
+    return False
+
+
+def analyze_pq_zero_entropy(
+    p: int, q: int, neg: bool, intervals: list[tuple[Q, Q]], depth: int
+) -> dict[str, object]:
+    """Compute exact depth-``depth`` survivor cells and Tarjan SCC branching count."""
+    cur = normalise(intervals)
+    for _ in range(depth):
+        cur = intersect(intervals, pq_preimage(cur, p, q, neg))
+    n = len(cur)
+    edges: list[set[int]] = [
+        {j for j in range(n) if pq_cells_overlap(p, q, neg, cur[i], cur[j])}
+        for i in range(n)
+    ]
+    comps = scc(n, edges)
+    max_intra = 0
+    for comp in comps:
+        cs = set(comp)
+        for v in comp:
+            max_intra = max(max_intra, len(edges[v] & cs))
+    return {
+        "width": total_length(intervals),
+        "cells": n,
+        "sccs": len(comps),
+        "max_intra": max_intra,
+    }
+
+
+PQ_ZERO_ENTROPY_CONFIGS = [
+    {
+        "label": "-5/3 centered [89/250, 161/250)",
+        "p": 5,
+        "q": 3,
+        "neg": True,
+        "intervals": [(Q(89, 250), Q(161, 250))],
+        "depth": 1,
+        "expected_width": Q(36, 125),
+        "expected_cells": 3,
+        "expected_sccs": 3,
+    },
+    {
+        "label": "-3/2 holed [147/1000,43/100) u [57/100,853/1000)",
+        "p": 3,
+        "q": 2,
+        "neg": True,
+        "intervals": [(Q(147, 1000), Q(43, 100)), (Q(57, 100), Q(853, 1000))],
+        "depth": 6,
+        "expected_width": Q(283, 500),
+        "expected_cells": 18,
+        "expected_sccs": 15,
+    },
+    {
+        "label": "-3/2 centered [1429/5000, 3571/5000)",
+        "p": 3,
+        "q": 2,
+        "neg": True,
+        "intervals": [(Q(1429, 5000), Q(3571, 5000))],
+        "depth": 7,
+        "expected_width": Q(1071, 2500),
+        "expected_cells": 26,
+        "expected_sccs": 16,
+    },
+    {
+        "label": "+5/3 centered [697/2000, 1303/2000)",
+        "p": 5,
+        "q": 3,
+        "neg": False,
+        "intervals": [(Q(697, 2000), Q(1303, 2000))],
+        "depth": 3,
+        "expected_width": Q(303, 1000),
+        "expected_cells": 13,
+        "expected_sccs": 9,
+    },
+    {
+        "label": "+5/3 centered [87/250, 163/250) (depth 7, 0.3040)",
+        "p": 5,
+        "q": 3,
+        "neg": False,
+        "intervals": [(Q(87, 250), Q(163, 250))],
+        "depth": 7,
+        "expected_width": Q(38, 125),
+        "expected_cells": 83,
+        "expected_sccs": 72,
+    },
+]
 
 
 def cup_alone_depth(u, branch, max_depth=30):

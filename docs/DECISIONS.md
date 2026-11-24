@@ -4,22 +4,22 @@
 
 ---
 
-## 1. 双分支笼必须用联合关系 `Step`
+## 1. 双分支零拓扑熵符号障碍（Two-Branch Zero-Entropy Obstruction）必须用联合关系 `Step`
 
-**决定.** 所有关于 Mahler `3/2` 双分支笼的陈述，都建模为
+**决定.** 所有关于 Mahler `3/2` 双分支零拓扑熵符号障碍（原工作注记中称为“双分支笼”）的陈述，都建模为
 
 ```lean
 Step x y := y = T0 x ∨ y = T1 x
 ```
 
-而 `Tq = T0` 的单分支迭代只用于确定性结论，不得冒充双分支结论。
+而 `Tq = T0` 的单分支迭代只用于确定性结论，不得冒充双分支联合关系的结论。
 
-**原因.** 真实轨道每一步都可以在偶/奇分支间切换；单分支在 `[2/7, 5/7)` 的 3 步清空
+**原因.** 真实轨道每一步都可以在偶/奇分支间切换；单分支在 `[2/7, 5/7)` 的 3 步终止性
 对 `Step` 不成立（`ZeroEntropyCages.joint_orbit_two_sevenths` 给出 6 项 `Step`-轨道，
-`joint_cycle_two_fifths`、`joint_cycle_four_thirteenths` 给出真正的周期环）。
+`joint_cycle_two_fifths`、`joint_cycle_four_thirteenths` 给出真正的周期轨）。
 
-**禁止回退.** 不得把 `cage_two_sevenths` 或“`[2/7, 5/7)` 3 步清空”写成双分支结论；
-`SpecCheck.ZeroEntropyCages` 的 `Step` 定义锁与轨道/环锁必须保持通过。
+**禁止回退.** 不得把 `cage_two_sevenths` 或“`[2/7, 5/7)` 3 步终止/清空”写成双分支结论；
+`SpecCheck.ZeroEntropyCages` 的 `Step` 定义锁与轨道/周期锁必须保持通过。
 
 ---
 

@@ -103,45 +103,23 @@ else
   echo "   actionlint not found; skipping workflow lint (CI installs v1.7.9)"
 fi
 
+python3 scripts/check_latex.py --source
+python3 scripts/verify_refs.py --offline
+
 if command -v latexmk >/dev/null 2>&1; then
   for d in papers/*/; do
-    ( cd "$d" && latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex && latexmk -c )
+    ( cd "$d" && latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex && python3 ../../scripts/check_latex.py --source --build . && latexmk -c )
   done
 elif command -v pdflatex >/dev/null 2>&1; then
   for d in papers/*/; do
     ( cd "$d" && pdflatex -interaction=nonstopmode -halt-on-error main.tex \
         && (bibtex main || true) \
         && pdflatex -interaction=nonstopmode -halt-on-error main.tex \
-        && pdflatex -interaction=nonstopmode -halt-on-error main.tex )
+        && pdflatex -interaction=nonstopmode -halt-on-error main.tex \
+        && python3 ../../scripts/check_latex.py --source --build . )
   done
 else
-  echo "   no TeX engine found; running structural check only"
-  python3 - <<'PY'
-import pathlib, re, sys
-bad = False
-for tex in sorted(pathlib.Path("papers").glob("*/main.tex")):
-    text = tex.read_text()
-    envs = re.findall(r"\\(begin|end)\{([^}]+)\}", text)
-    stack = []
-    for kind, name in envs:
-        if kind == "begin":
-            stack.append(name)
-        else:
-            if not stack or stack[-1] != name:
-                print(f"   {tex}: environment mismatch at \\end{{{name}}}")
-                bad = True
-                break
-            stack.pop()
-    if stack:
-        print(f"   {tex}: unclosed environments {stack}")
-        bad = True
-    if text.count("{") != text.count("}"):
-        print(f"   {tex}: unbalanced braces")
-        bad = True
-    if not bad:
-        print(f"   ok {tex}")
-sys.exit(1 if bad else 0)
-PY
+  echo "   no TeX engine found; TeX build-log check skipped locally (check_latex.py --source passed)"
 fi
 
 echo

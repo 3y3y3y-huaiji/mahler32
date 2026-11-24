@@ -8,15 +8,15 @@ module
 public import Mahler32.Basic
 
 /-!
-# Task 6 — two-world Padé criterion
+# Task 6 — Simultaneous Archimedean and `2`-adic Padé Criterion
 
 The `[1/2]` and `[1/1]` diagonal Padé approximants of `e * (1 + c + c² + ⋯)` are
 
 `pade12 e c = e / (1 - c)` and `pade11 e c = e * (1 + c)`.
 
-The two-world criterion compares them: the difference is exactly `e * c² / (1 - c)`, so the
-worlds agree iff `c = 0`.  Rational strictness checks (`17/12 > √2 > 99/70`) are done with
-`norm_num` on squares.
+The Padé comparison evaluates their discrepancy: the difference is exactly `e * c² / (1 - c)`,
+so the two evaluations agree iff `c = 0`.  Rational strictness checks (`17/12 > √2 > 99/70`) are
+done with `norm_num` on squares.
 -/
 
 public section
@@ -29,7 +29,7 @@ namespace Mahler32.TwoWorldPadeCriterion
 /-- `[1/1]` Padé value. -/
 @[expose] public def pade11 (e c : ℚ) : ℚ := e * (1 + c)
 
-/-- **Two-world identity**: the two Padé worlds differ by exactly `e c² / (1 - c)`. -/
+/-- **Archimedean–`2`-adic Padé identity**: the two Padé evaluations differ by `e c² / (1 - c)`. -/
 public theorem two_world_identity (e c : ℚ) (hc : c ≠ 1) :
     pade12 e c - pade11 e c = e * c ^ 2 / (1 - c) := by
   unfold pade12 pade11
@@ -37,8 +37,7 @@ public theorem two_world_identity (e c : ℚ) (hc : c ≠ 1) :
   ring
 
 /-- At the rational golden-split constant `c = 1/9` the complementary factor is exactly `1`:
-the rational product `c * 9` is an integer, which is what makes the two-world comparison
-integer-valued. -/
+the rational product `c * 9` is an integer, making the comparison integer-valued. -/
 public theorem integer_divisibility_bound : (1 / 9 : ℚ) * 9 = 1 := by
   norm_num
 
@@ -50,9 +49,9 @@ public theorem sqrt_two_lt_17_12 : (2 : ℚ) < (17 / 12) ^ 2 := by
 public theorem sqrt_two_gt_140_99 : (140 / 99 : ℚ) ^ 2 < 2 := by
   norm_num
 
-/-- **The two worlds agree iff `c = 0`.**  For a non-zero `e` and `c ≠ 1`, the two diagonal
-Padé worlds of `e * (1 + c + c² + ⋯)` coincide exactly on the degenerate `c = 0` case.  This is
-the exact statement behind `two_world_identity`: the difference is `e c² / (1 - c)`. -/
+/-- **Uniqueness of agreement (`c = 0`).**  For a non-zero `e` and `c ≠ 1`, the two diagonal
+Padé evaluations of `e * (1 + c + c² + ⋯)` coincide exclusively on the degenerate `c = 0` case.
+This follows directly from `two_world_identity`: the discrepancy is `e c² / (1 - c)`. -/
 public theorem two_world_iff (e c : ℚ) (he : e ≠ 0) (hc : c ≠ 1) :
     pade12 e c = pade11 e c ↔ c = 0 := by
   constructor
@@ -67,11 +66,10 @@ public theorem two_world_iff (e c : ℚ) (he : e ≠ 0) (hc : c ≠ 1) :
   · rintro rfl
     simp [pade12, pade11]
 
-/-- **The integer-vanishing engine of the two-world criterion.**  An integer `M` that is
-divisible by `2 ^ N` and satisfies `|M| < 2 ^ N` must vanish.  In the Padé comparison this is
-applied to `M = D · 3 ^ deg · (Q(2/3) S(2/3)₂ - P(2/3))`: the `2`-adic world forces the
-divisibility, the Archimedean world forces the size bound, and the only integer caught between
-them is `0`. -/
+/-- **The integer-vanishing engine of simultaneous evaluation.**  An integer `M` that is divisible
+by `2 ^ N` and satisfies `|M| < 2 ^ N` must vanish.  In the Padé comparison this is applied to
+`M = D · 3 ^ deg · (Q(2/3) S(2/3)₂ - P(2/3))`: the `2`-adic evaluation forces the divisibility,
+the Archimedean evaluation forces the size bound, and the only integer between them is `0`. -/
 public theorem two_pow_dvd_eq_zero {M : ℤ} {N : ℕ}
     (hdvd : (2 : ℤ) ^ N ∣ M) (hlt : |M| < (2 : ℤ) ^ N) : M = 0 := by
   obtain ⟨k, rfl⟩ := hdvd
@@ -86,15 +84,15 @@ public theorem two_pow_dvd_eq_zero {M : ℤ} {N : ℕ}
     omega
   rw [hk0, mul_zero]
 
-/-! ### `ℝ × ℚ₂` two-world isolation & elementary repetition-block exclusion
+/-! ### Simultaneous Archimedean and `2`-adic (`ℝ × ℚ₂`) isolation & repetition exclusion
 
 For the `9/4` model `4 g_{k+1} = 9 g_k + d_k` (`d_k ∈ {2, 3}`), any word `W = [d_0, ..., d_{L-1}]`
 accumulates `wordWeight94 W = ∑ j, d_j · 9^{L-1-j} · 4^j`, so matching `W` from `g_0` reads
-`4^L g_L = 9^L g_0 + wordWeight94 W`.  For an eventually periodic ghost word `U V^∞` (`|U| = r`,
-`|V| = s ≥ 1`), the `2`-adic/real limit `q* = Φ(U V^∞) ∈ [-3/5, -2/5]` isolates the positive
-integer `N* = (g_0 - q*) · 9^r · (9^s - 4^s)` between `4^{r+ws}` (from `2`-adic divisibility)
-and `(g_0 + 3/5) · 9^{r+s}` (from the real bound), unconditionally excluding all eventually
-periodic orbits and bounding the repetition exponent `w`. -/
+`4^L g_L = 9^L g_0 + wordWeight94 W`.  For an eventually periodic symbolic trajectory `U V^∞`
+(`|U| = r`, `|V| = s ≥ 1`), the `2`-adic/real limit `q* = Φ(U V^∞) ∈ [-3/5, -2/5]` isolates the
+positive integer `N* = (g_0 - q*) · 9^r · (9^s - 4^s)` between `4^{r+ws}` (from `2`-adic
+divisibility) and `(g_0 + 3/5) · 9^{r+s}` (from the real bound), unconditionally excluding all
+eventually periodic orbits and bounding the repetition exponent `w`. -/
 
 /-- Weighted `9/4`-word accumulation `∑_{j=0}^{L-1} d_j · 9^{L-1-j} · 4^j` (MSB-first). -/
 @[expose] public def wordWeight94 : List ℕ → ℕ
@@ -113,7 +111,7 @@ periodic orbits and bounding the repetition exponent `w`. -/
 @[expose] public def matchesWord94 (g0 : ℕ) (W : List ℕ) : Prop :=
   ∃ gN : ℕ, 4 ^ W.length * gN = 9 ^ W.length * g0 + wordWeight94 W
 
-/-- The `2`-adic/real limit `q* = Φ(U V^∞)` of an eventually periodic ghost word `U V^∞`. -/
+/-- The `2`-adic/real limit `q* = Φ(U V^∞)` of an eventually periodic symbolic orbit `U V^∞`. -/
 @[expose] public def qStar (U V : List ℕ) : ℚ :=
   -((((9 : ℤ) ^ V.length - 4 ^ V.length) * (wordWeight94 U : ℤ) +
       (4 : ℤ) ^ U.length * (wordWeight94 V : ℤ) : ℤ) : ℚ) /
@@ -224,8 +222,9 @@ public theorem qStar_bounds {U V : List ℕ} (hU : validWord94 U) (hV : validWor
   · rw [neg_div, neg_le, neg_neg, le_div_iff₀ hden_pos]
     linarith
 
-/-- **Two-world isolation theorem**: if `g_0 ≥ 1` matches `U V^w` (`|U| = r`, `|V| = s ≥ 1`),
-then `4^{r+ws} ≤ (g_0 - q*) · 9^r · (9^s - 4^s) < (g_0 + 3/5) · 9^{r+s}`. -/
+/-- **Simultaneous Archimedean and `2`-adic isolation theorem**: if `g_0 ≥ 1` matches `U V^w`
+(`|U| = r`, `|V| = s ≥ 1`), then
+`4^{r+ws} ≤ (g_0 - q*) · 9^r · (9^s - 4^s) < (g_0 + 3/5) · 9^{r+s}`. -/
 public theorem two_world_ghost_bounds {g0 : ℕ} (hg0 : 1 ≤ g0) {U V : List ℕ}
     (hU : validWord94 U) (hV : validWord94 V) (hs : 0 < V.length) (w : ℕ)
     (hmatch : matchesWord94 g0 (U ++ repeatWord V w)) :
@@ -426,7 +425,7 @@ public theorem repetition_exponent_bound {g0 m w : ℕ} (hg0 : 1 ≤ g0)
   exact pos_of_mul_pos_left hdiff (by positivity)
 
 
-/-! ### Mod-9 anti-misfire gate
+/-! ### Mod-9 non-vanishing congruence criterion
 
 A polynomial telescope `L(z) = ∑_{i ≤ r} ∑_{j ≤ d} c_{i,j} (q/b)^i z^j` evaluated at `z = 4/9`
 satisfies `(b^r 9^d) L(4/9) ≡ c_{0,d} · b^r · 4^d (mod 9)` whenever `9 ∣ q`.  Hence if `9 ∣ q`
@@ -538,7 +537,8 @@ public theorem mod_nine_gate_b2 {r d : ℕ} {c : ℕ → ℕ → ℤ} (g0 : ℕ)
     (9 : ℤ) ∣ c 0 d :=
   mod_nine_gate_rat ⟨-(5 * (g0 : ℤ) + 2), by ring⟩ (by norm_num) hL
 
-/-- Contrapositive anti-misfire criterion: if `9 ∤ c_{0,d}` and `9 ∣ q`, then `L(4/9) ≠ 0`. -/
+/-- Contrapositive non-vanishing congruence criterion: if `9 ∤ c_{0,d}` and `9 ∣ q`, then
+`L(4/9) ≠ 0`. -/
 public theorem mod_nine_anti_misfire {r d : ℕ} {c : ℕ → ℕ → ℤ} {q : ℤ}
     (hq : (9 : ℤ) ∣ q) (hc : ¬ ((9 : ℤ) ∣ c 0 d)) :
     polyTelescope r d c q (4 / 9 : ℚ) ≠ 0 :=

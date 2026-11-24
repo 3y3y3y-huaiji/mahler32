@@ -1,11 +1,19 @@
 \documentclass[11pt,a4paper]{article}
 
-\usepackage[margin=2.6cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
-\usepackage{hyperref}
 \usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
 \usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{xurl}
 \usepackage{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=teal!55!black,urlcolor=blue!55!black,pdfencoding=auto]{hyperref}
 \bibliographystyle{plainnat}
 
 \newtheorem{theorem}{Theorem}[section]
@@ -18,75 +26,48 @@
 \newcommand{\Q}{\mathbb{Q}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
 \newcommand{\fract}[1]{\left\{#1\right\}}
+\renewcommand{\_}{\textunderscore\allowbreak}
 \newcommand{\lean}[1]{\texttt{#1}}
+\emergencystretch=1.5em
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
-\title{A Two-World Pad\'e Criterion for Base $\tfrac32$ and the Algebraic--Pair Branch}
-\author{Su MingKai}
-\date{2026}
+\title{Simultaneous Archimedean and \texorpdfstring{$q$}{q}-adic Pad\'e Comparison for Rational Bases \texorpdfstring{$p/q$}{p/q} and the Algebraic--Pair Branch}
+\author{Su MingKai\thanks{Repository: \url{https://github.com/3y3y3y-huaiji/mahler32} \;|\; Zenodo DOI: \href{https://doi.org/10.5281/zenodo.24491265}{10.5281/zenodo.24491265}}}
+\date{November 2026}
 
 \begin{document}
+\maketitle
 
 \begin{abstract}
-We isolate a \emph{two-world} Pad\'e comparison for expansions in base $\tfrac32$: a single
-identity that is simultaneously a $2$-adic divisibility statement and an Archimedean size bound.
-Combined with an integer-vanishing lemma, it forces the ``minimal word'' remainder to be exactly
-zero.  The algebraic--pair branch of Stephan's program is formalised in Lean 4 with Mathlib,
-conditionally on Schlickewei's $p$-adic subspace theorem; the two-world comparison and its
-integer engine are proved unconditionally.  We do \emph{not} claim Mahler's original
-$\xi(3/2)^n \bmod 1$ conjecture; the transcendence statement below is a conditional reduction and
-is labelled as such.
+We formulate a simultaneous Archimedean and $2$-adic Pad\'e comparison for base~$\tfrac32$ and extend the underlying two-place isolation mechanism to arbitrary coprime rational bases $p/q$ with $2\le q<p$. A single algebraic identity yields both a $q$-adic divisibility condition and an Archimedean size bound; combined with an integer-vanishing lemma, this forces pre-periodic symbolic orbits beyond the critical repetition threshold $\log_q p$ to degenerate identically. The algebraic--pair branch of Stephan's program is formalised in Lean~4 with Mathlib conditionally on Schlickewei's $p$-adic subspace theorem, whereas the Pad\'e identity, the mod-$9$ non-vanishing congruence criterion, and the general $(p,q)$ repetition-exponent exclusion bound (\lean{repetition\_exponent\_bound\_pq}) are proved unconditionally with zero extra axioms. We do \emph{not} claim Mahler's $\fract{\xi(3/2)^n}$ conjecture; the transcendence reduction below is explicitly marked as conditional.
 \end{abstract}
 
 \tableofcontents
 
 \section{Introduction}
 
-Mahler's problem asks for the distribution of $\fract{\xi(3/2)^n}$ and is open; the state of the
-art is surveyed in \citep{stephan2026subspace,stephan2026minimal,stephan2026third}.  A point
-$\xi$ is a \emph{Z-number} when $\fract{\xi(3/2)^n}\in[0,\tfrac12)$ for every $n$; Strauch
-\citep{strauch1997} constructed Z-numbers with prescribed maps, and the combinatorial side is
-developed in \citep{lagarias2003,andrieu2026,cassaigne2026}.  Recent work of Cook
-\citep{cook2026} pushes the arithmetic envelope of base $\tfrac32$ congruences, while the
-denominator and equidistribution barriers are those of \citep{calegari2025,elmv}.  Pad\'e
-constructions have also proved effective in the two-expanding-place setting
-\citep{dedeo2026}, and the failure of naive positivity obstructions is illustrated by the
-``unforced singularity'' theme of \citep{tao2026}.
+Mahler's problem asks for the distribution of $\fract{\xi(3/2)^n}$ and remains open; the state of the art is surveyed in \citep{stephan2026subspace,stephan2026minimal,stephan2026third}. A real number $\xi>0$ is a \emph{Z-number} when $\fract{\xi(3/2)^n}\in[0,\tfrac12)$ for every $n\ge0$; Strauch \citep{strauch1997} constructed Z-numbers with prescribed asymptotic distribution laws, and the symbolic-combinatorial side is developed in \citep{lagarias2003,andrieu2026,cassaigne2026}. Recent work of Cook \citep{cook2026} studies coordinatewise clearing and endpoint congruences in base~$\tfrac32$, while the broader denominator and equidistribution barriers belong to \citep{calegari2025,elmv}. Pad\'e constructions have also proved effective in the two-expanding-place setting \citep{dedeo2026}, and structural limitations of naive positivity obstructions are discussed in \citep{tao2026}.
 
-The contribution here is narrow and checkable.  We show that two classical Pad\'e
-approximations---one attached to the analytic world, one to the $2$-adic world---differ by a
-single rational expression, and that the ``two worlds agree'' locus is exactly the degenerate
-parameter $c=0$.  This gives a clean route from ``an infinite family of words survives'' to
-``an integer is divisible by every power of $2$ and smaller than every power of $2$'', hence is
-$0$.
+The contribution of this note is narrow and machine-verified. First, we show that two diagonal Pad\'e approximants---one Archimedean, one $2$-adic---differ by an explicit rational factor, and coincide exclusively at $c=0$. Second, combining simultaneous $q$-adic divisibility and Archimedean upper bounds gives an unconditional exclusion of eventually periodic symbolic words $U V^w$ once $w$ crosses $\log_q p$ for every coprime $p>q\ge2$.
 
-\paragraph{Scope and honesty.}
-Section~\ref{sec:padeworlds}--\ref{sec:engine} contain unconditional, machine-checked results.
-Section~\ref{sec:algpair} records the algebraic--pair branch exactly as formalised: it depends on
-the explicitly declared axiom \lean{schlickewei\_subspace\_Q3}, and we say so.  No statement
-below asserts the Mahler conjecture.
+\paragraph{Scope and epistemic status.}
+Sections~\ref{sec:padeworlds}--\ref{sec:pqbound} contain unconditional results verified in the zero-axiom core of the Lean~4 development (\lean{Mahler32Core}). Section~\ref{sec:algpair} records the algebraic--pair branch as formalised: it depends on the explicitly isolated axiom \lean{schlickewei\_subspace\_Q3} inside \lean{Mahler32Conditional.\allowbreak AlgebraicPairBranch}. Nothing in this document asserts Mahler's conjecture.
 
-\section{Preliminary tool: two Pad\'e worlds}
+\section{Archimedean--\texorpdfstring{$2$}{2}-adic Pad\'e Comparison}
 \label{sec:padeworlds}
 
-The algebraic--pair theorem of Section~\ref{sec:algpair} is the main result of this paper; the
-material below is the elementary tool it needs.  Let $e,c\in\Q$ and consider the generating series $S(z)=e\,(1+z+z^2+\cdots)=e/(1-z)$, whose
-diagonal Pad\'e approximants in the two worlds are the depth-$1$ and depth-$2$ truncations
-\begin{equation}
-  P_{1,1}(z)=e\,\frac{1}{1-z}\Big|_{\text{ord }2},
-  \qquad
-  P_{2,2}(z)=e\,\frac{1}{1-z}\Big|_{\text{ord }4}.
-\end{equation}
-Concretely the Lean definitions take the closed rational forms
+Let $e,c\in\Q$ and consider the geometric series $S(z)=e\,(1+z+z^2+\cdots)=e/(1-z)$. Its depth-$1$ and depth-$2$ diagonal Pad\'e truncations take the closed rational forms
 \begin{equation}
   \lean{pade12}(e,c)=\frac{e}{1-c},
   \qquad
-  \lean{pade11}(e,c)=e\,(1+c).
+  \lean{pade11}(e,c)=e\,(1+c),
 \end{equation}
-These are the two ``worlds'': the first is the analytic diagonal, the second the carry-truncated
-diagonal of base $\tfrac32$.
+representing respectively the Archimedean evaluation and the carry-truncated $2$-adic approximation in base~$\tfrac32$.
 
-\begin{proposition}[Two-world identity]
+\begin{proposition}[Pad\'e discrepancy identity]
 \label{prop:identity}
 For all $e,c\in\Q$ with $c\neq 1$,
 \begin{equation}
@@ -95,159 +76,139 @@ For all $e,c\in\Q$ with $c\neq 1$,
 \end{proposition}
 
 \begin{proof}[Proof sketch]
-Expand the right-hand side: $e\bigl(\tfrac{1}{1-c}-(1+c)\bigr)
-= e\cdot\tfrac{c^2}{1-c}$.  Machine-checked as
-\lean{Mahler32.TwoWorldPadeCriterion.two\_world\_identity}.
+Direct algebraic expansion gives $e\bigl(\tfrac{1}{1-c}-(1+c)\bigr)=e\cdot\tfrac{c^2}{1-c}$. Machine-checked as \lean{Mahler32.\allowbreak TwoWorldPadeCriterion.\allowbreak two\_world\_identity}.
 \end{proof}
 
-The sign structure is then transparent, and the two worlds coincide only at $c=0$.
-
-\begin{theorem}[Agreement criterion]
+\begin{theorem}[Uniqueness of agreement]
 \label{thm:iff}
-Let $e,c\in\Q$ with $e\neq 0$ and $c\neq 1$.  Then
+Let $e,c\in\Q$ with $e\neq 0$ and $c\neq 1$. Then
 \[
   \lean{pade12}(e,c)=\lean{pade11}(e,c)\iff c=0 .
 \]
 \end{theorem}
 
 \begin{proof}
-By Proposition~\ref{prop:identity} the difference is $e c^2/(1-c)$.  If it vanishes, then
-$e c^2=0$ (as $c\neq 1$), hence $c^2=0$ (as $e\neq 0$), hence $c=0$.  Conversely $c=0$ gives
-$e= e$.  Machine-checked as \lean{Mahler32.TwoWorldPadeCriterion.two\_world\_iff}.
+By Proposition~\ref{prop:identity}, the difference equals $ec^2/(1-c)$. Because $c\neq1$ and $e\neq0$, vanishing of this quotient is equivalent to $c=0$. Machine-checked as \lean{Mahler32.\allowbreak TwoWorldPadeCriterion.\allowbreak two\_world\_iff}.
 \end{proof}
 
 \begin{remark}
-The rational strictness certificates used to separate the worlds numerically,
-$(140/99)^2<2$ and $(17/12)^2>2$, are also machine-checked
-(\lean{sqrt\_two\_gt\_140\_99}, \lean{sqrt\_two\_lt\_17\_12}).
+The rational strictness certificates separating the Archimedean and $2$-adic scales numerically, $(140/99)^2<2$ and $(17/12)^2>2$, are proved unconditionally as \lean{sqrt\_two\_gt\_140\_99} and \lean{sqrt\_two\_lt\_17\_12}, alongside the non-vanishing congruence criterion $(\bmod\,9)$ for Pad\'e polynomial telescopes (\lean{mod\_nine\_gate\_rat}, \lean{mod\_nine\_anti\_misfire}).
 \end{remark}
 
-\section{The integer engine}
+\section{Simultaneous Archimedean and \texorpdfstring{$q$}{q}-adic Exclusion}
 \label{sec:engine}
 
-The following elementary lemma is the whole content of the ``$2$-adic squeeze''.  Let
-$M=D\cdot 3^{d}\cdot\bigl(Q(2/3)S(2/3)-P(2/3)\bigr)$ be the integralised remainder of a
-two-world comparison.  The $2$-adic world provides $2^{N}\mid M$ for every $N$; the Archimedean
-world provides $|M|<2^{N}$.
+The following elementary lemma captures the integer-vanishing step of simultaneous Archimedean and $q$-adic evaluation. Given an integralised Pad\'e remainder $M=D\cdot 3^{d}\cdot\bigl(Q(2/3)S(2/3)-P(2/3)\bigr)$, $2$-adic divisibility supplies $2^{N}\mid M$ while the Archimedean estimate yields $|M|<2^{N}$.
 
-\begin{lemma}[Integer exclusion]
+\begin{lemma}[Integer-vanishing criterion]
 \label{lem:engine}
-If $M\in\Z$, $N\in\N$, $2^{N}\mid M$ and $|M|<2^{N}$, then $M=0$.
+If $M\in\Z$, $N\in\N$, $2^{N}\mid M$, and $|M|<2^{N}$, then $M=0$.
 \end{lemma}
 
 \begin{proof}
-Write $M=2^{N}k$.  Then $2^{N}|k|<2^{N}$, so $|k|<1$ and $k=0$.
-Machine-checked as \lean{Mahler32.TwoWorldPadeCriterion.two\_pow\_dvd\_eq\_zero}
-(and again as \lean{Mahler32.ZeroEntropyCages.exclusion\_integer}).
+Writing $M=2^{N}k$ gives $2^{N}|k|<2^{N}$, hence $|k|<1$ and $k=0$. Verified as \lean{two\_pow\_dvd\_eq\_zero} in \lean{Mahler32.\allowbreak TwoWorldPadeCriterion} and as \lean{exclusion\_integer} in \lean{Mahler32.\allowbreak ZeroEntropyCages}.
 \end{proof}
 
-\begin{corollary}[Remainder vanishes]
-If a minimal word produces a nonzero integer $M$ as above and every $2$-adic world divides it
-while the Archimedean bound holds, then the analytic remainder at $z=2/3$ is zero, i.e.\
-$R_{\infty}(2/3)=c\,\xi\,Q(2/3)=0$.
+\begin{corollary}[Annihilation of integralised remainders]
+If a minimal admissible symbolic word yields an integer $M$ divisible by arbitrarily high powers $2^N$ while satisfying the Archimedean bound $|M|<2^N$, then $M=0$ and the remainder at $z=2/3$ vanishes identically.
 \end{corollary}
 
-Lemma~\ref{lem:engine} is deliberately free of analysis: it takes the two worlds as hypotheses.
-The remaining work, which is not formalised here, is to derive the divisibility and the bound from
-a specific word family.
+\section{General \texorpdfstring{$(p,q)$}{(p,q)} Repetition-Exponent Exclusion}
+\label{sec:pqbound}
 
-\section{Core theorem: the algebraic--pair branch}
+Let $2\le q<p$ be coprime integers and consider admissible symbolic words $W=(d_0,\dots,d_{L-1})$ with $d_{\min}\le d_j\le d_{\max}$ governed by the linear recurrence $q g_{k+1}=p g_k+d_k$. Defining the weighted word accumulation
+\[
+  \lean{wordWeightPQ}(p,q,W)=\sum_{j=0}^{L-1} d_j\,p^{L-1-j}\,q^j,
+\]
+an eventually periodic word $U V^w$ determines an associated $q$-adic/Archimedean limit point $q^*(U,V)$ (\lean{qStarPQ}) bounded strictly inside $[-d_{\max}/(p-q),\,-d_{\min}/(p-q)]$.
+
+\begin{theorem}[General $(p,q)$ two-place isolation and critical exponent]
+\label{thm:pqrep}
+Suppose $2\le q<p$, $\gcd(p,q)=1$, $g_0\ge 1$, $|V|\ge 1$, and $g_0$ matches $U V^w$ under $q g_{k+1}=p g_k+d_k$. Then:
+\begin{enumerate}[leftmargin=1.5em]
+  \item (\textbf{No infinite periodic families}, \lean{no\_eventually\_periodic\_pq}) It is impossible for $g_0$ to match $U V^w$ for all $w\in\N$.
+  \item (\textbf{Critical threshold $\log_q p$}, \lean{repetition\_exponent\_bound\_pq}) The repetition exponent satisfies
+  \[
+    w < \frac{\log p}{\log q} + \left(\frac{\log p}{\log q}-1\right)\frac{|U|}{|V|}
+    + \frac{\log\bigl(g_0 + d_{\max}/(p-q)\bigr)}{|V|\,\log q}.
+  \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Clearing powers in $U V^w$ yields
+\[
+  p^{w|V|} N = q^{|U|+w|V|}\bigl((p^{|V|}-q^{|V|})g_L+\lean{wordWeightPQ}(p,q,V)\bigr)
+\]
+with $N>0$ proportional to $(g_0-q^*(U,V))p^{|U|}(p^{|V|}-q^{|V|})$. Since $\gcd(p,q)=1$, the $q$-adic valuation forces $q^{|U|+w|V|}\le N$, while the lower bound on $q^*(U,V)$ yields $N<(g_0+d_{\max}/(p-q))p^{|U|+|V|}$. Taking real logarithms recovers the linear slope $(\log p)/\log q$. Formalised unconditionally in \lean{Mahler32.\allowbreak GeneralPQDecay}.
+\end{proof}
+
+\begin{remark}[Critical slopes across coprime rational bases]
+Evaluating $w_{\mathrm{crit}}=\log_q p$ from Theorem~\ref{thm:pqrep} numerically gives $1.1610$ ($5/4$), $1.2619$ ($4/3$), $1.4037$ ($7/4$), $1.4650$ ($5/3$), $1.5850$ ($3/2$ and $9/4$), and $1.8928$ ($8/3$), establishing sharp linear exclusion envelopes complementing distribution lower bounds \citep{flp1995,luzheng2026}.
+\end{remark}
+
+\section{Core Conditional Result: The Algebraic--Pair Branch}
 \label{sec:algpair}
 
-Stephan's program splits the surviving words into a rational case and an algebraic-pair case
-\citep{stephan2026subspace,stephan2026third}.  The module
-\lean{Mahler32Conditional.AlgebraicPairBranch} closes the gap left open in
-\citep{stephan2026subspace}, \S4.4: for an algebraic \emph{irrational} multiplier $\delta$ the
-violating pairs $(a,c)$, $2\le a<c$, with distinct gaps $c-a$, are finite.
+Stephan's program separates surviving words into a rational case and an algebraic--pair case \citep{stephan2026subspace,stephan2026third}. The conditional module \lean{Mahler32Conditional.\allowbreak AlgebraicPairBranch} formalises the gap in \citep{stephan2026subspace}, \S4.4: for any algebraic irrational multiplier $\delta$, violating index pairs $(a,c)$ ($2\le a<c$) with distinct gaps $c-a$ must be finite, assuming Schlickewei's $p$-adic subspace theorem over $\Q^3$.
 
-\paragraph{Proof idea.}
-The only input beyond the two-world identity is Schlickewei's $p$-adic subspace theorem on
-$\Q^3$.  An infinite family with distinct gaps yields, via the subspace theorem, one nontrivial
-rational linear relation among $(3/2)^c$, $(3/2)^a$ and the integer $n_p$.  If the integer
-coefficient $C$ vanishes, the relation pins $(3/2)^{c-a}$ to a constant, contradicting strict
-monotonicity of $s\mapsto(3/2)^s$ and injectivity of the gap map.  If $C\ne0$, solving for $n_p$
-and dividing by $(3/2)^c$ drives $\delta$ to a rational limit, contradicting irrationality.  This
-is the rational / algebraic split made precise in Lemmas~\ref{lem:Czero}--\ref{lem:Cne}.
-
-\begin{theorem}[Algebraic pair, conditional]
+\begin{theorem}[Algebraic--pair finiteness, conditional]
 \label{thm:algpair}
-Assume Schlickewei's $p$-adic subspace theorem in the form recorded as the axiom
-\lean{schlickewei\_subspace\_Q3}.  Then for an algebraic irrational $\delta$ and
-$\vartheta\in(0,1)$, the set $T$ of pairs $2\le a<c$ with distinct gaps on which
-$\delta((3/2)^c-(3/2)^a)$ is within $\vartheta^c$ of an integer is finite.
-Machine-checked: \lean{algebraic\_pair\_branch\_finite}.
+Assume Schlickewei's $p$-adic subspace theorem in the form isolated as the axiom \lean{schlickewei\_subspace\_Q3}. For any algebraic irrational $\delta$ and $\vartheta\in(0,1)$, the set of pairs $2\le a<c$ with distinct gaps $c-a$ on which $\delta\bigl((3/2)^c-(3/2)^a\bigr)$ lies within distance $\vartheta^c$ of an integer is finite. Machine-checked as \lean{algebraic\_pair\_branch\_finite}.
 \end{theorem}
 
 \begin{proof}
-Split the subspace relation $A(3/2)^c+B(3/2)^a+C\,n_p=0$ on whether $C=0$.
-\textbf{Rational case $C=0$.}  Lemma~\ref{lem:Czero} rules it out: the relation is homogeneous, so
-$(3/2)^{c-a}$ is constant on the infinite family, contradicting distinct gaps.
-\textbf{Algebraic-irrational case $C\ne0$.}  Lemma~\ref{lem:Cne} solves for $n_p$; the one-step
-bound $|\delta-\alpha|\le|\delta+\beta|(2/3)^{c-a}+(2\vartheta/3)^c$ together with unbounded gaps
-drives $|\delta-\alpha|\to0$, forcing $\delta\in\Q$.
+The subspace relation $A(3/2)^c+B(3/2)^a+C\,n_p=0$ splits on whether $C=0$. If $C=0$, homogeneity fixes $(3/2)^{c-a}$ on an infinite set of distinct gaps (Lemma~\ref{lem:Czero}, \lean{lemma1\_no\_C\_zero}). If $C\neq0$, solving for $n_p$ yields $|\delta-\alpha|\le |\delta+\beta|(2/3)^{c-a}+(2\vartheta/3)^c\to0$, forcing $\delta\in\Q$ (Lemma~\ref{lem:Cne}, \lean{lemma2\_no\_C\_ne\_zero}).
 \end{proof}
 
-\begin{lemma}[Rational case vanishes]
+\begin{lemma}[Homogeneous subspace elimination]
 \label{lem:Czero}
-If an infinite family of pairs with distinct gaps satisfies the homogeneous relation
-$A(3/2)^c+B(3/2)^a=0$ with $(A,B)\ne(0,0)$, then contradiction.
-Machine-checked: \lean{lemma1\_no\_C\_zero}.
+An infinite family of pairs with distinct gaps cannot satisfy $A(3/2)^c+B(3/2)^a=0$ with $(A,B)\neq(0,0)$. Formalised without axioms as \lean{lemma1\_no\_C\_zero}.
 \end{lemma}
 
-\begin{lemma}[Algebraic case forces $\delta\in\Q$]
+\begin{lemma}[Inhomogeneous approximation forces rationality]
 \label{lem:Cne}
-If an irrational $\delta$ is approximated, up to $\vartheta^c$, by rational linear forms
-$\alpha(3/2)^c+\beta(3/2)^a$ on an infinite family with distinct gaps, then contradiction.
-Machine-checked: \lean{lemma2\_no\_C\_ne\_zero}.
+If an irrational $\delta$ is approximated within $\vartheta^c$ by fixed rational linear forms $\alpha(3/2)^c+\beta(3/2)^a$ on an infinite family with distinct gaps, contradiction occurs. Formalised without axioms as \lean{lemma2\_no\_C\_ne\_zero}.
 \end{lemma}
 
-\begin{remark}[Read this before citing]
-Theorem~\ref{thm:algpair} is \emph{conditional} on the single declared axiom
-\lean{schlickewei\_subspace\_Q3}; every other result in this paper is zero-axiom.  The CI axiom
-audit therefore excludes it from the unconditional count, and we make no claim that the Mahler
-problem is settled.
+\begin{remark}[Epistemic isolation]
+Only Theorem~\ref{thm:algpair} uses the isolated axiom \lean{schlickewei\_subspace\_Q3}. Every other theorem in Sections~\ref{sec:padeworlds}--\ref{sec:pqbound} and both sub-lemmas~\ref{lem:Czero}--\ref{lem:Cne} lie strictly in the zero-axiom core.
 \end{remark}
 
-\section{What is and is not claimed}
+\section{Claims and Formalisation Traceability}
 \label{sec:claims}
 
 \begin{itemize}[leftmargin=1.4em]
-  \item \textbf{Unconditional and machine-checked.} Proposition~\ref{prop:identity},
-        Theorem~\ref{thm:iff}, Lemma~\ref{lem:engine}, and the rational strictness bounds.
-  \item \textbf{Conditional and machine-checked.} Theorem~\ref{thm:algpair}, modulo the single
-        declared axiom.
-  \item \textbf{Human-level, not formalised.} The derivation of the $2$-adic divisibility and
-        Archimedean bound for the full word family, and any quantitative
-        $(\log n)^{1/4}$-type criterion.  These are stated in the literature
-        \citep{stephan2026subspace} and are not re-proved here.
-  \item \textbf{Not claimed at all.} Mahler's original conjecture, the unbounded-denominators
-        conjecture, and any unconditional transcendence of a Z-number.
+  \item \textbf{Unconditional and machine-checked.} Propositions~\ref{prop:identity}, Theorems~\ref{thm:iff} and~\ref{thm:pqrep}, Lemma~\ref{lem:engine}, the mod-$9$ congruence criterion, and rational $\sqrt{2}$ bounds.
+  \item \textbf{Conditional and machine-checked.} Theorem~\ref{thm:algpair}, isolated explicitly on \lean{schlickewei\_subspace\_Q3}.
+  \item \textbf{Human-level context.} Derivation of full word-family $2$-adic divisibility and quantitative $(\log n)^{1/4}$ bounds in \citep{stephan2026subspace}.
+  \item \textbf{Not claimed.} Mahler's original conjecture, the unbounded-denominators conjecture, or unconditional transcendence of any Z-number.
 \end{itemize}
 
-\section{Formalisation traceability}
+All Lean identifiers below are compiled by CI (\lean{lake build -KwarningAsError=true}) and verified by \lean{SpecCheck.lean} and \lean{AuditAxioms.lean}.
 
-All Lean names below live in the repository at commit time and are exercised by
-\texttt{scripts/verify\_all.sh}.  The axiom audit prints only the standard
-\lean{propext}, \lean{Quot.sound}, \lean{Classical.choice}.
-
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
-\small
-\begin{tabular}{@{}lll@{}}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}L{0.25\textwidth} Y L{0.23\textwidth}@{}}
 \toprule
-Result & Lean declaration & Status\\
+Mathematical result & Lean declaration & Axiom status \\
 \midrule
-Two-world identity & \lean{TwoWorldPadeCriterion.two\_world\_identity} & proved\\
-Agreement criterion & \lean{TwoWorldPadeCriterion.two\_world\_iff} & proved\\
-Integer exclusion & \lean{TwoWorldPadeCriterion.two\_pow\_dvd\_eq\_zero} & proved\\
-$\sqrt2>140/99$ & \lean{sqrt\_two\_gt\_140\_99} & proved\\
-$\sqrt2<17/12$ & \lean{sqrt\_two\_lt\_17\_12} & proved\\
-Rational case $C=0$ & \lean{Mahler32Conditional.lemma1\_no\_C\_zero} & proved (no axiom)\\
-Algebraic case $C\ne0$ & \lean{Mahler32Conditional.lemma2\_no\_C\_ne\_zero} & proved (no axiom)\\
-Algebraic pair (cond.) & \lean{Mahler32Conditional.algebraic\_pair\_branch\_finite} & axiom-dependent\\
+Pad\'e discrepancy identity & \lean{TwoWorldPadeCriterion.\allowbreak two\_world\_identity} & Zero axioms \\
+Agreement criterion ($c=0$) & \lean{TwoWorldPadeCriterion.\allowbreak two\_world\_iff} & Zero axioms \\
+Integer-vanishing criterion & \lean{TwoWorldPadeCriterion.\allowbreak two\_pow\_dvd\_eq\_zero} & Zero axioms \\
+$9/4$ repetition-exponent bound & \lean{TwoWorldPadeCriterion.\allowbreak repetition\_exponent\_bound} & Zero axioms \\
+Mod-$9$ congruence criterion & \lean{TwoWorldPadeCriterion.\allowbreak mod\_nine\_gate\_rat}, \lean{mod\_nine\_anti\_misfire} & Zero axioms \\
+General $(p,q)$ definitions & \lean{RationalBaseDefs.\allowbreak wordWeightPQ}, \lean{qStarPQ} & Pure defs \\
+General $(p,q)$ two-place isolation & \lean{GeneralPQDecay.\allowbreak two\_place\_isolation\_pq} & Zero axioms \\
+General $(p,q)$ $\log_q p$ threshold & \lean{GeneralPQDecay.\allowbreak no\_eventually\_periodic\_pq}, \lean{repetition\_exponent\_bound\_pq} & Zero axioms \\
+Rational $\sqrt{2}$ strict bounds & \lean{TwoWorldPadeCriterion.\allowbreak sqrt\_two\_gt\_140\_99}, \lean{sqrt\_two\_lt\_17\_12} & Zero axioms \\
+Homogeneous pair elimination & \lean{Mahler32Conditional.\allowbreak lemma1\_no\_C\_zero} & Zero axioms \\
+Inhomogeneous rationality limit & \lean{Mahler32Conditional.\allowbreak lemma2\_no\_C\_ne\_zero} & Zero axioms \\
+Algebraic--pair finiteness & \lean{Mahler32Conditional.\allowbreak algebraic\_pair\_branch\_finite} & Conditional (\lean{schlickewei\_subspace\_Q3}) \\
 \bottomrule
-\end{tabular}
-\caption{Theorem-to-Lean map for Paper~1.}
+\end{tabularx}
+\caption{Theorem-to-Lean traceability table for Paper~1.}
 \end{table}
 
 \bibliography{refs}
