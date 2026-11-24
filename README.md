@@ -1,6 +1,9 @@
 # Parity structure of the 3/2 Mahler recursion, in Lean 4
 
 [![Lean 4 CI](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/lean_build.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/lean_build.yml)
+[![Independent kernel (nanoda)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/independent-kernel.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/independent-kernel.yml)
+[![Papers (LaTeX)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/papers.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/papers.yml)
+[![Release](https://img.shields.io/github/v/release/3y3y3y-huaiji/mahler32?label=Release)](https://github.com/3y3y3y-huaiji/mahler32/releases/latest)
 [![Lean 4](https://img.shields.io/badge/Lean-v4.36.0-blue.svg)](https://lean-lang.org/)
 [![Mathlib4](https://img.shields.io/badge/Mathlib4-v4.36.0-brightgreen.svg)](https://github.com/leanprover-community/mathlib4)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0008--2312--6913-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0008-2312-6913)
@@ -152,6 +155,10 @@ Two companion papers live in `papers/`:
   Algebraic–Pair Branch*
 - `papers/paper2_zero_entropy_fluid/` — *Zero-Entropy Cages and Discrete Fluid for the Mahler
   3/2 Map*
+
+Prebuilt PDFs and SHA-256 checksums for both companion papers are published as assets on the
+[latest GitHub Release](https://github.com/3y3y3y-huaiji/mahler32/releases/latest); citation metadata
+is provided in [`CITATION.cff`](CITATION.cff) and [`.zenodo.json`](.zenodo.json).
 
 Both carry a theorem-to-Lean traceability table.  Three honesty caveats are stated there rather
 than hidden.  First, the general “all real `ξ` excluded” statement is a human-level proposition
