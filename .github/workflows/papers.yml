@@ -85,14 +85,24 @@ jobs:
           ( cd dist && sha256sum ./*.pdf > SHA256SUMS.txt )
           ls -lh dist
 
-      - name: Create GitHub Release
+      # The release may already exist when the tag was published by hand before
+      # this workflow ran.  In that case upload the PDFs (overwriting any asset
+      # of the same name) instead of failing on `gh release create`.
+      - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
-            --generate-notes \
-            dist/paper1_transcendence.pdf \
-            dist/paper2_zero_entropy_fluid.pdf \
+          assets=(
+            dist/paper1_transcendence.pdf
+            dist/paper2_zero_entropy_fluid.pdf
             dist/SHA256SUMS.txt
+          )
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" "${assets[@]}" --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              --title "${GITHUB_REF_NAME}" \
+              --generate-notes \
+              "${assets[@]}"
+          fi
