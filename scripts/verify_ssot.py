@@ -6,7 +6,7 @@ Zero third-party dependencies.  Exit status is strictly binary:
     0  every SSOT invariant holds
     1  at least one invariant is broken (the reason is printed)
 
-The gate enforces five things, all mechanical:
+The gate enforces six things, all mechanical:
 
 1. **Toolchain.**  ``lean-toolchain`` is the only source of truth for the Lean
    version.  ``formalization.yaml`` and ``README.md`` must quote exactly that
@@ -26,6 +26,9 @@ The gate enforces five things, all mechanical:
 5. **CI artifacts.**  Every core workflow and verification script must exist and
    be named in ``formalization.yaml``, so the self-report cannot silently drift
    away from the pipeline that actually runs.
+6. **No internal tracking numbers.**  The paper ``.tex`` sources may not leak
+   development identifiers such as ``Issue #12`` or ``PR #17``; the arXiv
+   preprint must read as a standalone academic document.
 
 Usage::
 
@@ -63,6 +66,10 @@ FILE_SUFFIXES = (".lean", ".py", ".sh", ".yml", ".yaml", ".md", ".json", ".tex",
 REPO_DIRS = ("Mahler32/", "Mahler32Conditional/", "docs/", "papers/", "scripts/", ".github/", ".githooks/")
 EXTERNAL_DIRS = ("Mathlib/", "mathlib4/")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+# Internal development tracking numbers (``Issue #12``, ``Issues #12 and #17``,
+# ``PR #7``) must not survive in a paper source.  LaTeX escapes the hash as
+# ``\#``, hence the optional backslash.
+TRACKING_ID_RE = re.compile(r"(?:Issues?|PRs?)\s*~?\s*\\?#\s*\d+")
 CODE_RE = re.compile(r"`([^`\n]+)`")
 MATH_CHARS = set("^+\\${}=* \t")
 
@@ -226,6 +233,23 @@ def check_ci_artifacts() -> None:
             fail(f"formalization.yaml does not mention core CI artifact: {rel}")
 
 
+def check_paper_tracking_ids() -> None:
+    """Reject internal development identifiers in the paper sources.
+
+    Numbers such as ``Issue #12`` or ``PR #17`` point at this repository's own
+    issue tracker and make no sense in an arXiv preprint, so their reappearance
+    in a ``.tex`` source is treated as drift.
+    """
+    for path in sorted((ROOT / "papers").rglob("*.tex")):
+        text = read_text(path)
+        for match in TRACKING_ID_RE.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            fail(
+                f"internal tracking id {match.group(0)!r} left in "
+                f"{path.relative_to(ROOT)}:{line}"
+            )
+
+
 def resolves(path: Path, doc_dir: Path) -> bool:
     if path.exists():
         return True
@@ -282,6 +306,7 @@ def main() -> int:
     check_modules()
     check_stale_phrases()
     check_ci_artifacts()
+    check_paper_tracking_ids()
     check_links()
 
     if failures:
