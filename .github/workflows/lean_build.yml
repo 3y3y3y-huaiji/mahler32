@@ -96,11 +96,12 @@ jobs:
       - name: Fetch Mathlib Cache
         run: lake exe cache get
 
-      # Seal every target that carries the zero-axiom claim, with warnings-as-errors.
+      # Seal every target that carries the zero-axiom claim (and conditional target),
+      # with warnings-as-errors.  Covers every Lean module across all Lake libraries.
       - name: Lean build (all audited targets)
         run: |
           lake build -KwarningAsError=true \
-            Mahler32Core Solution SpecCheck SpecCheckConditional
+            Mahler32Core Solution SpecCheck SpecCheckConditional Mahler32Conditional
 
       # `AuditAxioms*.lean` are root modules, not Lake roots; re-elaborate them directly.
       - name: Lean build (audit modules)
@@ -114,9 +115,6 @@ jobs:
         run: |
           lake build Solution
           lake build Challenge
-
-      - name: Conditional target (task 11)
-        run: lake build Mahler32Conditional
 
       # Source-level gate: no core module may contain `sorry`/`admit`/`native_decide`, may not
       # declare an `axiom`, and the conditional axiom may not leak into the zero-axiom core.
@@ -154,20 +152,10 @@ jobs:
           sys.exit(1 if bad else 0)
           PY
 
-      # Compile *every* module by name, not just `Basic.lean`, with warnings-as-errors.
-      # `lake env lean` re-elaborates the source, so a `sorry` shows up as a warning
-      # (hence an error) even if a stale `.olean` was already sitting in `.lake`.
-      - name: Strict Verification of All Modules
-        run: |
-          set -uo pipefail
-          status=0
-          for f in Mahler32Core.lean Mahler32.lean AuditAxioms.lean AuditAxiomsConditional.lean \
-                   Mahler32/*.lean Mahler32Conditional/*.lean; do
-            echo "::group::lake env lean -D warningAsError=true $f"
-            lake env lean -D warningAsError=true "$f" || status=1
-            echo "::endgroup::"
-          done
-          exit $status
+      # All core + conditional modules are compiled with -KwarningAsError=true above;
+      # additionally verify `Mahler32.lean` itself.
+      - name: Verify root library surface
+        run: lake env lean -D warningAsError=true Mahler32.lean
 
       # One `#lint` over the whole zero-axiom core instead of a single-file lint.
       - name: Mathlib Linter Check (#lint over the whole core)
@@ -234,6 +222,9 @@ jobs:
             Mahler32.ZeroEntropyCages Mahler32.DiscreteFluidCertificates \
             Mahler32.Model94Obstructions \
             Mahler32.Model94GlobalDecay \
+            Mahler32.RationalBaseDefs \
+            Mahler32.GeneralPQDecay \
+            Mahler32.ZeroEntropyAutomaton \
             Mahler32.Basic Mahler32Core \
             Mahler32Conditional.AlgebraicPairBranch; do
             echo "::group::leanchecker $m"

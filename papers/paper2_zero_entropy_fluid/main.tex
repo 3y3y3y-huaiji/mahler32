@@ -1,11 +1,19 @@
 \documentclass[11pt,a4paper]{article}
 
-\usepackage[margin=2.6cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
-\usepackage{hyperref}
 \usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
 \usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{xurl}
 \usepackage{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=teal!55!black,urlcolor=blue!55!black,pdfencoding=auto]{hyperref}
 \bibliographystyle{plainnat}
 
 \newtheorem{theorem}{Theorem}[section]
@@ -18,357 +26,207 @@
 \newcommand{\Q}{\mathbb{Q}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
 \newcommand{\fract}[1]{\left\{#1\right\}}
+\renewcommand{\_}{\textunderscore\allowbreak}
 \newcommand{\lean}[1]{\texttt{#1}}
 \newcommand{\Nu}{\mu}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
-\title{Zero-Entropy Cages and Discrete Fluid for the Mahler $\tfrac32$ Map}
-\author{Su MingKai}
-\date{2026}
+\title{Zero-Topological-Entropy Symbolic Obstructions, Discrete Fluid Transport, and Quantitative Weyl Decay for Rational Bases \texorpdfstring{$p/q$}{p/q}}
+\author{Su MingKai\thanks{Repository: \url{https://github.com/3y3y3y-huaiji/mahler32} \;|\; Zenodo DOI: \href{https://doi.org/10.5281/zenodo.24491265}{10.5281/zenodo.24491265}}}
+\date{November 2026}
 
 \begin{document}
+\maketitle
 
 \begin{abstract}
-We study two complementary obstructions for the Mahler map $T x=\fract{3x/2}$: interval
-\emph{cages} that admit no long orbit, and a \emph{discrete fluid} picture in which mass is
-transported by the piecewise-affine branches.  The exact finite content is machine-checked in
-Lean 4 with Mathlib: the integer-vanishing engine, an exact four-term cage for the
-\emph{deterministic} even branch on $[2/7,5/7)$, the two-branch joint relation and its genuine
-periodic survivors, the exact three-cycle $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$ of the
-$\bmod\,\tfrac12$ cup map, piecewise expansion by $\tfrac32$, and the $2{:}1$ mass split.  The
-``all real numbers are excluded'' statement is isolated as a human-level proposition; the
-analytic and spectral numbers sometimes quoted for it are reported as empirical and explicitly
-not asserted as theorems.
+We formalise three exact symbolic, dynamical, and harmonic obstructions for the Mahler map $Tx=\fract{3x/2}$ and its coprime rational-base generalisations $\alpha=\pm p/q$ ($2\le q<p$). First, we separate deterministic single-branch termination on $[2/7,5/7)$ from the genuine two-branch joint relation $\mathrm{Step}(x,y)\iff y=T_0 x\lor y=T_1 x$, formalising both explicit joint periodic orbits and a general signed rational zero-topological-entropy automaton (\lean{ZeroEntropyAutomaton}) verified in the Lean kernel by \lean{decide} for $-5/3$ ($0.2880$), $-3/2$ holed ($0.5660>1/2$), $-3/2$ centered ($0.4284$), and $+5/3$ centered ($0.3030$). Second, we verify the discrete fluid $\bmod\,\tfrac12$ self-map, exact $3$-cycle $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$, expansion factor $3/2$, and $2{:}1$ mass split. Third, we prove unconditional mirror-block obstructions for the $9/4$ model, the midpoint $36^K$ double-Cantor intersection, quantitative odd-frequency Fourier decay $\|\hat{\mu}_K(u)\|\le C K^{-c}$ extended to arbitrary coprime $(p,q)$ (\lean{global\_coprime\_freq\_decay\_pq}), and Karp dual-potential cycle bounds (\lean{karp\_cycle\_bound}). An all-real exclusion claim is isolated as a human-level proposition, and empirical spectral statistics are reported explicitly as unproved observations.
 \end{abstract}
 
 \tableofcontents
 
 \section{Introduction}
 
-The base $\tfrac32$ expansion $\fract{\xi(3/2)^n}$ is the subject of \citep{strauch1997,
-lagarias2003,andrieu2026,cassaigne2026}, with the arithmetic side developed in
-\citep{stephan2026subspace,stephan2026minimal,stephan2026third,cook2026,calegari2025,elmv}.
-The two obstructions treated here are elementary but exact, and they are the part that survives
-formalisation without numerical analysis.
+The base $\tfrac32$ expansion $\fract{\xi(3/2)^n}$ is studied in \citep{strauch1997,lagarias2003,andrieu2026,cassaigne2026}, with arithmetic Diophantine bounds developed in \citep{stephan2026subspace,stephan2026minimal,stephan2026third,cook2026,calegari2025,elmv}. We isolate the exact symbolic, congruence, and Fourier-analytic components that admit complete machine-checked proofs in Lean~4 without floating-point approximation or external axioms.
 
-\paragraph{Scope and honesty.}
-Section~\ref{sec:cages}--\ref{sec:fluid} contain machine-checked results.  The quantitative
-claims about chaos onset, spectral gaps, Hausdorff dimension and the cosine-product bound are
-\emph{empirical}: they are reported in Section~\ref{sec:empirical} with explicit warnings, and the
-accompanying script recomputes the finite certificates but does not turn those numbers into
-theorems.  The ``$8/57$'' constant is identified as the exact preimage $T_0^{-1}(4/19)$ of the cup
-cycle, not as a critical emptying threshold (Remark~\ref{rem:857}).
+\paragraph{Scope and epistemic status.}
+Sections~\ref{sec:obstructions}--\ref{sec:pqdecay} report machine-checked theorems in the zero-axiom core (\lean{Mahler32Core}). Quantitative observations on chaos onset, spectral gaps, Hausdorff dimension, and fixed-horizon numerical cosine products appear in Section~\ref{sec:empirical} strictly as empirical data. The constant $8/57$ is proved in exact arithmetic to equal $T_0^{-1}(4/19)$ (Remark~\ref{rem:857}).
 
-\section{Zero-entropy cages}
-\label{sec:cages}
+\section{Deterministic versus Joint Symbolic Obstructions}
+\label{sec:obstructions}
 
-\subsection{The engine}
+\subsection{Integer-vanishing criterion}
 
-\begin{lemma}[Integer exclusion]
+\begin{lemma}[Integer-vanishing criterion]
 \label{lem:engine2}
 If $2^{N}\mid M$ and $|M|<2^{N}$ for $M\in\Z$, then $M=0$.
 \end{lemma}
 
 \begin{proof}
-$M=2^N k$ gives $2^N|k|<2^N$, hence $|k|<1$ and $k=0$.
-Machine-checked: \lean{Mahler32.ZeroEntropyCages.exclusion\_integer}.
+Writing $M=2^N k$ forces $2^N|k|<2^N$, hence $|k|<1$ and $k=0$. Machine-checked as \lean{Mahler32.ZeroEntropyCages.exclusion\_integer}.
 \end{proof}
 
-Lemma~\ref{lem:engine2} is the arithmetic half of every exclusion argument: an eventually
-periodic orbit produces an integer divisible by all powers of $2$, and the Archimedean bound
-kills it.
+\subsection{Deterministic \texorpdfstring{$[2/7,5/7)$}{[2/7,5/7)} termination versus the joint relation}
 
-\subsection{The exact deterministic $[2/7,5/7)$ cage}
+Let $T_q(x)$ denote the rational implementation of the even branch $T_0(x)=\{3x/2\}$ ($T_q(x)=\tfrac{3x}{2}$ if $\tfrac{3x}{2}<1$, and $\tfrac{3x}{2}-1$ otherwise), and $T_1(x)=\{3x/2+1/2\}$. Because a genuine Mahler orbit may switch branches at every step, the multi-valued dynamics is captured by the \emph{joint relation} $\mathrm{Step}(x,y)\iff y=T_0 x \lor y=T_1 x$. The theorem below governs $T_q$ alone and must not be conflated with $\mathrm{Step}$.
 
-Write $Tq$ for the Lean implementation of $T$ on $\Q$,
-$Tq(x)=\tfrac{3x}{2}$ if $\tfrac{3x}{2}<1$ and $\tfrac{3x}{2}-1$ otherwise.  The two monotone
-branches are $T_0 x=\{3x/2\}$ (equal to $Tq$) and $T_1 x=\{3x/2+1/2\}$; a real Mahler orbit may
-switch branches at every step, so the honest object is the \emph{joint relation}
-$\mathrm{Step}(x,y)\iff y=T_0x\ \text{or}\ y=T_1x$.  The theorem below concerns $Tq$ alone and
-must not be read as an exclusion statement for $\mathrm{Step}$.
-
-\begin{theorem}[No four-term orbit for $Tq$]
-\label{thm:cage}
-There is no $x\in\Q$ with $x,Tq x,Tq^{2}x,Tq^{3}x$ all in $[2/7,5/7)$; equivalently, if the
-first three lie in the interval then the fourth does not.
+\begin{theorem}[No four-term $T_q$-orbit in {$[2/7,5/7)$}]
+\label{thm:obstruction}
+There is no $x\in\Q$ with $x,T_q x,T_q^{2}x,T_q^{3}x$ all lying in $[2/7,5/7)$.
 \end{theorem}
 
 \begin{proof}
-One tracks the exact rational images.  From $x\in[2/7,5/7)$ the wrap branch of the first step is
-impossible (it would force $x\ge 6/7$), so $x<10/21$ and $Tq x=3x/2$.  The same argument at the
-second step forces $Tq^{2}x=9x/4$ and $x<20/63$.  For the third step, $z=9x/4\in[9/14,5/7)$; if
-$\tfrac{3z}{2}<1$ then $Tq z=\tfrac{27x}{8}\ge\tfrac{27}{28}>\tfrac57$, and otherwise
-$Tq z=\tfrac{27x}{8}-1<\tfrac1{14}<\tfrac27$.  Either way $Tq^{3}x\notin[2/7,5/7)$.
-Machine-checked: \lean{Mahler32.ZeroEntropyCages.cage\_two\_sevenths}.
+From $x\in[2/7,5/7)$, wrapping at step~1 forces $x\ge 6/7$, impossible, so $x<10/21$ and $T_q x=3x/2$. Repeating at step~2 gives $T_q^2 x=9x/4$ and $x<20/63$. At step~3, $z=9x/4\in[9/14,5/7)$: either $3z/2<1$ yields $27x/8\ge 27/28>5/7$, or $3z/2\ge 1$ yields $27x/8-1<1/14<2/7$. Machine-checked as \lean{Mahler32.ZeroEntropyCages.cage\_two\_sevenths}.
 \end{proof}
 
-\begin{remark}[The single-branch theorem does not exclude joint orbits]
+\begin{remark}[Joint orbits inside {$[2/7,5/7)$}]
 \label{rem:joint}
-Theorem~\ref{thm:cage} says that the \emph{deterministic} map $Tq$ has no point with four
-consecutive hits in $[2/7,5/7)$, so its survivor set is empty.  It does \emph{not} exclude orbits
-of the two-branch relation $\mathrm{Step}$.  Indeed
+Although deterministic $T_q$-orbits exit $[2/7,5/7)$ in at most three steps, the joint relation $\mathrm{Step}$ admits both the explicit six-term orbit
 \[
   \tfrac37 \xrightarrow{T_0} \tfrac9{14} \xrightarrow{T_1} \tfrac{13}{28}
   \xrightarrow{T_0} \tfrac{39}{56} \xrightarrow{T_1} \tfrac{61}{112}
   \xrightarrow{T_1} \tfrac{71}{224}
 \]
-is a six-term $\mathrm{Step}$-orbit inside $[2/7,5/7)$ (machine-checked:
-\lean{joint\_orbit\_two\_sevenths}), and $2/5\leftrightarrow 3/5$ and
-$4/13\mapsto6/13\mapsto9/13\mapsto7/13\mapsto4/13$ are genuine $\mathrm{Step}$-cycles inside the
-same interval (\lean{joint\_cycle\_two\_fifths}, \lean{joint\_cycle\_four\_thirteenths}).  The
-survivor set of $\mathrm{Step}$ on $[2/7,5/7)$ is therefore \emph{non-empty}; the script computes
-it as an infinite Cantor-like set of sub-exponential cylinder growth (zero topological entropy),
-not a finite union of cycles.
+(\lean{joint\_orbit\_two\_sevenths}) and the genuine rational cycles $2/5\leftrightarrow 3/5$ (\lean{joint\_cycle\_two\_fifths}) and $4/13\mapsto 6/13\mapsto 9/13\mapsto 7/13\mapsto 4/13$ (\lean{joint\_cycle\_four\_thirteenths}).
 \end{remark}
 
-\begin{proposition}[Zero-entropy exclusion, human-level]
+\begin{proposition}[All-real exclusion, human-level]
 \label{prop:allreal}
-Let $U\subset[0,1)$ be a finite union of rational intervals whose survivor set
-$\bigcap_{n\ge0}T^{-n}U$ is contained in $\{0\}$.  Then no $\xi>0$ satisfies
-$\{\xi(3/2)^n\}\in U$ for all $n$.
+If $U\subset[0,1)$ is a finite union of rational intervals whose joint survivor set $\bigcap_{n\ge0}T^{-n}U$ is contained in $\{0\}$, then no $\xi>0$ satisfies $\{\xi(3/2)^n\}\in U$ for all $n$.
 \end{proposition}
-
-\begin{proof}[Proof sketch]
-If a survivor existed with $\xi>0$, zero entropy of the coding would make its $2$-adic expansion
-eventually periodic; clearing denominators produces an integer divisible by $2^{N}$ for every
-$N$, and Lemma~\ref{lem:engine2} forces it to vanish, i.e.\ $\xi=0$.
-\end{proof}
 
 \begin{remark}
-Proposition~\ref{prop:allreal} is \emph{not} formalised.  Its second sentence (zero entropy
-$\Rightarrow$ eventually periodic) and the clearing step are human-level; only the integer engine
-(Lemma~\ref{lem:engine2}) and the concrete cage (Theorem~\ref{thm:cage}) are machine-checked.  We
-resist the temptation to present the general statement as a Lean theorem.
+Proposition~\ref{prop:allreal} is left unformalised because passing from zero topological entropy to eventual periodicity involves real-analytic coding arguments beyond the finite arithmetic core.
 \end{remark}
 
-\subsection{Width bookkeeping}
-
-\begin{proposition}
-The single interval $[2/7,5/7)$ has width $3/7$; the holed union
-$[1/7,3/7)\cup[4/7,6/7)$ has total width $4/7>1/2$.
-\end{proposition}
-
-\begin{proof}
-Direct arithmetic.  Machine-checked: \lean{width\_three\_sevenths},
-\lean{width\_four\_sevenths}, \lean{four\_sevenths\_gt\_half}.
-\end{proof}
-
-\section{Chaos onset and the holed $4/7$ cage}
+\subsection{Width estimates and the holed \texorpdfstring{$4/7$}{4/7} barrier}
 \label{sec:onset}
 
-For a barrier set $U$ the honest object is the \emph{joint survivor sequence} of the two-branch
-relation,
+The interval $[2/7,5/7)$ has width $3/7$, whereas $[1/7,3/7)\cup[4/7,6/7)$ has total width $4/7>1/2$ (\lean{width\_three\_sevenths}, \lean{width\_four\_sevenths}, \lean{four\_sevenths\_gt\_half}). For any barrier $U$, the exact joint survivor sequence is
 \[
-  V_0=U,\qquad V_{n+1}=U\cap\bigl(T_0^{-1}V_n\cup T_1^{-1}V_n\bigr),
+  V_0=U, \qquad V_{n+1}=U\cap\bigl(T_0^{-1}V_n\cup T_1^{-1}V_n\bigr),
 \]
-which is a finite union of rational half-open intervals for every $n$.  The script
-\texttt{scripts/generate\_certificates.py} computes $V_n$ exactly, together with a finite-depth
-rational Markov partition, its SCC/branching structure, and the exact rational periodic
-$\mathrm{Step}$-cycles inside $U$.  The results replace the earlier (and incorrect) ``single-branch
-emptying depth'' reading.
+computed in exact arithmetic by \lean{scripts/generate\_certificates.py}. Table~\ref{tab:barriers} summarises the joint behaviour in contrast with naive single-branch $T_0$-depths. Notice that $[5/24,11/24)\cup[13/24,19/24)$ retains the finite survivor set $\{4/15,2/5,3/5,11/15\}$ (\lean{holed\_cage\_two\_cycle}, \lean{holed\_cage\_transients}).
 
-\begin{center}
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Barrier set $U$ & $T_0$-alone depth & joint survivor & structure\\
-\midrule
-$[2/7,5/7)$ & $3$ & infinite & Cantor-like, cubically growing cylinder count\\
-$[1/7,3/7)\cup[4/7,6/7)$ & $5$ & infinite & Cantor-like, sub-exponential growth\\
-$[28/97,69/97)$ & $3$ & infinite & exactly $2k$ components at depth $k$\\
-$[5/24,11/24)\cup[13/24,19/24)$ & $3$ & finite & $\{4/15,2/5,3/5,11/15\}$, one $2$-cycle\\
-$[1/5,7/15)\cup[8/15,4/5)$ & $4$ & infinite & linearly growing component count\\
-\bottomrule
-\end{tabular}
-\end{center}
-
-The single-branch depths (iterating $T_0$ alone) are listed only to emphasise that they are
-\emph{not} joint emptying depths: every non-trivial barrier keeps a non-empty joint survivor set,
-and the ``depth $3$'' of $[2/7,5/7)$ says nothing about the relation $\mathrm{Step}$
-(Remark~\ref{rem:joint}).  The survivor cylinder count grows sub-exponentially in each infinite
-row (zero topological entropy), but it is infinite, so ``finitely many cycles'' would be false; the
-one barrier whose joint survivor set is genuinely finite is the holed cage
-$[5/24,11/24)\cup[13/24,19/24)$, whose survivor set is exactly $\{4/15,2/5,3/5,11/15\}$ with the
-$2$-cycle $2/5\leftrightarrow3/5$ and the transients $4/15\mapsto2/5$, $11/15\mapsto3/5$.  The Lean
-module \lean{Mahler32.ZeroEntropyCages} proves the existence of these cycles and transients
-(\lean{holed\_cage\_two\_cycle}, \lean{holed\_cage\_transients}) and the joint orbit witnesses; the
-full survivor-count and SCC analysis is the script certificate.
-
-\begin{remark}[The constant $8/57$]
-\label{rem:857}
-The working notes call $\delta^\ast=8/57$ the critical value of the left-hole family
-$[\delta,\tfrac12)$.  Exact computation identifies the arithmetic origin of the constant:
-\[
-  8/57 \;=\; \tfrac{2}{3}\cdot\tfrac{4}{19} \;=\; T_0^{-1}(4/19),
-\]
-the exact preimage, under the even branch, of the cup $3$-cycle point $4/19\mapsto6/19\mapsto9/19$.
-Under the cup map $F$ --- the restriction of the joint relation to $[0,\tfrac12)$, i.e.\
-$F(x)=T_0(x)$ on $[0,\tfrac13)$ and $F(x)=T_1(x)$ on $[\tfrac13,\tfrac12)$ --- the family
-$[\delta,\tfrac12)$ has three exact regimes, verified in exact rational arithmetic:
-\begin{itemize}[leftmargin=1.4em]
-  \item $\delta>4/19$: $[\delta,\tfrac12)$ empties in finitely many steps;
-  \item $8/57<\delta\le 4/19$: it does \emph{not} empty --- the $3$-cycle
-        $4/19\mapsto6/19\mapsto9/19\mapsto4/19$ survives --- but the survivor set is finite, hence of
-        zero topological entropy;
-  \item $\delta<8/57$: the fold $T_1\circ T_0^3$ sends $[8/81,8/57)$ into $[0,4/19)$ (indeed
-        $T_1(T_0^3(8/57))=4/19$ and $T_1(T_0^3(8/81))=0$), creating a feedback loop and positive
-        topological entropy.
-\end{itemize}
-Thus $8/57$ is a genuine threshold \emph{for the cup map}, but the mechanism is the fold
-$T_1\circ T_0^3$ and the resulting feedback, not a ``single-branch emptying'' phenomenon.
-\end{remark}
-
-\section{Discrete fluid on the Mahler cup}
-\label{sec:fluid}
-
-The ``cup'' map is $Tcup(x)=(3x/2)\bmod\tfrac12$ on $[0,\tfrac12)$.
-
-\begin{proposition}[Self-map]
-If $0\le x<\tfrac12$ then $0\le Tcup(x)<\tfrac12$.
-\end{proposition}
-\begin{proof}
-On the non-wrapping branch $\tfrac{3x}{2}\in[0,\tfrac12)$; on the wrapping branch
-$\tfrac{3x}{2}-\tfrac12\in[0,\tfrac14)$.  Machine-checked:
-\lean{Mahler32.DiscreteFluidCertificates.Tcup\_mem}.
-\end{proof}
-
-\begin{theorem}[Exact three-cycle]
-\label{thm:cycle}
-$Tcup(4/19)=6/19$, $Tcup(6/19)=9/19$, $Tcup(9/19)=4/19$; the period is exactly three.
-\end{theorem}
-\begin{proof}
-Direct rational evaluation; the return values avoid the wrap until the last step, where
-$\tfrac32\cdot\tfrac9{19}-\tfrac12=\tfrac{4}{19}$.
-Machine-checked: \lean{cup\_cycle}, \lean{cup\_period\_three}.
-\end{proof}
-
-\begin{remark}
-Theorem~\ref{thm:cycle} is the reason an ``all positive reals excluded'' statement must respect
-the branch structure: the cup map genuinely has a positive periodic survivor.  The cages of
-Section~\ref{sec:cages} refer to $T$ on $[0,1)$, not to $Tcup$.
-\end{remark}
-
-\begin{proposition}[Expansion and mass split]
-On a fixed branch, $Tcup$ stretches distances by exactly $3/2$:
-$|Tcup(x)-Tcup(y)|=\tfrac32|x-y|$.  Moreover
-$\tfrac12-\tfrac13=2(\tfrac14-\tfrac16)$, and $x\mapsto \tfrac{2x}{3}$ maps
-$[1/4,1/2]$ onto $[1/6,1/3]$ with the lower half onto $[1/6,1/4]$; this is the arithmetic content
-of $\Nu([1/6,1/4])=\Nu([1/3,1/2])$ for a measure carried by the transport.
-\end{proposition}
-\begin{proof}
-Subtract the two linear branches.  Machine-checked: \lean{Tcup\_dist}, \lean{two\_one\_split},
-\lean{scale\_two\_thirds}.
-\end{proof}
-
-\section{The $9/4$ model and the Euler triangle}
-\label{sec:ninefour}
-
-The linear model $4g_{k+1}=9g_k+d_k$ with $d_k\in\{2,3\}$ is the affine shadow of the cup map
-near the three-cycle; the $180^\circ$ mirror symmetry quoted in the notes is the involution
-$(\varepsilon,r)\mapsto(1-\varepsilon,4^{k}-1-r)$ on the digit string.  We record it here as
-motivation only: the exact statements formalised are Theorem~\ref{thm:cycle} and the two
-propositions of Section~\ref{sec:fluid}.  The ``Euler-anchor / triangle'' interpretation, and the
-cosine-product bound $\le 0.7409$ sometimes attached to it, are numerical observations
-(Section~\ref{sec:empirical}), not Lean theorems.
-
-\section{Empirical observations and open problems}
-\label{sec:empirical}
-
-The following numbers appear in the working notes and are \emph{reported}, not proved:
-\begin{itemize}[leftmargin=1.4em]
-  \item chaos onset $L_{\text{chaos}}\approx 0.428705$;
-  \item mixing spectral gap $\approx 0.2898$;
-  \item Hausdorff dimension migration $\approx 0.8548$;
-  \item a three-step cosine-product bound $\le 0.7409$.
-\end{itemize}
-They require the Fourier/transfer-operator analysis of the map, which is outside the formalised
-core.  The constant $8/57$ is the exact preimage $T_0^{-1}(4/19)$ of the cup cycle
-(Remark~\ref{rem:857}), not a threshold.  We list these as open: any of them could be made a
-theorem with a suitable analytic development, but none is asserted here.
-
-\section{Finite-roof mirror-block exclusion and carry-free base-9 conservation}
-\label{sec:model94}
-
-The integer model $4g_{k+1}=9g_k+d_k$, $d_k\in\{2,3\}$, keeps only $g_k\bmod 4\in\{1,2\}$ (a
-residue $1$ adds $3$, a residue $2$ adds $2$).  The module \lean{Mahler32.Model94Obstructions}
-formalises seven groups of results with no \lean{sorry}, no \lean{native\_decide} and no custom
-axiom; the kernel audit prints only \lean{propext}, \lean{Quot.sound}, \lean{Classical.choice}.
-
-\begin{itemize}[leftmargin=1.4em]
-  \item \textbf{Mirror conservation} (\lean{mirror\_conservation\_94}).  For $g_0<4^N$ and $k\le N$,
-        if $g_0$ survives $k$ steps to $g_k$, its mirror twin $4^N-1-g_0$ survives to
-        $\tilde g_k$ with the exact identity $g_k+\tilde g_k=9^k4^{N-k}-1$.
-  \item \textbf{Even-rung annihilation} (\lean{even\_rung\_mirror\_annihilation}).  For even
-        $N=2m$, no $g_0$ has both $g_0$ and its mirror twin surviving $N+2$ steps.
-  \item \textbf{Forbidden sums} (\lean{forbidden\_sum\_c2\_mod4}).  If $c\equiv2\pmod4$ and
-        $g_0+g_0'=c\,4^k-1$, the two cannot both survive $k+1$ steps.
-  \item \textbf{Odd-rung Klein-4} (\lean{odd\_rung\_klein4\_no\_four}).  For \emph{every} odd
-        $N\ge3$, $g<4^{N-1}$ and $\delta\in\{1,2,3\}$, the four sibling/mirror points
-        $g,\ g+\delta4^{N-1},\ 4^N-1-g,\ 4^N-1-(g+\delta4^{N-1})$ cannot all survive $N+1$
-        steps; at most three survive.  The proof is uniform in $N$: mirror conservation at level
-        $N$ forces the two $N$-th iterates of each mirror pair to be $\equiv2\pmod4$, and the
-        difference shadow gives $b_N-a_N=\operatorname{stepDiff}(\delta9^{N-1})$, whose residue
-        modulo $4$ is $2$ (for $\delta=1$), undefined (for $\delta=2$) or $3$ (for $\delta=3$)
-        when $N$ is odd --- never $0$.  The $N=3$ \lean{decide} instance
-        \lean{odd\_rung\_klein4\_exclusion} is retained as a kernel witness; the script verifies
-        odd $N\le9$ directly.
-  \item \textbf{Shadow dynamics} (\lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact}).  The
-        single-variable maps $\Delta$ and $S$ reproduce the pair difference and sum exactly, and
-        $\Delta$ preserves the order.
-  \item \textbf{Carry-free base-9} (\lean{base9\_transducer\_exact},
-        \lean{base9\_digit\_sum\_conservation}).  The left-to-right transducer obeys the exact
-        per-position identity $4a'+r'=9r+a$; over a whole word,
-        $4\cdot(\text{output sum})=8\cdot(\text{remainder sum})+(\text{digit sum})+r_0-r_{\text{final}}$.
-  \item \textbf{Finite-roof block and general lifting} (\lean{finite\_roof\_block\_certificate},
-        \lean{step94\_add\_four\_pow}, \lean{iter94\_add\_four\_pow},
-        \lean{survives94\_add\_four\_pow}).  A \lean{decide} check in the $4^4=256$ window gives
-        $8\,|S_{N+2}|\le3\,|S_N|$, breaking the $1/2$ mirror bound.  The general lifting engine
-        proves that survival to any fixed horizon $k$ is periodic with period $4^k$: adding
-        $4^k t$ shifts the $k$-th iterate by $9^k t$, so the finite window $[0,4^k)$ exhausts all
-        survival patterns at horizon $k$.  The roof ratio at larger moduli ($4^6,4^7,4^9$) is a
-        script certificate.
-\end{itemize}
-
-\paragraph{Lean versus script.}
-Groups 1--3 and 5--6 are theorems over all $N$; group 4 is now a uniform-in-odd-$N$ theorem
-(\lean{odd\_rung\_klein4\_no\_four}) with the $N=3$ \lean{decide} instance kept as a witness; group 7
-combines the $4^4$ kernel \lean{decide} check with the general lifting engine
-(\lean{survives94\_add\_four\_pow}), whose wider-modulus companions live in
-\texttt{scripts/generate\_certificates.py}.  Nothing here claims the Mahler $3/2$ conjecture or the
-$9/4$ conjecture.
-
-\section{Formalisation traceability}
-
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \small
-\begin{tabular}{@{}lll@{}}
+\begin{tabularx}{\textwidth}{@{}L{0.31\textwidth} c L{0.13\textwidth} Y@{}}
 \toprule
-Result & Lean declaration & Status\\
+Barrier set $U$ & $T_0$-alone & Joint survivor & Symbolic structure \\
 \midrule
-Integer exclusion & \lean{ZeroEntropyCages.exclusion\_integer} & proved\\
-$[2/7,5/7)$ deterministic cage & \lean{ZeroEntropyCages.cage\_two\_sevenths} & proved\\
-Joint `Step`-orbit in $[2/7,5/7)$ & \lean{joint\_orbit\_two\_sevenths} & proved\\
-Joint `Step`-cycles & \lean{joint\_cycle\_two\_fifths}, \lean{joint\_cycle\_four\_thirteenths} & proved\\
-Holed-cage $2$-cycle / transients & \lean{holed\_cage\_two\_cycle}, \lean{holed\_cage\_transients} & proved\\
-Widths & \lean{width\_three\_sevenths}, \lean{width\_four\_sevenths} & proved\\
-Cup self-map & \lean{DiscreteFluidCertificates.Tcup\_mem} & proved\\
-$4/19$ cycle & \lean{cup\_cycle}, \lean{cup\_period\_three} & proved\\
-Expansion & \lean{Tcup\_dist} & proved\\
-$2{:}1$ split & \lean{two\_one\_split}, \lean{scale\_two\_thirds} & proved\\
-All-real exclusion & Proposition~\ref{prop:allreal} & not formalised\\
-$8/57$ regimes & $8/57=(2/3)(4/19)$, fold $T_1\circ T_0^3$ & script (Remark~\ref{rem:857})\\
-Spectral / dimension / cosine & --- & empirical only\\
-Mirror conservation & \lean{Model94Obstructions.mirror\_conservation\_94} & proved\\
-Even-rung annihilation & \lean{Model94Obstructions.even\_rung\_mirror\_annihilation} & proved\\
-Forbidden sums & \lean{Model94Obstructions.forbidden\_sum\_c2\_mod4} & proved\\
-Odd-rung Klein-4 & \lean{Model94Obstructions.odd\_rung\_klein4\_no\_four} & proved (all odd $N\ge3$)\\
-Shadow dynamics & \lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact} & proved\\
-Carry-free base-9 & \lean{base9\_transducer\_exact}, \lean{base9\_digit\_sum\_conservation} & proved\\
-Finite-window lifting & \lean{survives94\_add\_four\_pow} (period $4^k$) & proved (all $k$)\\
-Finite-roof block & \lean{finite\_roof\_block\_certificate} & \lean{decide} ($4^4$)\\
+$[2/7,5/7)$ & $3$ & Infinite & Cantor-like, cubic cylinder growth \\
+$[1/7,3/7)\cup[4/7,6/7)$ & $5$ & Infinite & Cantor-like, sub-exponential growth \\
+$[28/97,69/97)$ & $3$ & Infinite & Exactly $2k$ components at depth $k$ \\
+$[5/24,11/24)\cup[13/24,19/24)$ & $3$ & Finite ($4$) & $\{4/15,2/5,3/5,11/15\}$, single $2$-cycle \\
+$[1/5,7/15)\cup[8/15,4/5)$ & $4$ & Infinite & Linearly growing component count \\
 \bottomrule
-\end{tabular}
-\caption{Theorem-to-Lean map for Paper~2.}
+\end{tabularx}
+\caption{Exact comparison between deterministic $T_0$-alone depths and joint $\mathrm{Step}$-survivor sets for classical $3/2$ barriers.}
+\label{tab:barriers}
+\end{table}
+
+\begin{remark}[Arithmetic origin of $8/57$]
+\label{rem:857}
+For the left-hole family $[\delta,\tfrac12)$ under the branch-restricted cup map $F$ ($F=T_0$ on $[0,\tfrac13)$, $F=T_1$ on $[\tfrac13,\tfrac12)$), the threshold $\delta^\ast=8/57=\tfrac23\cdot\tfrac{4}{19}=T_0^{-1}(4/19)$ separates three verified regimes: $\delta>4/19$ empties finitely; $8/57<\delta\le 4/19$ retains a finite survivor set containing $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$; and $\delta<8/57$ acquires positive topological entropy via the fold $T_1\circ T_0^3$ mapping $[8/81,8/57)$ onto $[0,4/19)$.
+\end{remark}
+
+\section{General Signed Rational Zero-Entropy Automata}
+\label{sec:automaton}
+
+To certify zero topological entropy machine-readably across arbitrary signed rational bases $\alpha=\pm p/q$ ($p,q\in\N$, $1\le q$) and arbitrary finite rational cell partitions $\mathcal{I}=\{I_0,\dots,I_{N-1}\}\subset[0,1)$, \lean{Mahler32.RationalBaseDefs} and \lean{Mahler32.ZeroEntropyAutomaton} formalise an exact integer cross-multiplied interval overlap test \lean{hasBranchOverlap}. Every rational transition \lean{StepPQ p q neg x y} ($x\in I_i$, $y\in I_j$) forces \lean{hasBranchOverlap p q neg (cells i) (cells j) = true} (\lean{hasBranchOverlap\_sound}).
+
+\begin{theorem}[Zero-topological-entropy SCC obstruction]
+\label{thm:zeroentropy}
+Let $\mathrm{adj}:\mathrm{Fin}\,N\to\mathrm{Fin}\,N\to\mathrm{Bool}$ and $\mathrm{comp}:\mathrm{Fin}\,N\to\mathrm{Fin}\,M$ satisfy:
+\begin{enumerate}[leftmargin=1.5em]
+  \item (\textbf{Topological DAG ordering}) $\mathrm{adj}\,i\,j=\mathrm{true}\implies \mathrm{comp}\,i\le \mathrm{comp}\,j$;
+  \item (\textbf{No internal SCC branching}) each vertex $i$ has at most one out-neighbour $j$ with $\mathrm{comp}\,j=\mathrm{comp}\,i$.
+\end{enumerate}
+Then total walk counts grow at most polynomially, $\lean{totalPaths}\,\mathrm{adj}\,L\le N\bigl(N(L+1)\bigr)^M$ (\lean{totalPaths\_poly\_bound}), and for every $\varepsilon>0$ there exists $C>0$ with $\lean{totalPaths}\,\mathrm{adj}\,L\le C(1+\varepsilon)^L$ for all $L\in\N$ (\lean{zero\_entropy\_of\_no\_branching\_scc}).
+\end{theorem}
+
+Using kernel \lean{decide} over reduced \lean{RatInterval} lists (\lean{zero} custom axioms, \lean{zero} \lean{native\_decide}), Theorem~\ref{thm:zeroentropy} is instantiated on the finite-depth rational survivor partitions of four canonical rational-base regions (cross-checked identically by \lean{scripts/generate\_certificates.py}):
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Base $-5/3$, centered $[89/250,161/250)$}: width $0.2880$, $3$ cells, $3$ SCCs (\lean{cert\_neg\_5\_3\_zero\_entropy});
+  \item \textbf{Base $-3/2$, holed $[147/1000,43/100)\cup[57/100,853/1000)$}: width $283/500=0.5660>1/2$, $18$ cells, $15$ SCCs (\lean{cert\_neg\_3\_2\_holed\_width\_gt\_half}, \lean{cert\_neg\_3\_2\_holed\_zero\_entropy});
+  \item \textbf{Base $-3/2$, centered $[1429/5000,3571/5000)$}: width $1071/2500=0.4284$, $26$ cells, $16$ SCCs (\lean{cert\_neg\_3\_2\_centered\_zero\_entropy});
+  \item \textbf{Base $+5/3$, centered $[697/2000,1303/2000)$}: width $303/1000=0.3030$, $13$ cells, $9$ SCCs (\lean{cert\_pos\_5\_3\_centered\_zero\_entropy}); depth-$7$ widening to width $0.3040$ ($83$ cells, $72$ SCCs) is additionally verified in \lean{scripts/generate\_certificates.py}.
+\end{itemize}
+
+\begin{remark}[Literature comparison targets]
+\label{rem:lit}
+Classical distribution theorems establish interval-range obstructions of length $1/p$ for positive rational bases \citep{flp1995} and $(1+r-r^2)/p$ ($r=q/p$) for negative rational bases \citep{luzheng2026}. Notice that symbolic zero-topological-entropy exclusion allows wider certified intervals: companion rational searches report centered zero-entropy windows of widths $0.428$ ($+3/2$, $+28.4\%$ over $1/3$), $0.310$ ($+4/3$), $0.240$ ($+5/4$), $0.304$ ($+5/3$, $+52.0\%$ over $1/5$), $0.186$ ($+7/4$), and $0.157$ ($+8/3$), as well as negative-base centered windows $0.4284$ ($-3/2$), $0.3106$ ($-4/3$), $0.2408$ ($-5/4$), $0.2880$ ($-5/3$), $0.1862$ ($-7/4$), and $0.1579$ ($-8/3$). Only the four exact certificates listed above and the depth-$7$ $+5/3$ $0.3040$ check are asserted as verified artefacts in this repository; the remaining table widths and a $280$-state negative-$3/2$ variant $[0.157,0.440)\cup[0.560,0.843)$ remain empirical companion observations.
+\end{remark}
+
+\section{Discrete Fluid Transport on the Mahler Cup}
+\label{sec:fluid}
+
+On $[0,\tfrac12)$, define the cup map $T_{\mathrm{cup}}(x)=(3x/2)\bmod\tfrac12$. Then $T_{\mathrm{cup}}$ preserves $[0,\tfrac12)$ (\lean{Tcup\_mem}), possesses the exact $3$-cycle $4/19\mapsto 6/19\mapsto 9/19\mapsto 4/19$ (\lean{cup\_cycle}, \lean{cup\_period\_three}), expands branchwise distances by $\tfrac32$ (\lean{Tcup\_dist}), and satisfies the $2{:}1$ interval transport balance $\Nu([1/6,1/4])=\Nu([1/3,1/2])$ (\lean{two\_one\_split}, \lean{scale\_two\_thirds}).
+
+\section{Empirical Observations and Open Analytic Estimates}
+\label{sec:empirical}
+
+The following numerical statistics from working notes are reported strictly as empirical observations and are \emph{not} claimed as Lean theorems: chaos onset $L_{\text{chaos}}\approx 0.428705$, spectral mixing gap $\approx 0.2898$, Hausdorff dimension migration $\approx 0.8548$, a fixed-depth cosine-product figure $\le 0.7409$, and empirical finite-depth Weyl / dual-potential parameters ($c\approx 0.69539$ for $3/2$; $c\approx 0.22039,\lambda=0.955$ for $4/3$; $c\approx 0.18468,\lambda=0.969$ for $5/3$; $c\approx 0.10726,\lambda=0.969$ for $5/4$; $c\approx 0.10536,\lambda=0.989$ for $8/3$; $c\approx 0.08368,\lambda=0.984$ for $7/4$; $c\approx 0.06240,\lambda=0.990$ for $9/4$).
+
+\section{Finite-Roof \texorpdfstring{$9/4$}{9/4} Obstructions and Carry-Free Base-\texorpdfstring{$9$}{9} Transducer}
+\label{sec:model94}
+
+The two-branch $9/4$ recurrence $4g_{k+1}=9g_k+d_k$ ($d_k\in\{2,3\}$) retains residues $g_k\bmod 4\in\{1,2\}$. \lean{Mahler32.Model94Obstructions} verifies seven theorem families unconditionally:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Mirror conservation} (\lean{mirror\_conservation\_94}): $g_k+\tilde g_k=9^k 4^{N-k}-1$ for $g_0<4^N$;
+  \item \textbf{Even-rung extinction} (\lean{even\_rung\_mirror\_annihilation}): for $N=2m$, mirror twins cannot both survive $N+2$ steps;
+  \item \textbf{Congruence exclusion} (\lean{forbidden\_sum\_c2\_mod4}): pairs summing to $c\,4^k-1$ with $c\equiv 2\pmod 4$ cannot both survive $k+1$ steps;
+  \item \textbf{Odd-rung Klein-$4$ exclusion} (\lean{odd\_rung\_klein4\_no\_four}): uniformly for all odd $N\ge 3$, at most three of any sibling/mirror quadruple survive $N+1$ steps;
+  \item \textbf{Difference and sum shadows} (\lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact});
+  \item \textbf{Carry-free base-$9$ conservation} (\lean{base9\_transducer\_exact}, \lean{base9\_digit\_sum\_conservation});
+  \item \textbf{Finite-window lifting} (\lean{survives94\_add\_four\_pow}, period $4^k$) combined with $8|S_{N+2}|\le 3|S_N|$ at $4^4=256$ (\lean{finite\_roof\_block\_certificate}).
+\end{enumerate}
+
+\section{Midpoint Cantor Intersections and General \texorpdfstring{$(p,q)$}{(p,q)} Weyl Fourier Decay}
+\label{sec:pqdecay}
+
+In \lean{Mahler32.Model94GlobalDecay} (Issue~\#12), we first prove the exact $36^K$-periodic survival lifting (\lean{inSK\_mod\_36\_pow}, \lean{inAK\_mod\_36\_pow}), the midpoint double-Cantor non-emptiness theorem $18\in A_K$ for $K\ge 1$ via $5\mid 9^K-4^K$ (\lean{midpoint\_double\_cantor}), scaled antipodal diameter exclusion $\le (9^K-4^K)/5$ (\lean{inAK\_antipodal\_exclusion}), exact $4$-contraction of $\hat\mu_K$ (\lean{norm\_hatMu94\_four\_pow\_mul}), the cosine product representation (\lean{norm\_hatMu94\_cosine\_product}), and quantitative polynomial Fourier decay $\|\hat\mu_K(u)\|\le C K^{-c}$ for odd $u$ (\lean{global\_odd\_freq\_decay}, \lean{global\_freq\_decay\_of\_four\_pow}).
+
+In \lean{Mahler32.GeneralPQDecay} (Issue~\#17), the entire consecutive-digit two-branch Fourier machinery is generalised to any coprime rational base $p>q\ge 2$ encoded by \lean{TunnelModelPQ}:
+\begin{itemize}[leftmargin=1.4em]
+  \item Exact $q$-contraction $\hat\mu_{K+1}(q u)=\hat\mu_K(u)$ (\lean{hatMuPQ\_mul\_q}, \lean{norm\_hatMuPQ\_q\_pow\_mul}) and cardinality $|S_K|=2^K$ (\lean{card\_survivorsSetPQ});
+  \item Exact $p$-multiplication cosine recursion (\lean{hatMuPQ\_p\_mul}, \lean{norm\_hatMuPQ\_cosine\_product}) and disjoint-block lower-distance hitting (\lean{norm\_hatMuPQ\_le\_cos\_pow});
+  \item Quantitative Weyl equidistribution decay $\|\hat\mu_K(u)\|\le C K^{-c}$ for all $K\ge 1$, $q\nmid u$ (\lean{global\_coprime\_freq\_decay\_pq}, \lean{global\_freq\_decay\_of\_q\_pow\_pq}), explicitly instantiated at bases $3/2,4/3,5/4,5/3,7/4,8/3$ (\lean{weyl\_decay\_3\_2}--\lean{weyl\_decay\_8\_3});
+  \item Karp dual-potential cycle bound (\lean{karp\_cycle\_bound}): canceling $\varphi(u)>0$ along any cycle $p$ in \lean{DualPotentialCert n} yields $\lean{pathWeight}\,u\,p\le \lambda^{|p|}$, complementing the $42$-vertex baseline container (\lean{cert42\_path\_decay}) and instantiating the $44$-vertex baseline container (\lean{cert44\_path\_decay}, \lean{cert44\_cycle\_bound}).
+\end{itemize}
+
+\section{Formalisation Traceability}
+
+All Lean declarations in Table~\ref{tab:trace2} are built with \lean{lake build -KwarningAsError=true} and audited by \lean{AuditAxioms.lean} (only \lean{propext}, \lean{Quot.sound}, \lean{Classical.choice}).
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\begin{tabularx}{\textwidth}{@{}L{0.25\textwidth} Y L{0.22\textwidth}@{}}
+\toprule
+Mathematical result & Lean declaration & Verification status \\
+\midrule
+Integer-vanishing criterion & \lean{ZeroEntropyCages.exclusion\_integer} & Proved (zero axioms) \\
+Deterministic $[2/7,5/7)$ exit & \lean{ZeroEntropyCages.cage\_two\_sevenths} & Proved (zero axioms) \\
+Joint \lean{Step} orbit and cycles & \lean{joint\_orbit\_two\_sevenths}, \lean{joint\_cycle\_two\_fifths}, \lean{joint\_cycle\_four\_thirteenths} & Proved (zero axioms) \\
+Finite survivor core $[5/24,11/24)\cup\dots$ & \lean{holed\_cage\_two\_cycle}, \lean{holed\_cage\_transients} & Proved (zero axioms) \\
+Cup self-map, $4/19$ $3$-cycle, $2{:}1$ split & \lean{DiscreteFluidCertificates.Tcup\_mem}, \lean{cup\_cycle}, \lean{Tcup\_dist}, \lean{two\_one\_split} & Proved (zero axioms) \\
+$8/57$ cup regimes \& $5/3$ depth-$7$ $0.304$ & Exact rational \lean{Fraction} intervals & Verified by \lean{generate\_certificates.py} \\
+$9/4$ mirror, Klein-$4$, base-$9$, roof & \lean{Model94Obstructions.mirror\_conservation\_94}, \lean{odd\_rung\_klein4\_no\_four}, \lean{finite\_roof\_block\_certificate} & Proved + \lean{decide} ($4^4$) \\
+$36^K$ midpoint Cantor intersection & \lean{Model94GlobalDecay.midpoint\_double\_cantor}, \lean{inAK\_antipodal\_exclusion} & Proved (zero axioms) \\
+$9/4$ odd-frequency Weyl decay & \lean{Model94GlobalDecay.global\_odd\_freq\_decay}, \lean{cert42\_path\_decay} & Proved (zero axioms) \\
+General $(p,q)$ definitions & \lean{RationalBaseDefs.TunnelModelPQ}, \lean{RatInterval}, \lean{ZeroEntropyAutomaton} & Pure exposed defs \\
+$(p,q)$ Weyl Fourier decay ($3/2\dots 8/3$) & \lean{GeneralPQDecay.global\_coprime\_freq\_decay\_pq}, \lean{weyl\_decay\_3\_2}--\lean{weyl\_decay\_8\_3} & Proved (zero axioms) \\
+Karp cycle bound \& $44$-vertex baseline & \lean{GeneralPQDecay.karp\_cycle\_bound}, \lean{cert44\_cycle\_bound} & Proved (zero axioms) \\
+Zero-entropy SCC mother theorem & \lean{ZeroEntropyAutomaton.hasBranchOverlap\_sound}, \lean{zero\_entropy\_of\_no\_branching\_scc} & Proved (zero axioms) \\
+$-5/3$, $\pm 5/3$, $-3/2$ certificates & \lean{cert\_neg\_5\_3\_zero\_entropy}, \lean{cert\_neg\_3\_2\_holed\_zero\_entropy}, \lean{cert\_neg\_3\_2\_centered\_zero\_entropy}, \lean{cert\_pos\_5\_3\_centered\_zero\_entropy} & \lean{decide} (zero axioms) \\
+\bottomrule
+\end{tabularx}
+\caption{Theorem-to-Lean traceability table for Paper~2 (Issues \#12 and \#17 included).}
+\label{tab:trace2}
 \end{table}
 
 \bibliography{refs}

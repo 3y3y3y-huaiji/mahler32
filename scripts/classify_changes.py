@@ -38,6 +38,7 @@ LEAN_PATTERNS = (
 )
 PAPERS_PATTERNS = (
     "papers/**",
+    "scripts/check_latex.py",
     ".github/workflows/papers.yml",
 )
 DOCS_PATTERNS = (
@@ -45,6 +46,8 @@ DOCS_PATTERNS = (
     "AGENTS.md",
     "SECURITY.md",
     "LICENSE*",
+    ".zenodo.json",
+    "CITATION.cff",
     "docs/**",
     ".github/ISSUE_TEMPLATE/**",
     ".github/PULL_REQUEST_TEMPLATE.md",

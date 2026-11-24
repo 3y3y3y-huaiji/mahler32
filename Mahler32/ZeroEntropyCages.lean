@@ -8,17 +8,17 @@ module
 public import Mathlib
 
 /-!
-# Zero-entropy exclusion cages for the Mahler `3/2` map
+# Zero-topological-entropy symbolic obstructions for the Mahler `3/2` map
 
-This module formalises the *finite, decidable* core of the "exclusion cage" story for the
-Mahler map `T x = {3x/2}` on `[0, 1)`.  The distinction between the **deterministic** map and the
-**two-branch joint relation** is the central modelling point of the file:
+This module formalises the *finite, decidable* core of the symbolic-dynamical obstructions for
+the Mahler map `T x = {3x/2}` on `[0, 1)`.  The distinction between the **deterministic** map
+and the **two-branch joint relation** is the central modelling point of the file:
 
 * **The arithmetic engine** (`exclusion_integer`): an integer squeezed between a `2`-adic
   divisibility and an Archimedean size bound must vanish.  This is the `2`-adic half of every
   "all-real exclusion" argument.
 
-* **The deterministic even-branch cage** (`cage_two_sevenths`): for the map `Tq = T0`, the
+* **The deterministic even-branch obstruction** (`cage_two_sevenths`): for the map `Tq = T0`, the
   interval `[2/7, 5/7)` has *no* four-term orbit.  This is a genuine statement about iterating the
   single deterministic map `Tq`; it is proved by exact rational interval arithmetic, with no
   numerical approximation and no `native_decide`.  It is **not**, and must not be presented as, an
@@ -31,25 +31,25 @@ Mahler map `T x = {3x/2}` on `[0, 1)`.  The distinction between the **determinis
   `joint_cycle_four_thirteenths` exhibit genuine periodic `Step`-cycles inside it.  In particular
   the single-branch emptying depth `3` of `Tq` says nothing about the joint relation.
 
-* **The finite-state holed cage** (`holedCage`): the union `[5/24, 11/24) ∪ [13/24, 19/24)` has,
-  under the joint relation, the exact finite survivor set `{4/15, 2/5, 3/5, 11/15}`
+* **The finite-state holed obstruction** (`holedCage`): the union `[5/24, 11/24) ∪ [13/24, 19/24)`
+  has, under the joint relation, the exact finite survivor set `{4/15, 2/5, 3/5, 11/15}`
   (`holed_cage_two_cycle`, `holed_cage_transients`): a genuine `2`-cycle `2/5 ↔ 3/5` together with
   the two transients `4/15 ↦ 2/5` and `11/15 ↦ 3/5`.  This is the machine-checked "finite-state /
-  zero-entropy" core cage; the *full* survivor-count and cipher analysis for the other barriers is
-  reproduced by `scripts/generate_certificates.py`.
+  zero-entropy" core obstruction; the *full* survivor-count and SCC analysis for the other barriers
+  is reproduced by `scripts/generate_certificates.py`.
 
 * **Width bookkeeping** (`width_three_sevenths`, `width_four_sevenths`): the widths that make the
   single-interval and the holed `4/7` barriers interesting.
 
 The joint relation is analysed in `scripts/generate_certificates.py`: exact rational survivor sets
 `V_n = U ∩ (T0⁻¹ Vₙ₋₁ ∪ T1⁻¹ Vₙ₋₁)`, finite-depth Markov partitions with SCC / branching tests, and
-exact rational periodic cycles.  That computation shows `[28/97,69/97)` and `[2/7,5/7)` keep infinite
+exact rational periodic cycles.  The computation shows `[28/97,69/97)` and `[2/7,5/7)` keep infinite
 joint survivor sets of zero topological entropy (sub-exponential cylinder growth), while the holed
-cage above has the finite survivor set proved here.  The full zero-entropy statements are *script*
-certificates, not asserted as Lean theorems.  The constant `8/57 = T0⁻¹(4/19)` is the exact
-preimage of the cup `3`-cycle `4/19 ↦ 6/19 ↦ 9/19`; it is *not* a single-branch emptying threshold,
-and the left-hole family `[δ,1/2)` instead has the three exact regimes verified in the script
-(`δ > 4/19` empties; `8/57 < δ ≤ 4/19` keeps a finite survivor set; `δ < 8/57` has positive
+obstruction above has the finite survivor set proved here.  The general signed rational automaton
+formalisation lives in `Mahler32.ZeroEntropyAutomaton`.  The constant `8/57 = T0⁻¹(4/19)` is the
+exact preimage of the cup `3`-cycle `4/19 ↦ 6/19 ↦ 9/19`; it is *not* a single-branch emptying
+threshold, and the left-hole family `[δ,1/2)` instead has the three exact regimes verified in the
+script (`δ > 4/19` empties; `8/57 < δ ≤ 4/19` keeps a finite survivor set; `δ < 8/57` has positive
 entropy via the fold `T1 ∘ T0³`).
 -/
 
@@ -122,12 +122,12 @@ public theorem exclusion_integer {M : ℤ} {N : ℕ}
     omega
   rw [hk0, mul_zero]
 
-/-! ### The exact deterministic `[2/7, 5/7)` cage -/
+/-! ### The exact deterministic `[2/7, 5/7)` obstruction -/
 
-/-- **The even-branch (deterministic) `[2/7, 5/7)` cage has no four-term orbit.**  For the single
-deterministic map `T0 = Tq` there is no rational `x` with `x, T0x, T0²x, T0³x` all in `[2/7, 5/7)`.
-The proof tracks the exact image interval step by step:
-`[2/7,5/7) → [3/7,5/7) → [9/14,5/7)`, and the fourth image misses the cage entirely.
+/-- **The even-branch (deterministic) `[2/7, 5/7)` obstruction has no four-term orbit.**  For the
+single deterministic map `T0 = Tq` there is no rational `x` with `x, T0x, T0²x, T0³x` all in
+`[2/7, 5/7)`.  The proof tracks the exact image interval step by step:
+`[2/7,5/7) → [3/7,5/7) → [9/14,5/7)`, and the fourth image misses the interval entirely.
 
 This is a statement about `Tq` alone.  It does **not** exclude orbits of the two-branch joint
 relation `Step`; see `joint_orbit_two_sevenths` for a six-term `Step`-orbit inside the same
@@ -193,7 +193,7 @@ the witness theorems are unambiguously rational). -/
 @[expose] public def cage27 (x : ℚ) : Prop := 2 / 7 ≤ x ∧ x < 5 / 7
 
 /-- **A six-term `Step`-orbit inside `[2/7, 5/7)`.**  This is the explicit witness that the
-deterministic single-branch cage `cage_two_sevenths` does *not* exclude orbits of the joint
+deterministic single-branch theorem `cage_two_sevenths` does *not* exclude orbits of the joint
 relation: `3/7 ↦ 9/14 ↦ 13/28 ↦ 39/56 ↦ 61/112 ↦ 71/224`, alternating the two branches, stays in
 the barrier for far more than the deterministic depth `3`. -/
 public theorem joint_orbit_two_sevenths :
@@ -234,11 +234,11 @@ public theorem joint_cycle_four_thirteenths :
   · right; rw [T1_of_ge_lt (by norm_num) (by norm_num)]; norm_num
   all_goals (unfold cage27; constructor <;> norm_num)
 
-/-- The holed cage `U = [5/24, 11/24) ∪ [13/24, 19/24)`. -/
+/-- The holed zero-entropy symbolic obstruction `U = [5/24, 11/24) ∪ [13/24, 19/24)`. -/
 @[expose] public def holedCage (x : ℚ) : Prop :=
   (5 / 24 ≤ x ∧ x < 11 / 24) ∨ (13 / 24 ≤ x ∧ x < 19 / 24)
 
-/-- **The holed cage contains a genuine `2`-cycle** `2/5 ↔ 3/5`. -/
+/-- **The holed obstruction contains a genuine `2`-cycle** `2/5 ↔ 3/5`. -/
 public theorem holed_cage_two_cycle :
     Step (2 / 5) (3 / 5) ∧ Step (3 / 5) (2 / 5) ∧
       holedCage (2 / 5) ∧ holedCage (3 / 5) := by
@@ -248,9 +248,9 @@ public theorem holed_cage_two_cycle :
   · left; constructor <;> norm_num
   · right; constructor <;> norm_num
 
-/-- **The two transients of the holed cage**: `4/15 ↦ 2/5` and `11/15 ↦ 3/5`.  Together with
-`holed_cage_two_cycle` these are the exact finite survivor set `{4/15, 2/5, 3/5, 11/15}` of the
-joint relation on `[5/24,11/24) ∪ [13/24,19/24)` (the excludedness of any other point is the
+/-- **The two transients of the holed obstruction**: `4/15 ↦ 2/5` and `11/15 ↦ 3/5`.  Together
+with `holed_cage_two_cycle` these are the exact finite survivor set `{4/15, 2/5, 3/5, 11/15}` of
+the joint relation on `[5/24,11/24) ∪ [13/24,19/24)` (the excludedness of any other point is the
 script certificate of `scripts/generate_certificates.py`). -/
 public theorem holed_cage_transients :
     Step (4 / 15) (2 / 5) ∧ Step (11 / 15) (3 / 5) ∧

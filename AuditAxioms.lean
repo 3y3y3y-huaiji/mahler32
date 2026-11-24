@@ -118,6 +118,47 @@ public section
 #print axioms Mahler32.Model94GlobalDecay.DualPotentialCert.path_contraction
 #print axioms Mahler32.Model94GlobalDecay.cert42_path_decay
 
+-- Issue #17: General (p, q) repetition exclusion, Fourier decay, Karp cycle bound, and automata
+-- (`Mahler32.RationalBaseDefs` contains pure definitions exercised via the modules below.)
+#print axioms Mahler32.RationalBaseDefs.qStarPQ
+#print axioms Mahler32.GeneralPQDecay.qStarPQ_bounds
+#print axioms Mahler32.GeneralPQDecay.two_place_isolation_pq
+#print axioms Mahler32.GeneralPQDecay.no_eventually_periodic_pq
+#print axioms Mahler32.GeneralPQDecay.repetition_exponent_bound_pq
+#print axioms Mahler32.GeneralPQDecay.card_survivorsSetPQ
+#print axioms Mahler32.GeneralPQDecay.hatMuPQ_mul_q
+#print axioms Mahler32.GeneralPQDecay.hatMuPQ_q_pow_mul
+#print axioms Mahler32.GeneralPQDecay.norm_hatMuPQ_q_pow_mul
+#print axioms Mahler32.GeneralPQDecay.hatMuPQ_p_mul
+#print axioms Mahler32.GeneralPQDecay.norm_hatMuPQ_p_mul
+#print axioms Mahler32.GeneralPQDecay.hatMuPQ_mod_q_pow
+#print axioms Mahler32.GeneralPQDecay.norm_hatMuPQ_cosine_product
+#print axioms Mahler32.GeneralPQDecay.norm_hatMuPQ_le_cos_pow
+#print axioms Mahler32.GeneralPQDecay.global_coprime_freq_decay_pq
+#print axioms Mahler32.GeneralPQDecay.global_freq_decay_of_q_pow_pq
+#print axioms Mahler32.GeneralPQDecay.weyl_decay_3_2
+#print axioms Mahler32.GeneralPQDecay.weyl_decay_4_3
+#print axioms Mahler32.GeneralPQDecay.weyl_decay_5_4
+#print axioms Mahler32.GeneralPQDecay.weyl_decay_5_3
+#print axioms Mahler32.GeneralPQDecay.weyl_decay_7_4
+#print axioms Mahler32.GeneralPQDecay.weyl_decay_8_3
+#print axioms Mahler32.GeneralPQDecay.karp_cycle_bound
+#print axioms Mahler32.GeneralPQDecay.cert44_path_decay
+#print axioms Mahler32.GeneralPQDecay.cert44_cycle_bound
+
+#print axioms Mahler32.ZeroEntropyAutomaton.hasBranchOverlap_sound
+#print axioms Mahler32.ZeroEntropyAutomaton.totalPaths_poly_bound
+#print axioms Mahler32.ZeroEntropyAutomaton.zero_entropy_of_no_branching_scc
+#print axioms Mahler32.ZeroEntropyAutomaton.automaton_orbit_sound
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_5_3_width
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_5_3_zero_entropy
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_3_2_holed_width_gt_half
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_3_2_holed_zero_entropy
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_3_2_centered_width
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_3_2_centered_zero_entropy
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_pos_5_3_centered_width
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_pos_5_3_centered_zero_entropy
+
 -- `Mahler32.Basic` (imported transitively by every task module above) and
 -- `Mahler32.QuiverMonotone` (the mathlib4#44885 mirror consumed by `Mahler32.DAGBoundedGap`)
 -- are audited here directly, so the module inventory of `scripts/verify_ssot.py` is complete.

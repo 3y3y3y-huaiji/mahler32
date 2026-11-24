@@ -131,7 +131,7 @@ The following modules are built and audited (every path is checked for registrat
 | `Mahler32/Basic.lean` | the core parity development: one-step laws, information window and sharpness, base-3 transducer, inverse branch and period doubling, the `2^k` legal-class count, 11-free Fibonacci pruning and Walsh zero correlation |
 | `Mahler32/Base6LightCone.lean` | task-sheet `step`/`iterStep`/`bstep`/`good`; light-cone flip and the 3-adic window (`light_cone_flip`, `good_mod_iff`) |
 | `Mahler32/SyracuseGates.lean` | integer `3/2` step `zStep`; exact gates `g % 12 = 9`, `g % 256 = 9`, `g % 768 = 9` |
-| `Mahler32/TwoWorldPadeCriterion.lean` | two-world identity; agreement criterion `two_world_iff`; integer engine `two_pow_dvd_eq_zero`; rational `√2` bounds; $\mathbb{R}\times\mathbb{Q}_2$ two-world isolation (`two_world_ghost_bounds`, `no_eventually_periodic_94`, `repetition_exponent_bound`); mod-9 anti-misfire gate (`mod_nine_gate_rat`, `mod_nine_gate_b2`, `mod_nine_anti_misfire`) |
+| `Mahler32/TwoWorldPadeCriterion.lean` | Archimedean–`2`-adic Padé discrepancy identity; uniqueness of agreement `two_world_iff`; integer engine `two_pow_dvd_eq_zero`; rational `√2` bounds; $\mathbb{R}\times\mathbb{Q}_2$ simultaneous evaluation (`two_world_ghost_bounds`, `no_eventually_periodic_94`, `repetition_exponent_bound`); mod-9 non-vanishing congruence criterion (`mod_nine_gate_rat`, `mod_nine_gate_b2`, `mod_nine_anti_misfire`) |
 | `Mahler32/ArnoldTongue5State.lean` | the `5`-state count, **plus** exact windows where the real `T` branches stay in `[1/3, 11/15)` (`T_false_maps`, `T_true_maps`) |
 | `Mahler32/ArnoldTongue7State.lean` | the `7`-state count, **plus** the exact `T` windows on `[7/24, 17/24)` |
 | `Mahler32/DAGBoundedGap.lean` | bounded gap; exact hitting set `S7_iff_hits`; the `g + 128` carry branch (`zStepNat_add_128`); deterministic `Quiver.StrictMono` residue DAG |
@@ -139,10 +139,13 @@ The following modules are built and audited (every path is checked for registrat
 | `Mahler32/WalshZeroCorr.lean` | Walsh coefficients on the real `k`-step orbit; top-bit-zero vanishing and top-bit doubling |
 | `Mahler32/HInvariance.lean` | Hensel inverse, word residue `r_u`, affine offset `Δ(u,h,p3)`, and `h`-invariance of local Fourier norms |
 | `Mahler32/SyracuseBijection.lean` | full-branch bijection of the accelerated Mahler–Syracuse map; forced `b ≥ 5` after the truncated `a = 1` branch |
-| `Mahler32/ZeroEntropyCages.lean` | integer exclusion; the **deterministic** even-branch four-term cage `cage_two_sevenths`; the two-branch joint relation `Step`; genuine `Step`-orbits/cycles in `[2/7,5/7)` (`joint_orbit_two_sevenths`, `joint_cycle_two_fifths`, `joint_cycle_four_thirteenths`); the finite-state holed cage `[5/24,11/24) ∪ [13/24,19/24)` with survivor set `{4/15,2/5,3/5,11/15}` and `2`-cycle `2/5 ↔ 3/5` |
+| `Mahler32/ZeroEntropyCages.lean` | integer-vanishing criterion; the **deterministic** even-branch four-term obstruction `cage_two_sevenths`; the two-branch joint relation `Step`; genuine `Step`-orbits/cycles in `[2/7,5/7)` (`joint_orbit_two_sevenths`, `joint_cycle_two_fifths`, `joint_cycle_four_thirteenths`); the finite-state holed obstruction `[5/24,11/24) ∪ [13/24,19/24)` with survivor set `{4/15,2/5,3/5,11/15}` and `2`-cycle `2/5 ↔ 3/5` |
 | `Mahler32/DiscreteFluidCertificates.lean` | cup map self-map; exact `4/19 → 6/19 → 9/19 → 4/19` three-cycle; `3/2` expansion; `2 : 1` mass split |
-| `Mahler32/Model94Obstructions.lean` | `9/4` finite-roof arithmetic obstruction: mirror conservation, even-rung annihilation, forbidden sums, odd-rung Klein-4, sum/difference shadow maps, carry-free base-9 conservation, finite-roof block bound |
+| `Mahler32/Model94Obstructions.lean` | `9/4` finite-roof arithmetic obstruction: mirror conservation, even-rung extinction, forbidden sums, odd-rung Klein-4, sum/difference shadow maps, carry-free base-9 conservation, finite-roof block bound |
 | `Mahler32/Model94GlobalDecay.lean` | `9/4` global Fourier decay and midpoint $36^K$ Cantor intersection: `midpoint_double_cantor`, `inAK_scaled_interval`, `inAK_antipodal_exclusion`, exact `4`-contraction `norm_hatMu94_four_pow_mul`, cosine product `norm_hatMu94_cosine_product`, `global_odd_freq_decay`, `global_freq_decay_of_four_pow`, `DualPotentialCert`, `cert42_path_decay` |
+| `Mahler32/RationalBaseDefs.lean` | pure exposed definitions (`@[expose] public def`) for general coprime `(p, q)` symbolic words, `TunnelModelPQ`, `RatInterval`, `StepPQ`, `hasBranchOverlap`, and `ZeroEntropyAutomaton` |
+| `Mahler32/GeneralPQDecay.lean` | general coprime `(p, q)` (`2 ≤ q < p`) $\log_q p$ repetition-exponent exclusion (`repetition_exponent_bound_pq`), tunnel Fourier decay & quantitative Weyl equidistribution (`global_coprime_freq_decay_pq`, `weyl_decay_3_2`..`weyl_decay_8_3`), and Karp dual-potential cycle bound (`karp_cycle_bound`, `cert44_cycle_bound`) |
+| `Mahler32/ZeroEntropyAutomaton.lean` | soundness of exact branch-overlap checking (`hasBranchOverlap_sound`), polynomial walk growth (`totalPaths_poly_bound`), zero-entropy SCC mother theorem (`zero_entropy_of_no_branching_scc`), and kernel `decide` certificates (`-5/3` `0.2880`, `-3/2` holed `0.5660 > 1/2`, `-3/2` centered `0.4284`, `+5/3` centered `0.3030`) |
 | `Mahler32/QuiverMonotone.lean` | verbatim mirror of `Mathlib/Combinatorics/Quiver/Monotone.lean` from mathlib4#44885 (`Quiver.Monotone`, `Quiver.StrictMono`, `StrictMono.isPartialOrder_reachable`), pending the upstream merge |
 
 The conditional branch is deliberately *outside* the zero-axiom core: `Mahler32Conditional/AlgebraicPairBranch.lean`
@@ -150,12 +153,10 @@ is the only module that may depend on the single extra axiom `schlickewei_subspa
 Lake library so it cannot be imported by `Mahler32Core`, `Solution` or `SpecCheck`. Its own definition/statement
 lock lives in `SpecCheckConditional.lean`.
 
-Two companion papers live in `papers/`:
+Two companion papers (with Chinese reading editions) live in `papers/`:
 
-- `papers/paper1_transcendence/` — *A Two-World Padé Criterion for Base 3/2 and the
-  Algebraic–Pair Branch*
-- `papers/paper2_zero_entropy_fluid/` — *Zero-Entropy Cages and Discrete Fluid for the Mahler
-  3/2 Map*
+- `papers/paper1_transcendence/` ([`main.tex`](papers/paper1_transcendence/main.tex), [中文阅读版](papers/paper1_transcendence/main_zh.md)) — *Simultaneous Archimedean and $q$-adic Padé Comparison for Rational Bases $p/q$ and the Algebraic–Pair Branch*
+- `papers/paper2_zero_entropy_fluid/` ([`main.tex`](papers/paper2_zero_entropy_fluid/main.tex), [中文阅读版](papers/paper2_zero_entropy_fluid/main_zh.md)) — *Zero-Topological-Entropy Symbolic Obstructions, Discrete Fluid Transport, and Quantitative Weyl Decay for Rational Bases $p/q$*
 
 Prebuilt PDFs and SHA-256 checksums for both companion papers are published as assets on the
 [latest GitHub Release](https://github.com/3y3y3y-huaiji/mahler32/releases/latest); citation metadata
@@ -165,12 +166,12 @@ snapshot is archived on Zenodo under DOI [10.5281/zenodo.24491265](https://doi.o
 Both carry a theorem-to-Lean traceability table.  Three honesty caveats are stated there rather
 than hidden.  First, the general “all real `ξ` excluded” statement is a human-level proposition
 whose only machine-checked ingredients are the integer engine and the concrete deterministic
-`[2/7,5/7)` cage.  Second, the two-branch **joint** relation `Step x y ↔ y = T0 x ∨ y = T1 x` is
+`[2/7,5/7)` obstruction.  Second, the two-branch **joint** relation `Step x y ↔ y = T0 x ∨ y = T1 x` is
 *not* emptied on `[2/7,5/7)` (an explicit six-term `Step`-orbit is proved in
 `ZeroEntropyCages.joint_orbit_two_sevenths`), so the single-branch emptying depth `3` of the
 deterministic map says nothing about the joint relation; `scripts/generate_certificates.py`
 computes the exact joint survivor sets, the finite-depth Markov/SCC structure and the rational
-cycles, and the holed cage `[5/24,11/24) ∪ [13/24,19/24)` is the finite-state core where the
+cycles, and the holed obstruction `[5/24,11/24) ∪ [13/24,19/24)` is the finite-state core where the
 survivor set is exactly `{4/15,2/5,3/5,11/15}`.  Third, the constant `δ* = 8/57` is the exact
 preimage `T0⁻¹(4/19) = (2/3)(4/19)` of the cup cycle; under the cup map `F` (the branch-restricted
 joint map on `[0,1/2)`) the left-hole family `[δ,1/2)` has the three exact regimes verified in the

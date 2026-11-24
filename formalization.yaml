@@ -43,6 +43,9 @@ project:
     - "Mahler32/DiscreteFluidCertificates.lean"
     - "Mahler32/Model94Obstructions.lean"
     - "Mahler32/Model94GlobalDecay.lean"
+    - "Mahler32/RationalBaseDefs.lean"
+    - "Mahler32/GeneralPQDecay.lean"
+    - "Mahler32/ZeroEntropyAutomaton.lean"
     - "Mahler32/QuiverMonotone.lean"
     - "Mahler32Conditional/AlgebraicPairBranch.lean"
   responsible_maintainers:

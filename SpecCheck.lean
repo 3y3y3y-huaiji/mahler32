@@ -256,7 +256,7 @@ example (g : Fin 128) : carrySucc g = {zStep g, embed128 ((zStep g).val + 64)} :
 
 end SpecCheck.DAGBoundedGap
 
-/-! ## Task 6 — `Mahler32.TwoWorldPadeCriterion` -/
+/-! ## Task 6 — `Mahler32.TwoWorldPadeCriterion` (Archimedean–`2`-adic Padé Comparison) -/
 
 namespace SpecCheck.TwoWorldPadeCriterion
 
@@ -268,7 +268,7 @@ example (e c : ℚ) : pade12 e c = e / (1 - c) := rfl
 /-- Lock: `[1/1]` Padé value `e(1+c)`. -/
 example (e c : ℚ) : pade11 e c = e * (1 + c) := rfl
 
-/-- Statement lock: the two-world identity. -/
+/-- Statement lock: Padé discrepancy identity. -/
 example (e c : ℚ) (hc : c ≠ 1) : pade12 e c - pade11 e c = e * c ^ 2 / (1 - c) :=
   two_world_identity e c hc
 
@@ -278,7 +278,7 @@ example : (1 / 9 : ℚ) * 9 = 1 := integer_divisibility_bound
 /-- Numeric anchor: at `c = 1/2`, `pade12 1 (1/2) = 2`. -/
 example : pade12 1 (1 / 2) = 2 := by norm_num [pade12]
 
-/-- Statement lock: R × Q_2 two-world ghost-word isolation bounds. -/
+/-- Statement lock: simultaneous Archimedean and `2`-adic (`ℝ × ℚ₂`) isolation bounds. -/
 example (g0 : ℕ) (hg0 : 1 ≤ g0) {U V : List ℕ}
     (hU : validWord94 U) (hV : validWord94 V) (hs : 0 < V.length) (w : ℕ)
     (hmatch : matchesWord94 g0 (U ++ repeatWord V w)) :
@@ -303,19 +303,19 @@ example (g0 m w : ℕ) (hg0 : 1 ≤ g0)
       (m : ℚ) / (V.length : ℚ) :=
   repetition_exponent_bound hg0 hm hU hV hs hmatch
 
-/-- Statement lock: mod-9 gate for rational `q/b` with `9 ∣ q` and `3 ∤ b`. -/
+/-- Statement lock: mod-9 non-vanishing congruence criterion for rational `q/b`. -/
 example {r d : ℕ} {c : ℕ → ℕ → ℤ} {q b : ℤ}
     (hq : (9 : ℤ) ∣ q) (hb : ¬ ((3 : ℤ) ∣ b))
     (hL : polyTelescopeRat r d c q b (4 / 9 : ℚ) = 0) : (9 : ℤ) ∣ c 0 d :=
   mod_nine_gate_rat hq hb hL
 
-/-- Statement lock: mod-9 gate specialized at `B₂(4/9) = -9(5 g₀ + 2)/5`. -/
+/-- Statement lock: mod-9 criterion specialized at `B₂(4/9) = -9(5 g₀ + 2)/5`. -/
 example {r d : ℕ} {c : ℕ → ℕ → ℤ} (g0 : ℕ)
     (hL : polyTelescopeRat r d c (-9 * (5 * (g0 : ℤ) + 2)) 5 (4 / 9 : ℚ) = 0) :
     (9 : ℤ) ∣ c 0 d :=
   mod_nine_gate_b2 g0 hL
 
-/-- Statement lock: contrapositive anti-misfire criterion (`9 ∤ c_{0,d}` implies `L(4/9) ≠ 0`). -/
+/-- Statement lock: contrapositive mod-9 non-vanishing criterion (`9 ∤ c_{0,d}` implies `L(4/9) ≠ 0`). -/
 example {r d : ℕ} {c : ℕ → ℕ → ℤ} {q : ℤ}
     (hq : (9 : ℤ) ∣ q) (hc : ¬ ((9 : ℤ) ∣ c 0 d)) :
     polyTelescope r d c q (4 / 9 : ℚ) ≠ 0 :=
@@ -562,10 +562,10 @@ example (x y : ℚ) : Step x y ↔ y = T0 x ∨ y = T1 x := Iff.rfl
 example (x : ℚ) :
     Tq x = (if (3 * x) / 2 < 1 then (3 * x) / 2 else (3 * x) / 2 - 1) := rfl
 
-/-- Lock: the `[2/7,5/7)` cage predicate. -/
+/-- Lock: the `[2/7,5/7)` obstruction predicate. -/
 example (x : ℚ) : cage27 x ↔ 2 / 7 ≤ x ∧ x < 5 / 7 := Iff.rfl
 
-/-- Lock: the holed cage `[5/24,11/24) ∪ [13/24,19/24)`. -/
+/-- Lock: the holed obstruction `[5/24,11/24) ∪ [13/24,19/24)`. -/
 example (x : ℚ) :
     holedCage x ↔ (5 / 24 ≤ x ∧ x < 11 / 24) ∨ (13 / 24 ≤ x ∧ x < 19 / 24) := Iff.rfl
 
@@ -573,7 +573,7 @@ example (x : ℚ) :
 example {M : ℤ} {N : ℕ} (h1 : (2 : ℤ) ^ N ∣ M) (h2 : |M| < (2 : ℤ) ^ N) : M = 0 :=
   exclusion_integer h1 h2
 
-/-- Statement lock: the exact four-term deterministic `[2/7, 5/7)` cage. -/
+/-- Statement lock: the exact four-term deterministic `[2/7, 5/7)` obstruction. -/
 example (x : ℚ) (h0 : 2 / 7 ≤ x) (h1 : x < 5 / 7)
     (a1 : 2 / 7 ≤ Tq x) (b1 : Tq x < 5 / 7)
     (a2 : 2 / 7 ≤ Tq (Tq x)) (b2 : Tq (Tq x) < 5 / 7)
@@ -602,13 +602,13 @@ example :
       cage27 (4 / 13) ∧ cage27 (6 / 13) ∧ cage27 (9 / 13) ∧ cage27 (7 / 13) :=
   joint_cycle_four_thirteenths
 
-/-- Statement lock: the holed cage contains the `2/5 ↔ 3/5` joint cycle. -/
+/-- Statement lock: the holed obstruction contains the `2/5 ↔ 3/5` joint cycle. -/
 example :
     Step (2 / 5) (3 / 5) ∧ Step (3 / 5) (2 / 5) ∧
       holedCage (2 / 5) ∧ holedCage (3 / 5) :=
   holed_cage_two_cycle
 
-/-- Statement lock: the two holed-cage transients `4/15 ↦ 2/5` and `11/15 ↦ 3/5`. -/
+/-- Statement lock: the two holed-obstruction transients `4/15 ↦ 2/5` and `11/15 ↦ 3/5`. -/
 example :
     Step (4 / 15) (2 / 5) ∧ Step (11 / 15) (3 / 5) ∧
       holedCage (4 / 15) ∧ holedCage (11 / 15) :=
@@ -737,5 +737,87 @@ example (u : Fin 42) (p : List (Fin 42)) :
   cert42_path_decay u p
 
 end SpecCheck.Model94GlobalDecay
+
+/-! ## Issue #17 — `Mahler32.RationalBaseDefs` -/
+
+namespace SpecCheck.RationalBaseDefs
+
+open Mahler32
+
+/-- Definition lock: `wordWeightPQ 3 2 [1, 0] = 3`. -/
+example : wordWeightPQ 3 2 [1, 0] = 3 := rfl
+
+/-- Definition lock: `(mkCell 1 2 3 4).width = 1 / 4`. -/
+example : (mkCell 1 2 3 4).width = 1 / 4 := by
+  norm_num [RatInterval.width, RatInterval.lo, RatInterval.hi, mkCell]
+
+end SpecCheck.RationalBaseDefs
+
+/-! ## Issue #17 — `Mahler32.GeneralPQDecay` -/
+
+namespace SpecCheck.GeneralPQDecay
+
+open Mahler32
+open Mahler32.GeneralPQDecay
+open Mahler32.TwoWorldPadeCriterion
+open Mahler32.Model94GlobalDecay
+
+/-- Statement lock: critical `log_q p` repetition-exponent exclusion bound. -/
+example {p q dmin dmax g0 w : ℕ} (hq : 2 ≤ q) (hpq : q < p) (hcop : Nat.Coprime p q)
+    (hg0 : 1 ≤ g0) {U V : List ℕ} (hU : validWordPQ dmin dmax U)
+    (hV : validWordPQ dmin dmax V) (hs : 0 < V.length)
+    (hmatch : matchesWordPQ p q g0 (U ++ repeatWord V w)) :
+    (w : ℝ) < Real.log p / Real.log q +
+      (Real.log p / Real.log q - 1) * ((U.length : ℝ) / (V.length : ℝ)) +
+      Real.log ((g0 : ℝ) + (dmax : ℝ) / ((p : ℝ) - q)) / ((V.length : ℝ) * Real.log q) :=
+  repetition_exponent_bound_pq hq hpq hcop hg0 hU hV hs hmatch
+
+/-- Statement lock: general `(p, q)` quantitative Weyl Fourier decay. -/
+example (M : TunnelModelPQ) :
+    ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
+      ∀ K : ℕ, 1 ≤ K → ∀ u : ℤ, ¬ ((M.q : ℤ) ∣ u) →
+        ‖M.hatMu K u‖ ≤ C * (K : ℝ) ^ (-c) :=
+  global_coprime_freq_decay_pq M
+
+/-- Statement lock: Weyl instantiations for `3/2, 4/3, 5/4, 5/3, 7/4, 8/3`. -/
+example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∀ K : ℕ, 1 ≤ K → ∀ u : ℤ, ¬ ((3 : ℤ) ∣ u) →
+    ‖(TunnelModelPQ.mkConsecutive 8 3 1 (by decide) (by decide) (by decide)).hatMu K u‖ ≤
+      C * (K : ℝ) ^ (-c) :=
+  weyl_decay_8_3
+
+/-- Statement lock: Karp dual-potential cycle bound & 44-vertex baseline certificate. -/
+example (u : Fin 44) (p : List (Fin 44)) (hcyc : DualPotentialCert.pathEnd u p = u) :
+    cert44.pathWeight u p ≤ (249 / 250 : ℚ) ^ p.length :=
+  cert44_cycle_bound u p hcyc
+
+end SpecCheck.GeneralPQDecay
+
+/-! ## Issue #17 — `Mahler32.ZeroEntropyAutomaton` -/
+
+namespace SpecCheck.ZeroEntropyAutomaton
+
+open Mahler32
+open Mahler32.ZeroEntropyAutomaton
+
+/-- Statement lock: soundness of exact overlap check `hasBranchOverlap`. -/
+example {p q : ℕ} (hq : 1 ≤ q) (neg : Bool) {I J : RatInterval}
+    (hI0 : 0 ≤ I.lo) (hI1 : I.hi ≤ 1) {x y : ℚ}
+    (hx : I.mem x) (hy : J.mem y) (hstep : StepPQ p q neg x y) :
+    hasBranchOverlap p q neg I J = true :=
+  hasBranchOverlap_sound hq neg hI0 hI1 hx hy hstep
+
+/-- Statement lock: zero topological entropy under topological SCC ordering + no internal branching. -/
+example {p q N M : ℕ} {neg : Bool} (A : ZeroEntropyAutomaton p q neg N M) :
+    ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
+      ∀ L : ℕ, (totalPaths (fun i j =>
+        hasBranchOverlap p q neg (A.cells i) (A.cells j)) L : ℝ) ≤ C * (1 + ε) ^ L :=
+  zero_entropy_of_no_branching_scc A
+
+/-- Certificate lock: `-5/3`, `-3/2` holed (`0.5660 > 1/2`), `-3/2` centered (`0.4284`), `+5/3`. -/
+example :
+    (1 / 2 : ℚ) < unionWidth [mkCell 147 1000 43 100, mkCell 57 100 853 1000] :=
+  cert_neg_3_2_holed_width_gt_half.2
+
+end SpecCheck.ZeroEntropyAutomaton
 
 end
