@@ -42,6 +42,7 @@ project:
     - "Mahler32/ZeroEntropyCages.lean"
     - "Mahler32/DiscreteFluidCertificates.lean"
     - "Mahler32/Model94Obstructions.lean"
+    - "Mahler32/Model94GlobalDecay.lean"
     - "Mahler32/QuiverMonotone.lean"
     - "Mahler32Conditional/AlgebraicPairBranch.lean"
   responsible_maintainers:

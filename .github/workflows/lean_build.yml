@@ -203,6 +203,7 @@ jobs:
             Mahler32.HInvariance Mahler32.SyracuseBijection \
             Mahler32.ZeroEntropyCages Mahler32.DiscreteFluidCertificates \
             Mahler32.Model94Obstructions \
+            Mahler32.Model94GlobalDecay \
             Mahler32.Basic Mahler32Core \
             Mahler32Conditional.AlgebraicPairBranch; do
             echo "::group::leanchecker $m"
