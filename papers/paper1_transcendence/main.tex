@@ -106,7 +106,7 @@ If $M\in\Z$, $N\in\N$, $2^{N}\mid M$, and $|M|<2^{N}$, then $M=0$.
 \end{lemma}
 
 \begin{proof}
-Writing $M=2^{N}k$ gives $2^{N}|k|<2^{N}$, hence $|k|<1$ and $k=0$. Machine-checked as \lean{Mahler32.\allowbreak TwoWorldPadeCriterion.\allowbreak two\_pow\_dvd\_eq\_zero} (and as \lean{Mahler32.\allowbreak ZeroEntropyCages.\allowbreak exclusion\_integer}).
+Writing $M=2^{N}k$ gives $2^{N}|k|<2^{N}$, hence $|k|<1$ and $k=0$. Verified as \lean{two\_pow\_dvd\_eq\_zero} in \lean{Mahler32.\allowbreak TwoWorldPadeCriterion} and as \lean{exclusion\_integer} in \lean{Mahler32.\allowbreak ZeroEntropyCages}.
 \end{proof}
 
 \begin{corollary}[Annihilation of integralised remainders]

@@ -186,7 +186,7 @@ The two-branch $9/4$ recurrence $4g_{k+1}=9g_k+d_k$ ($d_k\in\{2,3\}$) retains re
   \item \textbf{Congruence exclusion} (\lean{forbidden\_sum\_c2\_mod4}): pairs summing to $c\,4^k-1$ with $c\equiv 2\pmod 4$ cannot both survive $k+1$ steps;
   \item \textbf{Odd-rung Klein-$4$ exclusion} (\lean{odd\_rung\_klein4\_no\_four}): uniformly for all odd $N\ge 3$, at most three of any sibling/mirror quadruple survive $N+1$ steps;
   \item \textbf{Difference and sum shadows} (\lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact});
-  \item \textbf{Carry-free base-$9$ transducer} (\lean{base9\_transducer\_exact}, \lean{base9\_digit\_sum\_conservation}): exact base-$9$ digit-sum conservation without carry propagation;
+  \item \textbf{Carry-free base-$9$ transducer}: exact base-$9$ digit-sum conservation without carry propagation (\lean{base9\_transducer\_exact}, \lean{base9\_digit\_sum\_conservation});
   \item \textbf{Finite-window lifting} (\lean{survives94\_add\_four\_pow}, period $4^k$) combined with $8|S_{N+2}|\le 3|S_N|$ at $4^4=256$ (\lean{finite\_roof\_block\_certificate}).
 \end{enumerate}
 
