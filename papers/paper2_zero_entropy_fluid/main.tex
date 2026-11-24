@@ -1,6 +1,8 @@
 \documentclass[11pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{microtype}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
@@ -28,6 +30,7 @@
 \newcommand{\fract}[1]{\left\{#1\right\}}
 \renewcommand{\_}{\textunderscore\allowbreak}
 \newcommand{\lean}[1]{\texttt{#1}}
+\emergencystretch=1.5em
 \newcommand{\Nu}{\mu}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
@@ -63,7 +66,7 @@ If $2^{N}\mid M$ and $|M|<2^{N}$ for $M\in\Z$, then $M=0$.
 \end{lemma}
 
 \begin{proof}
-Writing $M=2^N k$ forces $2^N|k|<2^N$, hence $|k|<1$ and $k=0$. Machine-checked as \lean{Mahler32.ZeroEntropyCages.exclusion\_integer}.
+Writing $M=2^N k$ forces $2^N|k|<2^N$, hence $|k|<1$ and $k=0$. Machine-checked as \lean{Mahler32.\allowbreak ZeroEntropyCages.\allowbreak exclusion\_integer}.
 \end{proof}
 
 \subsection{Deterministic \texorpdfstring{$[2/7,5/7)$}{[2/7,5/7)} termination versus the joint relation}
@@ -76,7 +79,7 @@ There is no $x\in\Q$ with $x,T_q x,T_q^{2}x,T_q^{3}x$ all lying in $[2/7,5/7)$.
 \end{theorem}
 
 \begin{proof}
-From $x\in[2/7,5/7)$, wrapping at step~1 forces $x\ge 6/7$, impossible, so $x<10/21$ and $T_q x=3x/2$. Repeating at step~2 gives $T_q^2 x=9x/4$ and $x<20/63$. At step~3, $z=9x/4\in[9/14,5/7)$: either $3z/2<1$ yields $27x/8\ge 27/28>5/7$, or $3z/2\ge 1$ yields $27x/8-1<1/14<2/7$. Machine-checked as \lean{Mahler32.ZeroEntropyCages.cage\_two\_sevenths}.
+From $x\in[2/7,5/7)$, wrapping at step~1 forces $x\ge 6/7$, impossible, so $x<10/21$ and $T_q x=3x/2$. Repeating at step~2 gives $T_q^2 x=9x/4$ and $x<20/63$. At step~3, $z=9x/4\in[9/14,5/7)$: either $3z/2<1$ yields $27x/8\ge 27/28>5/7$, or $3z/2\ge 1$ yields $27x/8-1<1/14<2/7$. Machine-checked as \lean{Mahler32.\allowbreak ZeroEntropyCages.\allowbreak cage\_two\_sevenths}.
 \end{proof}
 
 \begin{remark}[Joint orbits inside {$[2/7,5/7)$}]
@@ -134,7 +137,7 @@ For the left-hole family $[\delta,\tfrac12)$ under the branch-restricted cup map
 \section{General Signed Rational Zero-Entropy Automata}
 \label{sec:automaton}
 
-To certify zero topological entropy machine-readably across arbitrary signed rational bases $\alpha=\pm p/q$ ($p,q\in\N$, $1\le q$) and arbitrary finite rational cell partitions $\mathcal{I}=\{I_0,\dots,I_{N-1}\}\subset[0,1)$, \lean{Mahler32.RationalBaseDefs} and \lean{Mahler32.ZeroEntropyAutomaton} formalise an exact integer cross-multiplied interval overlap test \lean{hasBranchOverlap}. Every rational transition \lean{StepPQ p q neg x y} ($x\in I_i$, $y\in I_j$) forces \lean{hasBranchOverlap p q neg (cells i) (cells j) = true} (\lean{hasBranchOverlap\_sound}).
+To certify zero topological entropy machine-readably across arbitrary signed rational bases $\alpha=\pm p/q$ ($p,q\in\N$, $1\le q$) and arbitrary finite rational cell partitions $\mathcal{I}=\{I_0,\dots,I_{N-1}\}\subset[0,1)$, \lean{Mahler32.\allowbreak RationalBaseDefs} and \lean{Mahler32.\allowbreak ZeroEntropyAutomaton} formalise an exact integer cross-multiplied interval overlap test \lean{hasBranchOverlap}. Every rational transition \lean{StepPQ p q neg x y} ($x\in I_i$, $y\in I_j$) forces \lean{hasBranchOverlap p q neg (cells i) (cells j) = true} (\lean{hasBranchOverlap\_sound}).
 
 \begin{theorem}[Zero-topological-entropy SCC obstruction]
 \label{thm:zeroentropy}
@@ -143,7 +146,11 @@ Let $\mathrm{adj}:\mathrm{Fin}\,N\to\mathrm{Fin}\,N\to\mathrm{Bool}$ and $\mathr
   \item (\textbf{Topological DAG ordering}) $\mathrm{adj}\,i\,j=\mathrm{true}\implies \mathrm{comp}\,i\le \mathrm{comp}\,j$;
   \item (\textbf{No internal SCC branching}) each vertex $i$ has at most one out-neighbour $j$ with $\mathrm{comp}\,j=\mathrm{comp}\,i$.
 \end{enumerate}
-Then total walk counts grow at most polynomially, $\lean{totalPaths}\,\mathrm{adj}\,L\le N\bigl(N(L+1)\bigr)^M$ (\lean{totalPaths\_poly\_bound}), and for every $\varepsilon>0$ there exists $C>0$ with $\lean{totalPaths}\,\mathrm{adj}\,L\le C(1+\varepsilon)^L$ for all $L\in\N$ (\lean{zero\_entropy\_of\_no\_branching\_scc}).
+Then total walk counts grow at most polynomially,
+\[
+  \lean{totalPaths}\,\mathrm{adj}\,L\le N\bigl(N(L+1)\bigr)^M
+\]
+(\lean{totalPaths\_poly\_bound}), and for every $\varepsilon>0$ there exists $C>0$ with $\lean{totalPaths}\,\mathrm{adj}\,L\le C(1+\varepsilon)^L$ for all $L\in\N$ (\lean{zero\_entropy\_of\_no\_branching\_scc}).
 \end{theorem}
 
 Using kernel \lean{decide} over reduced \lean{RatInterval} lists (\lean{zero} custom axioms, \lean{zero} \lean{native\_decide}), Theorem~\ref{thm:zeroentropy} is instantiated on the finite-depth rational survivor partitions of four canonical rational-base regions (cross-checked identically by \lean{scripts/generate\_certificates.py}):
@@ -172,23 +179,23 @@ The following numerical statistics from working notes are reported strictly as e
 \section{Finite-Roof \texorpdfstring{$9/4$}{9/4} Obstructions and Carry-Free Base-\texorpdfstring{$9$}{9} Transducer}
 \label{sec:model94}
 
-The two-branch $9/4$ recurrence $4g_{k+1}=9g_k+d_k$ ($d_k\in\{2,3\}$) retains residues $g_k\bmod 4\in\{1,2\}$. \lean{Mahler32.Model94Obstructions} verifies seven theorem families unconditionally:
+The two-branch $9/4$ recurrence $4g_{k+1}=9g_k+d_k$ ($d_k\in\{2,3\}$) retains residues $g_k\bmod 4\in\{1,2\}$. \lean{Mahler32.\allowbreak Model94Obstructions} verifies seven theorem families unconditionally:
 \begin{enumerate}[leftmargin=1.5em]
   \item \textbf{Mirror conservation} (\lean{mirror\_conservation\_94}): $g_k+\tilde g_k=9^k 4^{N-k}-1$ for $g_0<4^N$;
   \item \textbf{Even-rung extinction} (\lean{even\_rung\_mirror\_annihilation}): for $N=2m$, mirror twins cannot both survive $N+2$ steps;
   \item \textbf{Congruence exclusion} (\lean{forbidden\_sum\_c2\_mod4}): pairs summing to $c\,4^k-1$ with $c\equiv 2\pmod 4$ cannot both survive $k+1$ steps;
   \item \textbf{Odd-rung Klein-$4$ exclusion} (\lean{odd\_rung\_klein4\_no\_four}): uniformly for all odd $N\ge 3$, at most three of any sibling/mirror quadruple survive $N+1$ steps;
   \item \textbf{Difference and sum shadows} (\lean{sum\_shadow\_exact}, \lean{diff\_shadow\_exact});
-  \item \textbf{Carry-free base-$9$ conservation} (\lean{base9\_transducer\_exact}, \lean{base9\_digit\_sum\_conservation});
+  \item \textbf{Carry-free base-$9$ transducer} (\lean{base9\_transducer\_exact}, \lean{base9\_digit\_sum\_conservation}): exact base-$9$ digit-sum conservation without carry propagation;
   \item \textbf{Finite-window lifting} (\lean{survives94\_add\_four\_pow}, period $4^k$) combined with $8|S_{N+2}|\le 3|S_N|$ at $4^4=256$ (\lean{finite\_roof\_block\_certificate}).
 \end{enumerate}
 
 \section{Midpoint Cantor Intersections and General \texorpdfstring{$(p,q)$}{(p,q)} Weyl Fourier Decay}
 \label{sec:pqdecay}
 
-In \lean{Mahler32.Model94GlobalDecay} (Issue~\#12), we first prove the exact $36^K$-periodic survival lifting (\lean{inSK\_mod\_36\_pow}, \lean{inAK\_mod\_36\_pow}), the midpoint double-Cantor non-emptiness theorem $18\in A_K$ for $K\ge 1$ via $5\mid 9^K-4^K$ (\lean{midpoint\_double\_cantor}), scaled antipodal diameter exclusion $\le (9^K-4^K)/5$ (\lean{inAK\_antipodal\_exclusion}), exact $4$-contraction of $\hat\mu_K$ (\lean{norm\_hatMu94\_four\_pow\_mul}), the cosine product representation (\lean{norm\_hatMu94\_cosine\_product}), and quantitative polynomial Fourier decay $\|\hat\mu_K(u)\|\le C K^{-c}$ for odd $u$ (\lean{global\_odd\_freq\_decay}, \lean{global\_freq\_decay\_of\_four\_pow}).
+In \lean{Mahler32.\allowbreak Model94GlobalDecay} (Issue~\#12), we first prove the exact $36^K$-periodic survival lifting (\lean{inSK\_mod\_36\_pow}, \lean{inAK\_mod\_36\_pow}), the midpoint double-Cantor non-emptiness theorem $18\in A_K$ for $K\ge 1$ via $5\mid 9^K-4^K$ (\lean{midpoint\_double\_cantor}), scaled antipodal diameter exclusion $\le (9^K-4^K)/5$ (\lean{inAK\_antipodal\_exclusion}), exact $4$-contraction of $\hat\mu_K$ (\lean{norm\_hatMu94\_four\_pow\_mul}), the cosine product representation (\lean{norm\_hatMu94\_cosine\_product}), and quantitative polynomial Fourier decay $\|\hat\mu_K(u)\|\le C K^{-c}$ for odd $u$ (\lean{global\_odd\_freq\_decay}, \lean{global\_freq\_decay\_of\_four\_pow}).
 
-In \lean{Mahler32.GeneralPQDecay} (Issue~\#17), the entire consecutive-digit two-branch Fourier machinery is generalised to any coprime rational base $p>q\ge 2$ encoded by \lean{TunnelModelPQ}:
+In \lean{Mahler32.\allowbreak GeneralPQDecay} (Issue~\#17), the entire consecutive-digit two-branch Fourier machinery is generalised to any coprime rational base $p>q\ge 2$ encoded by \lean{TunnelModelPQ}:
 \begin{itemize}[leftmargin=1.4em]
   \item Exact $q$-contraction $\hat\mu_{K+1}(q u)=\hat\mu_K(u)$ (\lean{hatMuPQ\_mul\_q}, \lean{norm\_hatMuPQ\_q\_pow\_mul}) and cardinality $|S_K|=2^K$ (\lean{card\_survivorsSetPQ});
   \item Exact $p$-multiplication cosine recursion (\lean{hatMuPQ\_p\_mul}, \lean{norm\_hatMuPQ\_cosine\_product}) and disjoint-block lower-distance hitting (\lean{norm\_hatMuPQ\_le\_cos\_pow});
@@ -207,19 +214,19 @@ All Lean declarations in Table~\ref{tab:trace2} are built with \lean{lake build 
 \toprule
 Mathematical result & Lean declaration & Verification status \\
 \midrule
-Integer-vanishing criterion & \lean{ZeroEntropyCages.exclusion\_integer} & Proved (zero axioms) \\
-Deterministic $[2/7,5/7)$ exit & \lean{ZeroEntropyCages.cage\_two\_sevenths} & Proved (zero axioms) \\
+Integer-vanishing criterion & \lean{ZeroEntropyCages.\allowbreak exclusion\_integer} & Proved (zero axioms) \\
+Deterministic $[2/7,5/7)$ exit & \lean{ZeroEntropyCages.\allowbreak cage\_two\_sevenths} & Proved (zero axioms) \\
 Joint \lean{Step} orbit and cycles & \lean{joint\_orbit\_two\_sevenths}, \lean{joint\_cycle\_two\_fifths}, \lean{joint\_cycle\_four\_thirteenths} & Proved (zero axioms) \\
 Finite survivor core $[5/24,11/24)\cup\dots$ & \lean{holed\_cage\_two\_cycle}, \lean{holed\_cage\_transients} & Proved (zero axioms) \\
-Cup self-map, $4/19$ $3$-cycle, $2{:}1$ split & \lean{DiscreteFluidCertificates.Tcup\_mem}, \lean{cup\_cycle}, \lean{Tcup\_dist}, \lean{two\_one\_split} & Proved (zero axioms) \\
+Cup self-map, $4/19$ $3$-cycle, $2{:}1$ split & \lean{DiscreteFluidCertificates.\allowbreak Tcup\_mem}, \lean{cup\_cycle}, \lean{Tcup\_dist}, \lean{two\_one\_split} & Proved (zero axioms) \\
 $8/57$ cup regimes \& $5/3$ depth-$7$ $0.304$ & Exact rational \lean{Fraction} intervals & Verified by \lean{generate\_certificates.py} \\
-$9/4$ mirror, Klein-$4$, base-$9$, roof & \lean{Model94Obstructions.mirror\_conservation\_94}, \lean{odd\_rung\_klein4\_no\_four}, \lean{finite\_roof\_block\_certificate} & Proved + \lean{decide} ($4^4$) \\
-$36^K$ midpoint Cantor intersection & \lean{Model94GlobalDecay.midpoint\_double\_cantor}, \lean{inAK\_antipodal\_exclusion} & Proved (zero axioms) \\
-$9/4$ odd-frequency Weyl decay & \lean{Model94GlobalDecay.global\_odd\_freq\_decay}, \lean{cert42\_path\_decay} & Proved (zero axioms) \\
-General $(p,q)$ definitions & \lean{RationalBaseDefs.TunnelModelPQ}, \lean{RatInterval}, \lean{ZeroEntropyAutomaton} & Pure exposed defs \\
-$(p,q)$ Weyl Fourier decay ($3/2\dots 8/3$) & \lean{GeneralPQDecay.global\_coprime\_freq\_decay\_pq}, \lean{weyl\_decay\_3\_2}--\lean{weyl\_decay\_8\_3} & Proved (zero axioms) \\
-Karp cycle bound \& $44$-vertex baseline & \lean{GeneralPQDecay.karp\_cycle\_bound}, \lean{cert44\_cycle\_bound} & Proved (zero axioms) \\
-Zero-entropy SCC mother theorem & \lean{ZeroEntropyAutomaton.hasBranchOverlap\_sound}, \lean{zero\_entropy\_of\_no\_branching\_scc} & Proved (zero axioms) \\
+$9/4$ mirror, Klein-$4$, base-$9$, roof & \lean{Model94Obstructions.\allowbreak mirror\_conservation\_94}, \lean{odd\_rung\_klein4\_no\_four}, \lean{finite\_roof\_block\_certificate} & Proved + \lean{decide} ($4^4$) \\
+$36^K$ midpoint Cantor intersection & \lean{Model94GlobalDecay.\allowbreak midpoint\_double\_cantor}, \lean{inAK\_antipodal\_exclusion} & Proved (zero axioms) \\
+$9/4$ odd-frequency Weyl decay & \lean{Model94GlobalDecay.\allowbreak global\_odd\_freq\_decay}, \lean{cert42\_path\_decay} & Proved (zero axioms) \\
+General $(p,q)$ definitions & \lean{RationalBaseDefs.\allowbreak TunnelModelPQ}, \lean{RatInterval}, \lean{ZeroEntropyAutomaton} & Pure exposed defs \\
+$(p,q)$ Weyl Fourier decay ($3/2\dots 8/3$) & \lean{GeneralPQDecay.\allowbreak global\_coprime\_freq\_decay\_pq}, \lean{weyl\_decay\_3\_2}--\lean{weyl\_decay\_8\_3} & Proved (zero axioms) \\
+Karp cycle bound \& $44$-vertex baseline & \lean{GeneralPQDecay.\allowbreak karp\_cycle\_bound}, \lean{cert44\_cycle\_bound} & Proved (zero axioms) \\
+Zero-entropy SCC mother theorem & \lean{ZeroEntropyAutomaton.\allowbreak hasBranchOverlap\_sound}, \lean{zero\_entropy\_of\_no\_branching\_scc} & Proved (zero axioms) \\
 $-5/3$, $\pm 5/3$, $-3/2$ certificates & \lean{cert\_neg\_5\_3\_zero\_entropy}, \lean{cert\_neg\_3\_2\_holed\_zero\_entropy}, \lean{cert\_neg\_3\_2\_centered\_zero\_entropy}, \lean{cert\_pos\_5\_3\_centered\_zero\_entropy} & \lean{decide} (zero axioms) \\
 \bottomrule
 \end{tabularx}
