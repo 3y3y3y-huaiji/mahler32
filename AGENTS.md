@@ -109,10 +109,12 @@ contain `sorry`; `Mahler32/Basic.lean` must build with none.
    加 `run-independent-kernel` 标签。
 6. 只在 PR 上合并（squash）；合并后 `pr-cleanup.yml` 自动删除临时分支。
 
-PR 分类：`lean_build.yml` 的 `classify` 只对**最近一次推送**做路径分类，纯文档/脚本推送
-跳过 `Build and Verify`；但只要碰到 `*.lean`、`lakefile.lean`、`lean-toolchain`、
+PR 分类：`lean_build.yml` 的 `classify` 对 `pull_request` 分类**整个 PR**
+（`merge-base(base, head) .. head`），对 `push` 只分类**最近一次推送**；纯文档推送跳过
+`Build and Verify`。只要碰到 `*.lean`、`lakefile.lean`、`lean-toolchain`、
 `lake-manifest.json`、`comparator.json`、`AuditAxioms*`、`SpecCheck*`、`check_axioms.py`、
-`generate_certificates.py`、`verify_all.sh` 或 `lean_build.yml`，就全量重跑。
+`generate_certificates.py`、`verify_all.sh`、`lean_build.yml`，或者任何不在文档白名单里的
+路径（包括新脚本），就全量重跑。
 
 特性分支只通过 PR 跑 `lean_build.yml`（它不再监听 `trae/**` 的 push），同一次提交不会
 跑两遍；`main`/`master` 的 push 仍然全量跑。

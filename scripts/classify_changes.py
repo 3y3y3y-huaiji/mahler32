@@ -11,10 +11,10 @@ Outputs (to ``$GITHUB_OUTPUT``, and to stdout when that is unset):
     docs_only=true|false only documentation changed (lean and papers false)
     changed=<n>          number of changed files
 
-The diff is taken from the *latest* push when possible:
-
-* ``pull_request`` / ``push``: ``github.event.before`` .. ``github.event.after``
-* otherwise: the PR base .. head, or ``HEAD^`` .. ``HEAD``
+A pull request is classified over the whole PR (merge base .. head), because the
+PR is merged as one unit: a docs-only follow-up push must not hide an earlier
+Lean change in the same PR.  A push is classified over the latest push only
+(``github.event.before`` .. ``after``), with ``HEAD^`` .. ``HEAD`` as a fallback.
 """
 
 from __future__ import annotations
@@ -71,6 +71,13 @@ def commit_exists(sha: str) -> bool:
         return False
 
 
+def merge_base(base: str, head: str) -> str | None:
+    try:
+        return git("merge-base", base, head) or None
+    except subprocess.CalledProcessError:
+        return None
+
+
 def changed_files() -> list[str] | None:
     event = os.environ.get("EVENT_NAME", "")
     before = os.environ.get("BEFORE_SHA", "")
@@ -82,10 +89,13 @@ def changed_files() -> list[str] | None:
         return None
 
     candidates: list[tuple[str, str]] = []
-    if commit_exists(before) and commit_exists(after):
-        candidates.append((before, after))
     if commit_exists(pr_base) and commit_exists(pr_head):
-        candidates.append((pr_base, pr_head))
+        # Whole PR.  `github.event.pull_request.base.sha` is the current base
+        # tip, not the merge base, so diff from the merge base explicitly.
+        candidates.append((merge_base(pr_base, pr_head) or pr_base, pr_head))
+    elif event == "push" and commit_exists(before) and commit_exists(after):
+        # Latest push only.
+        candidates.append((before, after))
     candidates.append(("HEAD^", "HEAD"))
 
     for base, head in candidates:
@@ -116,6 +126,10 @@ def main() -> int:
         docs_only = bool(files) and not lean and not papers and all(
             matches(f, DOCS_PATTERNS) for f in files
         )
+        if files and not lean and not papers and not docs_only:
+            # Paths we do not recognise (e.g. a new helper script): be
+            # conservative and run the heavy build rather than skip it.
+            lean = True
         count = len(files)
         print(f"classify: {count} changed file(s); lean={lean} papers={papers}")
         for f in files:

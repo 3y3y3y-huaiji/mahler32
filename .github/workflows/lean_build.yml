@@ -45,9 +45,10 @@ jobs:
       - name: SSOT gate
         run: python3 scripts/verify_ssot.py
 
-  # Cheap path classifier.  A docs-only push on an existing PR must not rebuild
-  # Mathlib + all modules: only the latest push is classified (before..after),
-  # and `build` below is skipped when no Lean input changed.
+  # Cheap path classifier.  A docs-only change must not rebuild Mathlib + all
+  # modules: a pull request is classified over the whole PR (merge base .. head),
+  # a push over its latest push (before..after).  `build` below is skipped when
+  # no Lean input changed.
   classify:
     name: Classify change set
     runs-on: ubuntu-latest
