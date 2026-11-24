@@ -7,6 +7,7 @@ authors:
 title: "Parity structure of the 3/2 Mahler recursion and 9/4 arithmetic obstructions in Lean 4"
 version: "1.0.0"
 date-released: "2026-11-24"
+doi: "10.5281/zenodo.24491265"
 url: "https://github.com/3y3y3y-huaiji/mahler32"
 repository-code: "https://github.com/3y3y3y-huaiji/mahler32"
 keywords:
