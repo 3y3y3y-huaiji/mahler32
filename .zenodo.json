@@ -1,0 +1,33 @@
+{
+  "title": "Parity structure of the 3/2 Mahler recursion and 9/4 arithmetic obstructions in Lean 4",
+  "description": "Machine-checked Lean 4 / Mathlib4 formalization of the arithmetic, symbolic-dynamical, and harmonic structure of the 3/2 Mahler recursion a(n+1) = ceil(3 a(n) / 2) (OEIS A061419 / A205083) and its 9/4 twin dynamics. Covers base-6/base-3 two-state automata, information windows, hexadecimal light-cone flips, F_2 linear splitting, 11-free Fibonacci pruning, Walsh zero correlation, R x Q_2 two-world Pade isolation, mod-9 anti-misfire gates, zero-entropy cages, discrete fluid certificates, 9/4 finite-roof obstructions, midpoint 36^K double-Cantor intersections, and global odd-frequency Fourier decay O(K^{-c}), verified with zero sorry and audited with Lean kernel replay (leanchecker) and nanoda.",
+  "creators": [
+    {
+      "name": "Su, MingKai",
+      "affiliation": "Independent Researcher",
+      "orcid": "0009-0008-2312-6913"
+    }
+  ],
+  "keywords": [
+    "Lean 4",
+    "Mathlib4",
+    "Mahler 3/2 problem",
+    "OEIS A061419",
+    "OEIS A205083",
+    "Number Theory",
+    "3-adic analysis",
+    "Fourier decay",
+    "Formal Verification",
+    "Interactive Theorem Proving"
+  ],
+  "license": "Apache-2.0",
+  "upload_type": "software",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/3y3y3y-huaiji/mahler32",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
