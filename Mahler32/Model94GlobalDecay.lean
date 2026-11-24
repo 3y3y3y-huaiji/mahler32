@@ -842,6 +842,25 @@ private lemma cos_pi_18_lt_one : Real.cos (Real.pi / 18) < 1 := by
     ⟨by positivity, by linarith [Real.pi_pos]⟩ (by positivity : (0 : ℝ) < Real.pi / 18)
   simpa using hlt
 
+private lemma prod_le_prod_nat (s : Finset ℕ) (f g : ℕ → ℝ)
+    (hf : ∀ i ∈ s, 0 ≤ f i) (hfg : ∀ i ∈ s, f i ≤ g i) :
+    ∏ i ∈ s, f i ≤ ∏ i ∈ s, g i := by
+  induction s using Finset.induction with
+  | empty => simp
+  | @insert a s ha ih =>
+    rw [Finset.prod_insert ha, Finset.prod_insert ha]
+    have hfa : 0 ≤ f a := hf a (Finset.mem_insert_self a s)
+    have hle : f a ≤ g a := hfg a (Finset.mem_insert_self a s)
+    have hfs : ∀ i ∈ s, 0 ≤ f i := fun i hi => hf i (Finset.mem_insert_of_mem hi)
+    have hfgs : ∀ i ∈ s, f i ≤ g i := fun i hi => hfg i (Finset.mem_insert_of_mem hi)
+    have hps : 0 ≤ ∏ i ∈ s, f i := Finset.prod_nonneg hfs
+    exact mul_le_mul hle (ih hfs hfgs) hps (le_trans hfa hle)
+
+private lemma prod_le_one_nat (s : Finset ℕ) (f : ℕ → ℝ)
+    (hf : ∀ i ∈ s, 0 ≤ f i) (h1 : ∀ i ∈ s, f i ≤ 1) :
+    ∏ i ∈ s, f i ≤ 1 := by
+  simpa using prod_le_prod_nat s f (fun _ => 1) hf h1
+
 /-- Disjoint-block cosine product bound: if `4^R ≤ K` and `u` is odd, then
 `‖μ̂_K(u)‖ ≤ (cos (π/18))^R`. -/
 public theorem norm_hatMu94_le_cos_pow {K R : ℕ} (hR : 4 ^ R ≤ K) {u : ℤ} (hu : u % 2 = 1) :
@@ -850,7 +869,7 @@ public theorem norm_hatMu94_le_cos_pow {K R : ℕ} (hR : 4 ^ R ≤ K) {u : ℤ} 
   | zero =>
     simp only [pow_zero]
     rw [norm_hatMu94_cosine_product]
-    refine Finset.prod_le_one (fun _ _ => abs_nonneg _) fun _ _ => ?_
+    refine prod_le_one_nat _ _ (fun _ _ => abs_nonneg _) fun _ _ => ?_
     rw [mul_div_assoc]
     exact abs_cos_pi_le_one _
   | succ R' =>
@@ -926,7 +945,7 @@ public theorem norm_hatMu94_le_cos_pow {K R : ℕ} (hR : 4 ^ R ≤ K) {u : ℤ} 
         (∏ idx ∈ picks, f idx) * (∏ idx ∈ Finset.range K \ picks, f idx) :=
       (Finset.prod_sdiff hsub).symm.trans (mul_comm _ _)
     have hrest : ∏ idx ∈ Finset.range K \ picks, f idx ≤ 1 := by
-      refine Finset.prod_le_one (fun _ _ => abs_nonneg _) fun _ _ => ?_
+      refine prod_le_one_nat _ _ (fun _ _ => abs_nonneg _) fun _ _ => ?_
       dsimp [f]
       rw [mul_div_assoc]
       exact abs_cos_pi_le_one _
@@ -935,7 +954,7 @@ public theorem norm_hatMu94_le_cos_pow {K R : ℕ} (hR : 4 ^ R ≤ K) {u : ℤ} 
     have hpicks_le : ∏ idx ∈ picks, f idx ≤ (Real.cos (Real.pi / 18)) ^ picks.card := by
       calc
         ∏ idx ∈ picks, f idx ≤ ∏ _idx ∈ picks, Real.cos (Real.pi / 18) := by
-          refine Finset.prod_le_prod (fun _ _ => abs_nonneg _) fun idx hidx => ?_
+          refine prod_le_prod_nat _ _ _ (fun _ _ => abs_nonneg _) fun idx hidx => ?_
           rw [Finset.mem_image] at hidx
           obtain ⟨j, hj, rfl⟩ := hidx
           have hj_lt : j < R' + 1 := Finset.mem_range.mp hj
