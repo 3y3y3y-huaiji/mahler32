@@ -4,6 +4,7 @@
 [![Independent kernel (nanoda)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/independent-kernel.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/independent-kernel.yml)
 [![Papers (LaTeX)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/papers.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/papers.yml)
 [![Release](https://img.shields.io/github/v/release/3y3y3y-huaiji/mahler32?label=Release)](https://github.com/3y3y3y-huaiji/mahler32/releases/latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24491265.svg)](https://doi.org/10.5281/zenodo.24491265)
 [![Lean 4](https://img.shields.io/badge/Lean-v4.36.0-blue.svg)](https://lean-lang.org/)
 [![Mathlib4](https://img.shields.io/badge/Mathlib4-v4.36.0-brightgreen.svg)](https://github.com/leanprover-community/mathlib4)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0008--2312--6913-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0008-2312-6913)
@@ -158,7 +159,8 @@ Two companion papers live in `papers/`:
 
 Prebuilt PDFs and SHA-256 checksums for both companion papers are published as assets on the
 [latest GitHub Release](https://github.com/3y3y3y-huaiji/mahler32/releases/latest); citation metadata
-is provided in [`CITATION.cff`](CITATION.cff) and [`.zenodo.json`](.zenodo.json).
+is provided in [`CITATION.cff`](CITATION.cff) and [`.zenodo.json`](.zenodo.json). The `v1.0.0`
+snapshot is archived on Zenodo under DOI [10.5281/zenodo.24491265](https://doi.org/10.5281/zenodo.24491265).
 
 Both carry a theorem-to-Lean traceability table.  Three honesty caveats are stated there rather
 than hidden.  First, the general “all real `ξ` excluded” statement is a human-level proposition
