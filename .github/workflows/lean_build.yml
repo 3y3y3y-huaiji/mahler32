@@ -1,8 +1,10 @@
 name: Lean 4 CI
 
 on:
+  # Feature branches are validated through their pull requests; running both
+  # `push` (trae/**) and `pull_request` built the same tree twice.
   push:
-    branches: [ main, master, 'trae/**' ]
+    branches: [ main, master ]
     paths-ignore:
       - 'README.md'
       - 'docs/**'
@@ -43,9 +45,37 @@ jobs:
       - name: SSOT gate
         run: python3 scripts/verify_ssot.py
 
+  # Cheap path classifier.  A docs-only change must not rebuild Mathlib + all
+  # modules: a pull request is classified over the whole PR (merge base .. head),
+  # a push over its latest push (before..after).  `build` below is skipped when
+  # no Lean input changed.
+  classify:
+    name: Classify change set
+    runs-on: ubuntu-latest
+    outputs:
+      lean: ${{ steps.classify.outputs.lean }}
+      papers: ${{ steps.classify.outputs.papers }}
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Classify changed paths
+        id: classify
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 scripts/classify_changes.py
+
   build:
     name: Build and Verify
-    needs: guards
+    needs: [guards, classify]
+    if: needs.classify.outputs.lean == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
