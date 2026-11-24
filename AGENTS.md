@@ -97,6 +97,9 @@ script, `lake build -KwarningAsError=true`) are unchanged and are documented in
 `docs/MAHLER32_REVIEW.md` §6. `Challenge.lean` is the only file allowed to
 contain `sorry`; `Mahler32/Basic.lean` must build with none.
 
+Proofs default to `grind`; fall back to `omega`, `ring` or `simp` only where
+`grind` does not apply or a lighter tactic closes the goal directly.
+
 ## 7. 提交流程：开 PR，不要直推 `main`/`master`
 
 1. 从最新 `main` 开临时分支：`git switch -c trae/<topic> origin/main`。

@@ -6,7 +6,7 @@ Zero third-party dependencies.  Exit status is strictly binary:
     0  every SSOT invariant holds
     1  at least one invariant is broken (the reason is printed)
 
-The gate enforces four things, all mechanical:
+The gate enforces five things, all mechanical:
 
 1. **Toolchain.**  ``lean-toolchain`` is the only source of truth for the Lean
    version.  ``formalization.yaml`` and ``README.md`` must quote exactly that
@@ -23,6 +23,9 @@ The gate enforces four things, all mechanical:
    not reappear in ``README.md`` or under ``papers/``.
 4. **Links.**  Every repository-internal path named in ``README.md``,
    ``AGENTS.md`` or ``docs/`` must exist.
+5. **CI artifacts.**  Every core workflow and verification script must exist and
+   be named in ``formalization.yaml``, so the self-report cannot silently drift
+   away from the pipeline that actually runs.
 
 Usage::
 
@@ -62,6 +65,23 @@ EXTERNAL_DIRS = ("Mathlib/", "mathlib4/")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 CODE_RE = re.compile(r"`([^`\n]+)`")
 MATH_CHARS = set("^+\\${}=* \t")
+
+# Core CI infrastructure advertised by ``formalization.yaml``.  Each entry is
+# checked in both directions: the file must exist, and its path must appear in
+# the self-report.  Adding a gate without recording it (or deleting a recorded
+# gate) is exactly the documentation/CI drift this check exists to stop.
+CORE_CI_ARTIFACTS = (
+    ".github/workflows/guards.yml",
+    ".github/workflows/lean_build.yml",
+    ".github/workflows/independent-kernel.yml",
+    ".github/workflows/papers.yml",
+    "scripts/check_no_secrets.py",
+    "scripts/verify_ssot.py",
+    "scripts/check_axioms.py",
+    "scripts/check_latex.py",
+    "scripts/verify_refs.py",
+    "scripts/generate_certificates.py",
+)
 
 failures: list[str] = []
 
@@ -192,6 +212,20 @@ def check_stale_phrases() -> None:
                 fail(f"stale claim {phrase!r} reappeared in {path.relative_to(ROOT)}")
 
 
+def check_ci_artifacts() -> None:
+    """Keep ``formalization.yaml`` in step with the CI files it advertises.
+
+    Whitespace is stripped before matching, so a folded YAML scalar that wraps a
+    path across two lines is still recognised.
+    """
+    text = normalise(read_text(ROOT / "formalization.yaml"))
+    for rel in CORE_CI_ARTIFACTS:
+        if not (ROOT / rel).is_file():
+            fail(f"formalization.yaml advertises missing CI artifact: {rel}")
+        if normalise(rel) not in text:
+            fail(f"formalization.yaml does not mention core CI artifact: {rel}")
+
+
 def resolves(path: Path, doc_dir: Path) -> bool:
     if path.exists():
         return True
@@ -247,6 +281,7 @@ def main() -> int:
         check_versions(version)
     check_modules()
     check_stale_phrases()
+    check_ci_artifacts()
     check_links()
 
     if failures:

@@ -100,9 +100,10 @@ automation:
       models: ["DeepSeek-V4.1-Flash", "Gemini"]
       framework: "Lean 4 + Mathlib (agent-driven editing, compiling and CI iteration)"
       tool_setup: >-
-        Proofs largely discharged by `omega` and `ring`; numerics cross-checked with a Python
-        script; every change validated by `lake build -KwarningAsError=true`, `#lint` and a
-        kernel-axiom audit in CI.
+        Proofs are primarily discharged by `grind`, with `omega`, `ring` and `simp` as auxiliary
+        closers where they are lighter or where `grind` does not apply; numerics cross-checked
+        with a Python script; every change validated by `lake build -KwarningAsError=true`,
+        `#lint` and a kernel-axiom audit in CI.
       cost:
         wall_time: "one working session"
         spend_usd: "subscription-based"
@@ -127,7 +128,12 @@ review:
   notes: >-
     No external human review of the statements or proofs has been performed.  Statements were
     audited by the maintainer against the informal account and cross-checked numerically; the
-    proofs are checked by Lean's kernel in CI.
+    proofs are checked by Lean's kernel in CI.  The reproducible gate is wired through
+    `.github/workflows/guards.yml`, `.github/workflows/lean_build.yml`,
+    `.github/workflows/independent-kernel.yml` and `.github/workflows/papers.yml`, supported by
+    `scripts/check_no_secrets.py`, `scripts/verify_ssot.py`, `scripts/check_axioms.py`,
+    `scripts/check_latex.py`, `scripts/verify_refs.py` and `scripts/generate_certificates.py`;
+    `scripts/verify_ssot.py` fails if any of these artifacts is missing.
 
 alignment:
   namespace: "Mahler32"
