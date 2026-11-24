@@ -278,6 +278,49 @@ example : (1 / 9 : ℚ) * 9 = 1 := integer_divisibility_bound
 /-- Numeric anchor: at `c = 1/2`, `pade12 1 (1/2) = 2`. -/
 example : pade12 1 (1 / 2) = 2 := by norm_num [pade12]
 
+/-- Statement lock: R × Q_2 two-world ghost-word isolation bounds. -/
+example (g0 : ℕ) (hg0 : 1 ≤ g0) {U V : List ℕ}
+    (hU : validWord94 U) (hV : validWord94 V) (hs : 0 < V.length) (w : ℕ)
+    (hmatch : matchesWord94 g0 (U ++ repeatWord V w)) :
+    (4 : ℚ) ^ (U.length + w * V.length) ≤
+        ((g0 : ℚ) - qStar U V) * (9 : ℚ) ^ U.length * ((9 : ℚ) ^ V.length - (4 : ℚ) ^ V.length) ∧
+      ((g0 : ℚ) - qStar U V) * (9 : ℚ) ^ U.length * ((9 : ℚ) ^ V.length - (4 : ℚ) ^ V.length) <
+        ((g0 : ℚ) + 3 / 5) * (9 : ℚ) ^ (U.length + V.length) :=
+  two_world_ghost_bounds hg0 hU hV hs w hmatch
+
+/-- Statement lock: unconditional exclusion of all eventually periodic `9/4` orbits. -/
+example (g0 : ℕ) (hg0 : 1 ≤ g0) {U V : List ℕ}
+    (hU : validWord94 U) (hV : validWord94 V) (hs : 0 < V.length) :
+    ¬ ∀ w : ℕ, matchesWord94 g0 (U ++ repeatWord V w) :=
+  no_eventually_periodic_94 hg0 hU hV hs
+
+/-- Statement lock: repetition exponent bound `w < 317/200 + (117/200)(r/s) + m/s`. -/
+example (g0 m w : ℕ) (hg0 : 1 ≤ g0)
+    (hm : (g0 : ℚ) + 3 / 5 ≤ (4 : ℚ) ^ m) {U V : List ℕ} (hU : validWord94 U)
+    (hV : validWord94 V) (hs : 0 < V.length)
+    (hmatch : matchesWord94 g0 (U ++ repeatWord V w)) :
+    (w : ℚ) < (317 / 200 : ℚ) + (117 / 200 : ℚ) * ((U.length : ℚ) / (V.length : ℚ)) +
+      (m : ℚ) / (V.length : ℚ) :=
+  repetition_exponent_bound hg0 hm hU hV hs hmatch
+
+/-- Statement lock: mod-9 gate for rational `q/b` with `9 ∣ q` and `3 ∤ b`. -/
+example {r d : ℕ} {c : ℕ → ℕ → ℤ} {q b : ℤ}
+    (hq : (9 : ℤ) ∣ q) (hb : ¬ ((3 : ℤ) ∣ b))
+    (hL : polyTelescopeRat r d c q b (4 / 9 : ℚ) = 0) : (9 : ℤ) ∣ c 0 d :=
+  mod_nine_gate_rat hq hb hL
+
+/-- Statement lock: mod-9 gate specialized at `B₂(4/9) = -9(5 g₀ + 2)/5`. -/
+example {r d : ℕ} {c : ℕ → ℕ → ℤ} (g0 : ℕ)
+    (hL : polyTelescopeRat r d c (-9 * (5 * (g0 : ℤ) + 2)) 5 (4 / 9 : ℚ) = 0) :
+    (9 : ℤ) ∣ c 0 d :=
+  mod_nine_gate_b2 g0 hL
+
+/-- Statement lock: contrapositive anti-misfire criterion (`9 ∤ c_{0,d}` implies `L(4/9) ≠ 0`). -/
+example {r d : ℕ} {c : ℕ → ℕ → ℤ} {q : ℤ}
+    (hq : (9 : ℤ) ∣ q) (hc : ¬ ((9 : ℤ) ∣ c 0 d)) :
+    polyTelescope r d c q (4 / 9 : ℚ) ≠ 0 :=
+  mod_nine_anti_misfire hq hc
+
 end SpecCheck.TwoWorldPadeCriterion
 
 /-! ## Task 7 — `Mahler32.Fib11Free` -/
@@ -638,5 +681,61 @@ example :
   odd_rung_klein4_exclusion
 
 end SpecCheck.Model94Obstructions
+
+/-! ### `Model94GlobalDecay` — `9/4` global Fourier decay and midpoint `36^K` intersection -/
+
+namespace SpecCheck.Model94GlobalDecay
+
+open Mahler32.Model94GlobalDecay
+open Mahler32.Model94Obstructions
+
+/-- Statement lock: midpoint `g_K mod 36^K ∈ S_K ∩ A_K` for any `2K`-step survivor. -/
+example (K g0 gK : ℕ) (h2K : survives94 (2 * K) g0) (hmid : iter94 K g0 = some gK) :
+    gK % 36 ^ K < 36 ^ K ∧ inSK K (gK % 36 ^ K) ∧ inAK K (gK % 36 ^ K) :=
+  midpoint_double_cantor h2K hmid
+
+/-- Statement lock: `A_K` deterministic interval clamp `[2(9^K - 4^K)/5, 3(9^K - 4^K)/5]`. -/
+example (K a : ℕ) (ha : inAK K a) :
+    2 * (9 ^ K - 4 ^ K) / 5 ≤ (4 ^ K * a) % 9 ^ K ∧
+      (4 ^ K * a) % 9 ^ K ≤ 3 * (9 ^ K - 4 ^ K) / 5 :=
+  inAK_scaled_interval ha
+
+/-- Statement lock: `A_K` antipodal exclusion (diameter `≤ (9^K - 4^K)/5` after `4^K` scaling). -/
+example (K a₁ a₂ : ℕ) (h1 : inAK K a₁) (h2 : inAK K a₂) :
+    |(((4 ^ K * a₁) % 9 ^ K : ℕ) : ℤ) - (((4 ^ K * a₂) % 9 ^ K : ℕ) : ℤ)| ≤
+      ((9 ^ K - 4 ^ K) / 5 : ℕ) :=
+  inAK_antipodal_exclusion h1 h2
+
+/-- Statement lock: `|(survivorsSet94 K)| = 2^K`. -/
+example (K : ℕ) : (survivorsSet94 K).card = 2 ^ K := card_survivorsSet94 K
+
+/-- Statement lock: iterated exact `4`-contraction `‖μ̂_K(4^v u)‖ = ‖μ̂_{K-v}(u)‖`. -/
+example (K v : ℕ) (hv : v ≤ K) (u : ℤ) :
+    ‖hatMu94 K ((4 : ℤ) ^ v * u)‖ = ‖hatMu94 (K - v) u‖ :=
+  norm_hatMu94_four_pow_mul hv u
+
+/-- Statement lock: one-step `9`-multiplication cosine identity. -/
+example (K : ℕ) (u : ℤ) :
+    ‖hatMu94 (K + 1) (9 * u)‖ =
+      |Real.cos (Real.pi * (u : ℝ) / (4 : ℝ) ^ (K + 1))| * ‖hatMu94 K u‖ :=
+  norm_hatMu94_nine_mul K u
+
+/-- Statement lock: global odd-frequency decay `∃ C c > 0, ‖μ̂_K(u)‖ ≤ C K^{-c}`. -/
+example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
+    ∀ (K : ℕ), 1 ≤ K → ∀ (u : ℤ), u % 2 = 1 → ‖hatMu94 K u‖ ≤ C * (K : ℝ) ^ (-c) :=
+  global_odd_freq_decay
+
+/-- Statement lock: combined `4`-contraction and odd-frequency decay `C (K - v)^{-c}`. -/
+example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
+    ∀ (K v : ℕ), v < K → ∀ (u : ℤ), u % 2 = 1 →
+      ‖hatMu94 K ((4 : ℤ) ^ v * u)‖ ≤ C * ((K - v : ℕ) : ℝ) ^ (-c) :=
+  global_freq_decay_of_four_pow
+
+/-- Statement lock: path contraction instantiated at `cert42`. -/
+example (u : Fin 42) (p : List (Fin 42)) :
+    cert42.pathWeight u p ≤ (161 / 162 : ℚ) ^ p.length :=
+  cert42_path_decay u p
+
+end SpecCheck.Model94GlobalDecay
 
 end

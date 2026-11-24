@@ -9,8 +9,8 @@ Two independent guards, both cheap and both deliberately blunt:
    Bearer ...`) plus the common GitHub, AWS and Slack token prefixes and PEM
    private keys.
 2. Layout guard.  Scratch responses belong outside the repository, so a `.json`
-   file at the repository root is refused unless it is one of the two files
-   that belong there.  Symlinks are refused outright.
+   file at the repository root is refused unless it is one of the allowlisted
+   files that belong there.  Symlinks are refused outright.
 
 Usage:
     python3 scripts/check_no_secrets.py --staged   # pre-commit: index only
@@ -29,7 +29,7 @@ import subprocess
 import sys
 
 # Root-level `.json` files that legitimately belong to the project.
-ALLOWED_ROOT_JSON = {"comparator.json", "lake-manifest.json"}
+ALLOWED_ROOT_JSON = {"comparator.json", "lake-manifest.json", ".zenodo.json"}
 
 # Filenames that the submission flow writes and that must never be committed,
 # wherever they appear.

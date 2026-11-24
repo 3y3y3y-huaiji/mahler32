@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Same script the pre-commit hook runs, over the tracked tree.  Cheap, and
       # it comes first so a leak fails the run before anything is built.
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install elan
         run: |
@@ -232,6 +232,7 @@ jobs:
             Mahler32.HInvariance Mahler32.SyracuseBijection \
             Mahler32.ZeroEntropyCages Mahler32.DiscreteFluidCertificates \
             Mahler32.Model94Obstructions \
+            Mahler32.Model94GlobalDecay \
             Mahler32.Basic Mahler32Core \
             Mahler32Conditional.AlgebraicPairBranch; do
             echo "::group::leanchecker $m"

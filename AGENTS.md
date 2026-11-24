@@ -48,8 +48,8 @@ tracked tree (CI):
 - content matching `access_token`, `pending_secret`, `Bearer <credential>`,
   GitHub tokens (`ghp_`, `gho_`, `github_pat_`), AWS key ids, Slack tokens, or
   PEM private keys;
-- any `.json` file at the repository root other than `comparator.json` and
-  `lake-manifest.json`;
+- any `.json` file at the repository root other than `comparator.json`,
+  `lake-manifest.json` and `.zenodo.json`;
 - the scratch names the submission flow writes (`.submit*.json`,
   `.verify*.json`, `.status.json`, `.review.json`, `st.json`, …);
 - symlinks.

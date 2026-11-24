@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this formalization or software in academic work, please cite it as below."
+authors:
+  - family-names: "Su"
+    given-names: "MingKai"
+    orcid: "https://orcid.org/0009-0008-2312-6913"
+title: "Parity structure of the 3/2 Mahler recursion and 9/4 arithmetic obstructions in Lean 4"
+version: "1.0.0"
+date-released: "2026-11-24"
+url: "https://github.com/3y3y3y-huaiji/mahler32"
+repository-code: "https://github.com/3y3y3y-huaiji/mahler32"
+keywords:
+  - "Lean 4"
+  - "Mathlib4"
+  - "Mahler 3/2 problem"
+  - "OEIS A061419"
+  - "OEIS A205083"
+  - "Number Theory"
+  - "3-adic analysis"
+  - "Fourier decay"
+  - "Formal Verification"
+license: "Apache-2.0"
