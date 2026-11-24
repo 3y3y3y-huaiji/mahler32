@@ -43,6 +43,15 @@ public section
 #print axioms Mahler32.TwoWorldPadeCriterion.integer_divisibility_bound
 #print axioms Mahler32.TwoWorldPadeCriterion.two_world_iff
 #print axioms Mahler32.TwoWorldPadeCriterion.two_pow_dvd_eq_zero
+#print axioms Mahler32.TwoWorldPadeCriterion.qStar_bounds
+#print axioms Mahler32.TwoWorldPadeCriterion.two_world_ghost_bounds
+#print axioms Mahler32.TwoWorldPadeCriterion.no_eventually_periodic_94
+#print axioms Mahler32.TwoWorldPadeCriterion.nine_pow_200_lt_four_pow_317
+#print axioms Mahler32.TwoWorldPadeCriterion.repetition_exponent_bound
+#print axioms Mahler32.TwoWorldPadeCriterion.mod_nine_gate_rat
+#print axioms Mahler32.TwoWorldPadeCriterion.mod_nine_gate
+#print axioms Mahler32.TwoWorldPadeCriterion.mod_nine_gate_b2
+#print axioms Mahler32.TwoWorldPadeCriterion.mod_nine_anti_misfire
 
 #print axioms Mahler32.ArnoldTongue5State.T_false_maps
 #print axioms Mahler32.ArnoldTongue7State.T_true_maps
@@ -83,6 +92,31 @@ public section
 #print axioms Mahler32.Model94Obstructions.base9_transducer_exact
 #print axioms Mahler32.Model94Obstructions.base9_digit_sum_conservation
 #print axioms Mahler32.Model94Obstructions.finite_roof_block_certificate
+
+-- Issue #12: 9/4 global Fourier decay, midpoint 36^K intersection, and A_K antipodal exclusion
+#print axioms Mahler32.Model94GlobalDecay.iter94_exists_word
+#print axioms Mahler32.Model94GlobalDecay.inSK_mod_36_pow
+#print axioms Mahler32.Model94GlobalDecay.inAK_mod_36_pow
+#print axioms Mahler32.Model94GlobalDecay.five_dvd_nine_pow_sub_four_pow
+#print axioms Mahler32.Model94GlobalDecay.midpoint_double_cantor
+#print axioms Mahler32.Model94GlobalDecay.inAK_scaled_interval_mul
+#print axioms Mahler32.Model94GlobalDecay.inAK_scaled_interval
+#print axioms Mahler32.Model94GlobalDecay.inAK_antipodal_exclusion
+#print axioms Mahler32.Model94GlobalDecay.card_survivorsSet94
+#print axioms Mahler32.Model94GlobalDecay.hatMu94_mul_four
+#print axioms Mahler32.Model94GlobalDecay.hatMu94_four_pow_mul
+#print axioms Mahler32.Model94GlobalDecay.norm_hatMu94_four_pow_mul
+#print axioms Mahler32.Model94GlobalDecay.hatMu94_nine_mul
+#print axioms Mahler32.Model94GlobalDecay.norm_hatMu94_nine_mul
+#print axioms Mahler32.Model94GlobalDecay.hatMu94_mod_four_pow
+#print axioms Mahler32.Model94GlobalDecay.norm_hatMu94_cosine_product
+#print axioms Mahler32.Model94GlobalDecay.circleDist_step_exact
+#print axioms Mahler32.Model94GlobalDecay.norm_hatMu94_le_cos_pow
+#print axioms Mahler32.Model94GlobalDecay.global_odd_freq_decay
+#print axioms Mahler32.Model94GlobalDecay.global_freq_decay_of_four_pow
+#print axioms Mahler32.Model94GlobalDecay.DualPotentialCert.path_bound
+#print axioms Mahler32.Model94GlobalDecay.DualPotentialCert.path_contraction
+#print axioms Mahler32.Model94GlobalDecay.cert42_path_decay
 
 -- `Mahler32.Basic` (imported transitively by every task module above) and
 -- `Mahler32.QuiverMonotone` (the mathlib4#44885 mirror consumed by `Mahler32.DAGBoundedGap`)
