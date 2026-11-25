@@ -19,10 +19,9 @@ MSG
 ```
 
 A blanket add sweeps up whatever happens to be in the working tree — generated
-output, downloaded reports, editor backups, and, on 2026-11-20, a Palomar
-submission response containing a live `access_token`, which then went to a
-public repository. The cost of typing the paths is a few seconds; the cost of
-the alternative was a leaked credential and a withdrawn submission.
+output, downloaded reports and editor backups — and can sweep up a credential.
+The cost of typing the paths is a few seconds; the cost of the alternative is a
+leaked secret and a withdrawn submission.
 
 ## 2. Every response body, token and one-off file lives outside the repository
 
