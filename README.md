@@ -27,7 +27,7 @@ The recurrence is the `3/2` dynamical system of Mahler (1968).
 | Result | Content | Status |
 | :-- | :-- | :-- |
 | General `(p,q)` repetition exponent | For coprime `2 ≤ q < p`, a symbolic orbit matching `U V^w` must satisfy `w < log_q p + (log_q p − 1)·|U|/|V| + log(g₀ + d_max/(p−q))/(|V| log q)`; no orbit matches `U V^w` for all `w`. | Unconditional, zero axioms |
-| `9/4` model | Mirror conservation `g_k + g̃_k = 9^k 4^{N−k} − 1`; even-rung extinction; odd-rung Klein-4 exclusion; midpoint `36^K` double-Cantor intersection with antipodal diameter `≤ (9^K − 4^K)/5`; global odd-frequency decay `‖μ̂_K(u)‖ ≤ C K^{−c}`. | Unconditional, zero axioms |
+| `(9,4)` congruence model | Mirror symmetry `g_k + g̃_k = 9^k 4^{N−k} − 1`; even-level extinction; four-point odd-level exclusion; CRT intersection modulo `36^K` of the `2`-adic and `3`-adic survivor sets, with antipodal diameter `≤ (9^K − 4^K)/5`; global odd-frequency decay `‖μ̂_K(u)‖ ≤ C K^{−c}`. | Unconditional, zero axioms |
 | Quantitative Weyl equidistribution | The `9/4` Fourier decay extends to every coprime `p > q ≥ 2`: `‖μ̂_K(u)‖ ≤ C K^{−c}` whenever `q ∤ u`, explicit at `3/2, 4/3, 5/4, 5/3, 7/4, 8/3`. | Unconditional, zero axioms |
 | Simultaneous Padé comparison | Archimedean and `2`-adic diagonal Padé approximants differ by `e c²/(1−c)` and coincide iff `c = 0`; with integer-vanishing this gives the repetition exponent above. | Unconditional, zero axioms |
 | `3/2` deterministic vs joint symbolics | No rational `x` has four iterates of the deterministic map in `[2/7, 5/7)`; the joint two-branch relation admits explicit periodic orbits there; the holed barrier has survivor set `{4/15, 2/5, 3/5, 11/15}`. | Unconditional, zero axioms |
@@ -70,7 +70,7 @@ reproducibility and the LaTeX build.
 ## Paper
 
 The two former companion papers are merged into a single pure-mathematics paper,
-[*Symbolic obstructions and quantitative distribution for rational-base Mahler orbits*](papers/main/main.tex)
+[*Symbolic exclusion intervals, Fourier decay, and p-adic obstructions for rational-base orbits*](papers/main/main.tex)
 (source and `refs.bib`), organised as introduction and main results, proofs, a short
 formal-verification section, and an AI-assistance statement. The `v1.0.0` snapshot is archived on
 Zenodo under DOI [10.5281/zenodo.24491265](https://doi.org/10.5281/zenodo.24491265); prebuilt PDFs
@@ -88,7 +88,7 @@ The core module [`Mahler32/Basic.lean`](Mahler32/Basic.lean) (1046 lines) proves
 - **One-step laws.** `step x % 2 = x / 2 % 2`: the next parity is the second binary digit of the
   current term. Also `step x % 3 = 2 * (x % 2)`, and the base-`6` last digit is a bijection onto
   consecutive parity pairs, taking values in `{0, 2, 3, 5}`.
-- **Information window.** `m` low binary (equivalently base-`6`) digits determine exactly the next
+- **Sharp parity predictability.** `m` low binary (equivalently base-`6`) digits determine exactly the next
   `m` parities, and the window is sharp: `0` and `6^m` agree modulo `6^m` yet differ at step `m`.
 - **Base-`3` transducer.** Long division with a carry in `{0,1}` reproduces `⌈3x/2⌉`; the invariant
   is purely algebraic.
@@ -106,24 +106,24 @@ The core module [`Mahler32/Basic.lean`](Mahler32/Basic.lean) (1046 lines) proves
 
 | Module | Machine-checked content |
 | :-- | :-- |
-| `Mahler32/Basic.lean` | one-step laws, information window and sharpness, base-3 transducer, inverse branch and period doubling, the `2^k` legal-class count, 11-free Fibonacci pruning, Walsh zero correlation |
-| `Mahler32/Base6LightCone.lean` | light-cone flip and the 3-adic window (`light_cone_flip`, `good_mod_iff`) |
+| `Mahler32/Basic.lean` | one-step laws, sharp `m`-digit parity predictability, base-3 transducer, inverse branch and period doubling, the `2^k` legal-class count, 11-free Fibonacci pruning, Walsh zero correlation |
+| `Mahler32/Base6LightCone.lean` | carry propagation under `6^(L−1)` shifts and the 3-adic window (`light_cone_flip`, `good_mod_iff`) |
 | `Mahler32/SyracuseGates.lean` | integer `3/2` step; exact gates `g % 12 = 9`, `g % 256 = 9`, `g % 768 = 9` |
-| `Mahler32/TwoWorldPadeCriterion.lean` | Padé discrepancy identity, agreement criterion, integer engine, rational `√2` bounds, `9/4` repeated-block bounds, mod-9 non-vanishing criterion |
+| `Mahler32/TwoWorldPadeCriterion.lean` | Padé discrepancy identity, agreement criterion, integer engine, rational `√2` bounds, `(9,4)` prefix repetition bounds, mod-9 non-vanishing criterion |
 | `Mahler32/ArnoldTongue5State.lean` | the 5-state count and exact `T` windows on `[1/3, 11/15)` |
 | `Mahler32/ArnoldTongue7State.lean` | the 7-state count and exact `T` windows on `[7/24, 17/24)` |
-| `Mahler32/DAGBoundedGap.lean` | bounded gap; exact hitting set; `g + 128` carry branch; deterministic `Quiver.StrictMono` residue DAG |
+| `Mahler32/DAGBoundedGap.lean` | finite-state hitting-time bounds; exact hitting set; carry branch under `g + 128`; deterministic monotone residue graph |
 | `Mahler32/Fib11Free.lean` | 11-free 3-adic reverse pruning; `countBelow (good11Free k) (3^k) = fib (k+2)` |
 | `Mahler32/WalshZeroCorr.lean` | Walsh coefficients on the real `k`-step orbit; top-bit vanishing and doubling |
 | `Mahler32/HInvariance.lean` | Hensel inverse, word residue, affine offset, `h`-invariance of local Fourier norms |
 | `Mahler32/SyracuseBijection.lean` | full-branch bijection of the accelerated Mahler–Syracuse map |
-| `Mahler32/ZeroEntropyCages.lean` | integer-vanishing criterion; deterministic `[2/7,5/7)` exit; joint orbits and cycles; holed finite survivor core |
-| `Mahler32/DiscreteFluidCertificates.lean` | cup self-map, exact `4/19 → 6/19 → 9/19 → 4/19` cycle, `3/2` expansion, `2:1` mass split |
-| `Mahler32/Model94Obstructions.lean` | `9/4` mirror conservation, even-rung extinction, forbidden sums, odd-rung Klein-4, shadows, carry-free base-9 conservation, finite-roof bound |
-| `Mahler32/Model94GlobalDecay.lean` | midpoint `36^K` double-Cantor intersection, antipodal exclusion, `4`-contraction, cosine product, global odd-frequency decay |
-| `Mahler32/RationalBaseDefs.lean` | exposed definitions for general coprime `(p,q)` words, tunnel model, rational intervals, zero-entropy automaton |
-| `Mahler32/GeneralPQDecay.lean` | general `(p,q)` repetition-exponent exclusion, tunnel Fourier decay, quantitative Weyl equidistribution, Karp cycle bound |
-| `Mahler32/ZeroEntropyAutomaton.lean` | branch-overlap soundness, polynomial walk growth, zero-entropy SCC theorem, exact kernel certificates |
+| `Mahler32/ZeroEntropyCages.lean` | zero-entropy exclusion intervals; deterministic `[2/7,5/7)` exit; joint orbits and cycles; holed finite survivor core |
+| `Mahler32/DiscreteFluidCertificates.lean` | invariant-measure and transfer bounds, exact `4/19 → 6/19 → 9/19 → 4/19` cycle, `3/2` expansion, `2:1` mass split |
+| `Mahler32/Model94Obstructions.lean` | `(9,4)` mirror symmetry, even-level extinction, forbidden sums, four-point odd-level exclusion, sum/difference identities, carry-free base-9 conservation, finite-window bound |
+| `Mahler32/Model94GlobalDecay.lean` | CRT intersection modulo `36^K` of the `2`-adic and `3`-adic survivor sets, antipodal exclusion, `4`-contraction, cosine product, global odd-frequency decay |
+| `Mahler32/RationalBaseDefs.lean` | exposed definitions for general coprime `(p,q)` words, consecutive-digit model, rational intervals, zero-entropy finite-state model |
+| `Mahler32/GeneralPQDecay.lean` | general `(p,q)` repetition-exponent exclusion, consecutive-digit Fourier decay, quantitative Weyl equidistribution, Karp cycle bound |
+| `Mahler32/ZeroEntropyAutomaton.lean` | branch-overlap soundness, polynomial walk growth, zero-entropy finite-state theorem, exact kernel certificates |
 | `Mahler32/QuiverMonotone.lean` | mirror of `Mathlib/Combinatorics/Quiver/Monotone.lean` from mathlib4#44885, pending upstream merge |
 | `Mahler32Conditional/AlgebraicPairBranch.lean` | the conditional algebraic-pair finiteness theorem; the only module with the extra axiom |
 

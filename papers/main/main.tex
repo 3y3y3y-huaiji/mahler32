@@ -33,7 +33,7 @@
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
-\title{Symbolic obstructions and quantitative distribution for rational-base Mahler orbits}
+\title{Symbolic exclusion intervals, Fourier decay, and \texorpdfstring{$p$}{p}-adic obstructions for rational-base orbits \texorpdfstring{$\{\xi(p/q)^{n}\}$}{xi(p/q)^n}}
 \author{Su MingKai\thanks{Repository: \url{https://github.com/3y3y3y-huaiji/mahler32} \;|\; Zenodo DOI: \href{https://doi.org/10.5281/zenodo.24491265}{10.5281/zenodo.24491265}}}
 \date{November 2026}
 
@@ -41,7 +41,7 @@
 \maketitle
 
 \begin{abstract}
-For the Mahler map $T x = \fract{3x/2}$ and its coprime rational-base analogues $\alpha = \pm p/q$ with $2 \le q < p$, we study which symbolic orbits can survive a prescribed interval and how far the surviving orbit distributes. A simultaneous Archimedean and $q$-adic Pad\'e comparison reduces the exclusion of eventually periodic orbits $U V^{w}$ to the elementary fact that an integer cannot be simultaneously highly $q$-divisible and Archimedean-small; for every coprime $(p,q)$ this yields the critical repetition exponent $\log_{q} p$. For the $9/4$ model we prove mirror and congruence obstructions, a midpoint $36^{K}$ double-Cantor intersection with antipodal diameter at most $(9^{K} - 4^{K})/5$, and quantitative odd-frequency Fourier decay, the last extended to a Weyl equidistribution estimate for all coprime bases. For the $3/2$ map we separate the deterministic single-branch exit from the two-branch relation, construct explicit joint periodic orbits, and show that an acyclic component ordering with no internal branching forces zero symbolic entropy, with exact rational certificates. The finiteness of the algebraic-pair branch is the only conditional statement, and it is proved from a single explicitly isolated instance of Schlickewei's subspace theorem.
+For the Mahler map $T x = \fract{3x/2}$ and its coprime rational-base analogues $\alpha = \pm p/q$ with $2 \le q < p$, we study which symbolic orbits can survive a prescribed interval and how far the surviving orbit distributes. A simultaneous Archimedean and $q$-adic Pad\'e comparison reduces the exclusion of eventually periodic orbits $U V^{w}$ to the elementary fact that an integer cannot be simultaneously highly $q$-divisible and Archimedean-small; for every coprime $(p,q)$ this yields the critical repetition exponent $\log_{q} p$. For the $9/4$ model we prove mirror and congruence obstructions, a CRT intersection modulo $36^{K}$ of the $2$-adic and $3$-adic survivor sets with antipodal diameter at most $(9^{K} - 4^{K})/5$, and quantitative odd-frequency Fourier decay, the last extended to a Weyl equidistribution estimate for all coprime bases. For the $3/2$ map we separate the deterministic single-branch exit from the two-branch relation, construct explicit joint periodic orbits, and show that an acyclic component ordering with no internal branching forces zero symbolic entropy, with exact rational certificates. The finiteness of the algebraic-pair branch is the only conditional statement, and it is proved from a single explicitly isolated instance of Schlickewei's subspace theorem.
 \end{abstract}
 
 \tableofcontents
@@ -73,7 +73,7 @@ In particular no $g_{0}$ matches $U V^{w}$ for all $w \in \N$.
 
 \begin{theorem}[Main Theorem B: the $9/4$ model and quantitative Weyl decay]
 \label{thm:mainB}
-For the recurrence $4 g_{k+1} = 9 g_{k} + d_{k}$ with $d_{k} \in \{2,3\}$ the survivor set in $[0,4^{K})$ has cardinality $2^{K}$; mirror twins satisfy $g_{k} + \tilde g_{k} = 9^{k} 4^{N-k} - 1$; and every $2K$-step survivor has its midpoint in the double-Cantor intersection $S_{K} \cap A_{K}$ modulo $36^{K}$, whose rescaled antipodal diameter is at most $(9^{K} - 4^{K})/5$. If $g_{0} + 3/5 \le 4^{m}$ and $g_{0}$ matches $U V^{w}$, then
+For the recurrence $4 g_{k+1} = 9 g_{k} + d_{k}$ with $d_{k} \in \{2,3\}$ the survivor set in $[0,4^{K})$ has cardinality $2^{K}$; mirror twins satisfy $g_{k} + \tilde g_{k} = 9^{k} 4^{N-k} - 1$; and every $2K$-step survivor has its midpoint in the CRT intersection $S_{K} \cap A_{K}$ modulo $36^{K}$, whose rescaled antipodal diameter is at most $(9^{K} - 4^{K})/5$. If $g_{0} + 3/5 \le 4^{m}$ and $g_{0}$ matches $U V^{w}$, then
 \[
   w < \frac{317}{200} + \frac{117}{200}\,\frac{|U|}{|V|} + \frac{m}{|V|}.
 \]
@@ -94,7 +94,7 @@ Theorems~\ref{thm:mainA}, \ref{thm:mainB} and~\ref{thm:mainC} are unconditional 
 
 \subsection{Organisation}
 
-Section~\ref{sec:pade} proves the Pad\'e comparison. Section~\ref{sec:pq} develops the general $(p,q)$ word calculus and the repetition exponent. Section~\ref{sec:model94} treats the $9/4$ model, the repeated-block exclusion, the midpoint Cantor intersection, and quantitative Weyl decay. Section~\ref{sec:threehalves} treats the $3/2$ map, zero-entropy automata, and the cup transport. Section~\ref{sec:algpair} records the conditional algebraic-pair branch. Section~\ref{sec:formal} states the formal status, and Section~\ref{sec:ai} contains the assistance disclosure.
+Section~\ref{sec:pade} proves the Pad\'e comparison. Section~\ref{sec:pq} develops the general $(p,q)$ word calculus and the repetition exponent. Section~\ref{sec:model94} treats the $(9,4)$ congruence model, the prefix repetition bound, the CRT intersection modulo $36^{K}$, and quantitative Weyl decay. Section~\ref{sec:threehalves} treats the $3/2$ map, finite-state zero-entropy exclusion, and transfer bounds. Section~\ref{sec:algpair} records the conditional algebraic-pair branch. Section~\ref{sec:formal} states the formal status, and Section~\ref{sec:ai} contains the assistance disclosure.
 
 \section{Simultaneous Archimedean and \texorpdfstring{$2$}{2}-adic Pad\'e comparison}
 \label{sec:pade}
@@ -218,10 +218,10 @@ Evaluating $\log_{q} p$ for the principal coprime bases gives
 These are linear exclusion envelopes, complementary to the distribution lower bounds of \citep{flp1995,luzheng2026}.
 \end{remark}
 
-\section{The \texorpdfstring{$9/4$}{9/4} model: repeated-block exclusion and Weyl decay}
+\section{The \texorpdfstring{$(9,4)$}{(9,4)} congruence model: repetition bounds and Fourier decay}
 \label{sec:model94}
 
-\subsection{Survivors, mirrors, and congruence obstructions}
+\subsection{Survivor sets, mirror symmetry, and congruence obstructions}
 
 The two-branch $9/4$ recurrence is
 \begin{equation}
@@ -230,7 +230,7 @@ The two-branch $9/4$ recurrence is
 \end{equation}
 Every admissible $g_{k}$ satisfies $g_{k} \bmod 4 \in \{1,2\}$, and the set $S_{K}$ of $g \in [0,4^{K})$ surviving $K$ steps of \eqref{eq:94} has cardinality $2^{K}$.
 
-\begin{theorem}[Repeated-block exclusion]
+\begin{theorem}[Prefix repetition-exponent bound]
 \label{thm:94rep}
 Let $g_{0} \ge 1$ and suppose $g_{0} + 3/5 \le 4^{m}$. If $g_{0}$ matches the eventually periodic word $U V^{w}$ with $|V| \ge 1$, then
 \[
@@ -264,8 +264,8 @@ Let $N \ge 1$, $g_{0} < 4^{N}$, and suppose $g_{0}$ reaches $g_{k}$ after $k \le
 Induct on $k$. The substitution $g \mapsto 4^{N} - 1 - g$ reverses the two admissible residues $\{1,2\}$; summing the two recursions at each step cancels the digit and multiplies the constant term by $9$, which is exactly the stated identity after $k$ steps.
 \end{proof}
 
-\begin{theorem}[Even-rung extinction and forbidden sums]
-\label{thm:evenrung}
+\begin{theorem}[Even-level mirror extinction and forbidden sums]
+\label{thm:evenlevel}
 Let $N = 2m$ with $m \ge 1$. Mirror twins cannot both survive $N+2$ steps of \eqref{eq:94}. More generally, if $c \equiv 2 \pmod 4$ and $g_{0} + g_{1} = c\,4^{k} - 1$, then $g_{0}$ and $g_{1}$ cannot both survive $k+1$ steps.
 \end{theorem}
 
@@ -278,7 +278,7 @@ Suppose $g_{0}$ and its mirror $4^{2m} - 1 - g_{0}$ both survive $2m+2$ steps, a
 because $9^{2m+1} \equiv 9 \pmod{16}$ and $(9^{2m+1} - 5)/4 \equiv 1 \pmod 4$. But $g_{N+1}$ and $\tilde g_{N+1}$ each still survive one step, so both again lie in residue $1$ or $2$; a sum of two elements of $\{1,2\}$ is congruent to $2$, $3$ or $0$ modulo $4$, never to $1$. This contradiction proves the mirror statement. The forbidden-sum statement is the same argument applied to the sum shadow: an induction on $k$ shows that a pair summing to $c\,4^{k} - 1$ with $c \equiv 2 \pmod 4$ reaches the inadmissible residue $2$ at the final step.
 \end{proof}
 
-\begin{theorem}[Odd-rung Klein-four exclusion]
+\begin{theorem}[Four-point exclusion at odd levels]
 \label{thm:klein}
 Let $N \ge 3$ be odd, $g < 4^{N-1}$, and $1 \le \delta \le 3$. Then the four numbers $g$, $g + \delta\,4^{N-1}$, $4^{N} - 1 - g$ and $4^{N} - 1 - (g + \delta\,4^{N-1})$ cannot all survive $N+1$ steps of \eqref{eq:94}.
 \end{theorem}
@@ -300,7 +300,7 @@ For all $k, t, g$, one has $\mathrm{step}(g + 4^{k+1} t) = \mathrm{step}(g) + 9 
 Substituting $g + 4^{k+1} t$ into \eqref{eq:94} and reducing modulo $4$ shows that the admissible residue is unchanged, while the affine image shifts by $9 \cdot 4^{k} t$. The block inequality is then a finite count over the $256$ residues.
 \end{proof}
 
-\begin{theorem}[Sum and difference shadows; carry-free base-$9$ transducer]
+\begin{theorem}[Sum and difference identities; carry-free base-$9$ digit conservation]
 \label{thm:shadows}
 The sum and difference of two surviving orbits obey exact affine recursions driven by the digit sums. Moreover the base-$9$ digit-sum identity
 \[
@@ -309,9 +309,9 @@ The sum and difference of two surviving orbits obey exact affine recursions driv
 holds without carry propagation.
 \end{theorem}
 
-\subsection{Midpoint Cantor intersection}
+\subsection{A CRT intersection of \texorpdfstring{$2$}{2}-adic and \texorpdfstring{$3$}{3}-adic survivor sets}
 
-\begin{theorem}[Midpoint $36^{K}$ double-Cantor intersection]
+\begin{theorem}[CRT intersection modulo $36^{K}$]
 \label{thm:cantor}
 Let $K \ge 1$. If $g_{0}$ survives $2K$ steps of \eqref{eq:94} and reaches $g_{K}$ after $K$ steps, then $g_{K} \bmod 36^{K}$ lies in $S_{K} \cap A_{K}$, where
 \[
@@ -368,7 +368,7 @@ For every $v < K$ and every odd $u$, $\|\hat\mu_{K}(4^{v} u)\| \le C (K-v)^{-c}$
 
 \begin{theorem}[Quantitative Weyl equidistribution for coprime \texorpdfstring{$(p,q)$}{(p,q)}]
 \label{thm:pqweyl}
-Let $2 \le q < p$ be coprime and let $\hat\mu^{pq}_{K}$ be the transform of the consecutive-digit tunnel model $q g_{k+1} = p g_{k} + d_{k}$ with $d_{k} \in \{d_{0}, d_{0}+1\}$. Then $|S^{pq}_{K}| = 2^{K}$, $\hat\mu^{pq}_{K+1}(q u) = \hat\mu^{pq}_{K}(u)$, and there exist $C, c > 0$ with
+Let $2 \le q < p$ be coprime and let $\hat\mu^{pq}_{K}$ be the transform of the consecutive-digit model $q g_{k+1} = p g_{k} + d_{k}$ with $d_{k} \in \{d_{0}, d_{0}+1\}$. Then $|S^{pq}_{K}| = 2^{K}$, $\hat\mu^{pq}_{K+1}(q u) = \hat\mu^{pq}_{K}(u)$, and there exist $C, c > 0$ with
 \[
   \|\hat\mu^{pq}_{K}(u)\| \le C\, K^{-c}
 \]
@@ -383,7 +383,7 @@ The $q$-contraction and the cardinality count are exact. The $p$-multiplication 
 The exponential decay is complemented by a finite contractive certificate. On a finite directed graph with strictly positive vertex potential $\varphi$, an edge weight $w$ satisfying $w(u,v)\varphi(v) \le \lambda \varphi(u)$ for every edge and some $\lambda < 1$ forces $\sum_{\text{paths}} \prod w \le \lambda^{|p|}$ along every closed path. The $42$- and $44$-vertex baseline graphs used in the formalisation realise this inequality explicitly; no numerical input beyond exact rationals is required.
 \end{remark}
 
-\section{The \texorpdfstring{$3/2$}{3/2} map: deterministic versus joint symbolics}
+\section{Symbolic exclusion for the \texorpdfstring{$3/2$}{3/2} map: deterministic and joint branches}
 \label{sec:threehalves}
 
 \subsection{The two branches}
@@ -429,18 +429,18 @@ The displayed steps are direct rational identities. The exactness of the survivo
 \end{proof}
 
 \begin{remark}[Widths and the arithmetic origin of $8/57$]
-The interval $[2/7,5/7)$ has width $3/7$, while $[1/7,3/7) \cup [4/7,6/7)$ has width $4/7 > 1/2$. For the left-hole family $[\delta,1/2)$ under the branch-restricted cup map $F$ ($F = T_{0}$ on $[0,1/3)$, $F = T_{1}$ on $[1/3,1/2)$), the threshold
+The interval $[2/7,5/7)$ has width $3/7$, while $[1/7,3/7) \cup [4/7,6/7)$ has width $4/7 > 1/2$. For the left-hole family $[\delta,1/2)$ under the branch-restricted map $F$ ($F = T_{0}$ on $[0,1/3)$, $F = T_{1}$ on $[1/3,1/2)$), the threshold
 \[
   \delta^{*} = \frac{8}{57} = \frac23 \cdot \frac{4}{19} = T_{0}^{-1}\!\left(\frac{4}{19}\right)
 \]
 separates three exact regimes: $\delta > 4/19$ empties in finitely many steps; $8/57 < \delta \le 4/19$ retains a finite zero-entropy survivor set containing the $3$-cycle $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$; and $\delta < 8/57$ acquires positive entropy through the fold $T_{1} \circ T_{0}^{3}$ mapping $[8/81,8/57)$ onto $[0,4/19)$.
 \end{remark}
 
-\subsection{A zero-topological-entropy automaton}
+\subsection{Finite-state zero-entropy exclusion}
 
 We now pass from a single barrier to arbitrary signed rational bases. Let $\alpha = \pm p/q$ with $2 \le q < p$ and let $\mathcal{I} = \{I_{0}, \dots, I_{N-1}\}$ be a finite rational partition of a subset of $[0,1)$. Each interval is stored as $[\ell n/\ell d, h n/h d)$ with positive integer denominators, and the branch-overlap predicate is an exact integer cross-multiplication test: two cells overlap when the integer images of the two branches meet.
 
-\begin{theorem}[Zero-topological-entropy SCC obstruction]
+\begin{theorem}[Zero-entropy finite-state obstruction]
 \label{thm:ze}
 Let $\mathrm{adj} : \mathrm{Fin}\,N \to \mathrm{Fin}\,N \to \mathrm{Bool}$ and $\mathrm{comp} : \mathrm{Fin}\,N \to \mathrm{Fin}\,M$ satisfy:
 \begin{enumerate}[leftmargin=1.5em]
@@ -470,7 +470,7 @@ $+5/3$ centered $[697/2000,1303/2000)$ & $303/1000 = 0.3030$ & $13$ & $9$ & cert
 \bottomrule
 \end{tabular}
 \end{center}
-For each region the kernel also checks the finite-depth bridge from the ambient union $U$ to the survivor partition: a closed rational preimage iteration with integer cross-multiplied endpoints is contained in the closed hull of the certified cells, so any orbit staying in $U$ for the certified depth lies in a certified cell.
+For each region the kernel also checks the finite-depth bridge from the ambient union $U$ to the survivor partition: a closed rational preimage iteration with integer endpoints compared by cross multiplication is contained in the closed hull of the certified cells, so any orbit staying in $U$ for the certified depth lies in a certified cell.
 \end{theorem}
 
 \begin{proof}
@@ -481,13 +481,13 @@ Each row is a finite integer computation. The branch-overlap predicate, the comp
 The widths of the four certified regions exceed the classical interval-range bounds of length $1/p$ for positive bases and $(1 + r - r^{2})/p$, $r = q/p$, for negative bases \citep{flp1995,luzheng2026}. Wider empirically observed windows are not asserted here; only the four exact certificates and the depth-$7$ $+5/3$ check are verified artefacts.
 \end{remark}
 
-\subsection{Discrete fluid transport on the cup}
+\subsection{Invariant-measure and transfer bounds}
 
-On $[0,1/2)$ define the cup map $T_{\mathrm{cup}}(x) = (3x/2) \bmod (1/2)$.
+On $[0,1/2)$ define the map $U(x) = (3x/2) \bmod (1/2)$.
 
-\begin{theorem}[Cup transport]
+\begin{theorem}[Transport bounds for the map $U$]
 \label{thm:cup}
-$T_{\mathrm{cup}}$ preserves $[0,1/2)$, has the exact $3$-cycle $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$, expands branchwise distances by $3/2$, and satisfies the $2{:}1$ transport balance $\mu([1/6,1/4]) = \mu([1/3,1/2])$ for a measure carried by $x \mapsto 2x/3$.
+$U$ preserves $[0,1/2)$, has the exact $3$-cycle $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$, expands branchwise distances by $3/2$, and satisfies the $2{:}1$ transport balance $\mu([1/6,1/4]) = \mu([1/3,1/2])$ for a measure carried by $x \mapsto 2x/3$.
 \end{theorem}
 
 \begin{proof}
