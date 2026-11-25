@@ -314,10 +314,10 @@ holds without carry propagation.
 \begin{theorem}[CRT intersection modulo $36^{K}$]
 \label{thm:cantor}
 Let $K \ge 1$. If $g_{0}$ survives $2K$ steps of \eqref{eq:94} and reaches $g_{K}$ after $K$ steps, then $g_{K} \bmod 36^{K}$ lies in $S_{K} \cap A_{K}$, where
-\[
-  S_{K} = \{\, x : x \text{ survives } K \text{ steps}\,\}, \qquad
-  A_{K} = \bigl\{\, a : (4^{K} a) \bmod 9^{K} = \omega_{9,4}(W) \text{ for a valid } K\text{-digit word } W \,\bigr\}.
-\]
+\begin{align*}
+  S_{K} &= \{\, x : x \text{ survives } K \text{ steps}\,\}, \\
+  A_{K} &= \bigl\{\, a : (4^{K} a) \bmod 9^{K} = \omega_{9,4}(W) \text{ for a valid } K\text{-digit word } W \,\bigr\}.
+\end{align*}
 Every $a \in A_{K}$ satisfies $2(9^{K} - 4^{K}) \le 5\,((4^{K} a) \bmod 9^{K}) \le 3(9^{K} - 4^{K})$, and $18 \in A_{K}$ for every $K \ge 1$, because $5 \mid 9^{K} - 4^{K}$.
 \end{theorem}
 
@@ -458,19 +458,19 @@ Within one component the walk is forced, so the number of ways to spend steps am
 \label{thm:certs}
 The following rational regions admit exact finite certificates for the automaton of Theorem~\ref{thm:ze}:
 \begin{center}
-\small
-\begin{tabular}{@{}lcccc@{}}
+\footnotesize
+\begin{tabular}{@{}L{0.48\textwidth}L{0.24\textwidth}cc@{}}
 \toprule
-Region & width & cells & components & status \\
+Region & width & cells & components \\
 \midrule
-$-5/3$ centered $[89/250,161/250)$ & $36/125 = 0.2880$ & $3$ & $3$ & certified \\
-$-3/2$ holed $[147/1000,43/100) \cup [57/100,853/1000)$ & $283/500 = 0.5660 > 1/2$ & $18$ & $15$ & certified \\
-$-3/2$ centered $[1429/5000,3571/5000)$ & $1071/2500 = 0.4284$ & $26$ & $16$ & certified \\
-$+5/3$ centered $[697/2000,1303/2000)$ & $303/1000 = 0.3030$ & $13$ & $9$ & certified \\
+$-5/3$: $[89/250,161/250)$ & $36/125 = 0.2880$ & $3$ & $3$ \\
+$-3/2$ holed: $[147/1000,43/100)\allowbreak\cup[57/100,853/1000)$ & $283/500 = 0.5660$ & $18$ & $15$ \\
+$-3/2$: $[1429/5000,3571/5000)$ & $1071/2500 = 0.4284$ & $26$ & $16$ \\
+$+5/3$: $[697/2000,1303/2000)$ & $303/1000 = 0.3030$ & $13$ & $9$ \\
 \bottomrule
 \end{tabular}
 \end{center}
-For each region the kernel also checks the finite-depth bridge from the ambient union $U$ to the survivor partition: a closed rational preimage iteration with integer endpoints compared by cross multiplication is contained in the closed hull of the certified cells, so any orbit staying in $U$ for the certified depth lies in a certified cell.
+The holed region has total width $283/500 > 1/2$. For each region the kernel also checks the finite-depth bridge from the ambient union $U$ to the survivor partition: a closed rational preimage iteration with integer endpoints compared by cross multiplication is contained in the closed hull of the certified cells, so any orbit staying in $U$ for the certified depth lies in a certified cell.
 \end{theorem}
 
 \begin{proof}
