@@ -3,7 +3,7 @@
 and for the ``9/4`` finite-roof model.
 
 This script recomputes, in exact arithmetic (``fractions.Fraction`` and Python
-``int``), the finite certificates quoted in ``papers/paper2_zero_entropy_fluid``.
+``int``), the finite certificates quoted in ``papers/main``.
 It never uses floating point for a decision.
 
 Two independent blocks:

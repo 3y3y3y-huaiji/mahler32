@@ -29,6 +29,9 @@ The gate enforces six things, all mechanical:
 6. **No internal tracking numbers.**  The paper ``.tex`` sources may not leak
    development identifiers such as ``Issue #12`` or ``PR #17``; the arXiv
    preprint must read as a standalone academic document.
+7. **Unified paper.**  The companion papers are merged into a single entry
+   point ``papers/main/main.tex`` with its ``refs.bib``; no legacy
+   ``papers/paper*/main.tex`` may remain.
 
 Usage::
 
@@ -268,6 +271,20 @@ def check_paper_tracking_ids() -> None:
             )
 
 
+def check_unified_paper() -> None:
+    """The two companion papers must be merged into one entry point."""
+    unified = ROOT / "papers" / "main" / "main.tex"
+    if not unified.is_file():
+        fail("unified paper papers/main/main.tex is missing")
+    elif not (unified.parent / "refs.bib").is_file():
+        fail("unified paper papers/main/refs.bib is missing")
+    for legacy in sorted((ROOT / "papers").glob("paper*/main.tex")):
+        fail(
+            f"legacy companion paper {legacy.relative_to(ROOT)} must be merged "
+            "into papers/main/main.tex"
+        )
+
+
 def resolves(path: Path, doc_dir: Path) -> bool:
     if path.exists():
         return True
@@ -326,6 +343,7 @@ def main() -> int:
     check_ci_artifacts()
     check_formalization_artifacts()
     check_paper_tracking_ids()
+    check_unified_paper()
     check_links()
 
     if failures:
