@@ -15,6 +15,10 @@ name: Independent kernel (nanoda)
 # Axiom discipline is enforced separately by `scripts/check_axioms.py` and `comparator.json`;
 # here nanoda's role is the independent *type check*, so all axioms are admitted to the
 # environment (`unsafe_permit_all_axioms`) and the axiom whitelist is left to those gates.
+#
+# The two export targets are independent, so they run as a matrix on separate runners: the
+# wall-clock time drops from the serial sum to the slower of the two, and each runner keeps
+# only its own `.export` file on disk.
 
 on:
   workflow_dispatch:
@@ -40,13 +44,23 @@ env:
   NANODA_REV: 0da9f98feadd3a0a2ef4b3dbcf52a298a6fef929
 
 jobs:
-  nanoda:
-    name: nanoda independent kernel
+  nanoda-check:
+    name: nanoda check (${{ matrix.label }})
     if: >-
       github.event_name != 'pull_request' ||
       github.event.label.name == 'run-independent-kernel'
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Zero-axiom core (tasks 1–10).
+          - label: core
+            target: Mahler32Core
+          # Conditional module (task 11).
+          - label: conditional
+            target: Mahler32Conditional.AlgebraicPairBranch
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -66,8 +80,8 @@ jobs:
       - name: Fetch Mathlib Cache
         run: lake exe cache get
 
-      - name: Lake Build
-        run: lake build -KwarningAsError=true
+      - name: Lake Build (${{ matrix.label }})
+        run: lake build -KwarningAsError=true ${{ matrix.target }}
 
       # ---------------------------------------------------------------------------------
       # Build the exporter against *this* toolchain, then build the Rust kernel.
@@ -92,33 +106,24 @@ jobs:
           echo "NANODA_BIN=$RUNNER_TEMP/nanoda_lib/target/release/nanoda_bin" >> "$GITHUB_ENV"
 
       # ---------------------------------------------------------------------------------
-      # Export the zero-axiom core (tasks 1–10) and the conditional module (task 11).
+      # Export this matrix entry's target, then run the independent type check.
+      # `unsafe_permit_all_axioms` only *admits* axiom constants to nanoda's environment;
+      # every proof term is still re-type-checked from scratch.  The axiom whitelist itself
+      # is enforced by check_axioms.py and comparator.json.
       # ---------------------------------------------------------------------------------
-      - name: Export Mahler32Core
+      - name: Export ${{ matrix.label }}
         run: |
           set -euo pipefail
-          lake env "$LEAN4EXPORT_BIN" Mahler32Core > "$RUNNER_TEMP/core.export"
-          head -c 200 "$RUNNER_TEMP/core.export"; echo
-          ls -lh "$RUNNER_TEMP/core.export"
+          lake env "$LEAN4EXPORT_BIN" ${{ matrix.target }} > "$RUNNER_TEMP/${{ matrix.label }}.export"
+          head -c 200 "$RUNNER_TEMP/${{ matrix.label }}.export"; echo
+          ls -lh "$RUNNER_TEMP/${{ matrix.label }}.export"
 
-      - name: Export Mahler32Conditional
+      - name: nanoda check (${{ matrix.label }})
         run: |
           set -euo pipefail
-          lake env "$LEAN4EXPORT_BIN" Mahler32Conditional.AlgebraicPairBranch > "$RUNNER_TEMP/conditional.export"
-          head -c 200 "$RUNNER_TEMP/conditional.export"; echo
-          ls -lh "$RUNNER_TEMP/conditional.export"
-
-      # ---------------------------------------------------------------------------------
-      # Independent type check.  `unsafe_permit_all_axioms` only *admits* axiom constants to
-      # nanoda's environment; every proof term is still re-type-checked from scratch.  The
-      # axiom whitelist itself is enforced by check_axioms.py and comparator.json.
-      # ---------------------------------------------------------------------------------
-      - name: nanoda check (core)
-        run: |
-          set -euo pipefail
-          cat > "$RUNNER_TEMP/nanoda-core.json" <<JSON
+          cat > "$RUNNER_TEMP/nanoda-${{ matrix.label }}.json" <<JSON
           {
-            "export_file_path": "$RUNNER_TEMP/core.export",
+            "export_file_path": "$RUNNER_TEMP/${{ matrix.label }}.export",
             "use_stdin": false,
             "num_threads": 4,
             "unsafe_permit_all_axioms": true,
@@ -127,20 +132,16 @@ jobs:
             "string_extension": true
           }
           JSON
-          "$NANODA_BIN" "$RUNNER_TEMP/nanoda-core.json"
+          "$NANODA_BIN" "$RUNNER_TEMP/nanoda-${{ matrix.label }}.json"
 
-      - name: nanoda check (conditional task 11)
-        run: |
-          set -euo pipefail
-          cat > "$RUNNER_TEMP/nanoda-conditional.json" <<JSON
-          {
-            "export_file_path": "$RUNNER_TEMP/conditional.export",
-            "use_stdin": false,
-            "num_threads": 4,
-            "unsafe_permit_all_axioms": true,
-            "unpermitted_axiom_hard_error": false,
-            "nat_extension": true,
-            "string_extension": true
-          }
-          JSON
-          "$NANODA_BIN" "$RUNNER_TEMP/nanoda-conditional.json"
+  # Lightweight aggregator that keeps the status-check name ``nanoda independent kernel``
+  # (previously the single job) available to branch protection: it succeeds only when every
+  # matrix entry succeeded.
+  nanoda:
+    name: nanoda independent kernel
+    needs: [ nanoda-check ]
+    if: always() && needs['nanoda-check'].result == 'success'
+    runs-on: ubuntu-slim
+    steps:
+      - name: All exports verified
+        run: echo "Both nanoda exports passed the independent kernel check."
