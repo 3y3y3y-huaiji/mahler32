@@ -161,6 +161,8 @@ Using kernel \lean{decide} over reduced \lean{RatInterval} lists (\lean{zero} cu
   \item \textbf{Base $+5/3$, centered $[697/2000,1303/2000)$}: width $303/1000=0.3030$, $13$ cells, $9$ SCCs (\lean{cert\_pos\_5\_3\_centered\_zero\_entropy}); depth-$7$ widening to width $0.3040$ ($83$ cells, $72$ SCCs) is additionally verified in \lean{scripts/generate\_certificates.py}.
 \end{itemize}
 
+The certificate is not only a statement about the cells: the kernel also verifies the finite-depth bridge from the ambient region $U$ to the survivor partition. For each of the four regions a closed rational preimage iteration with integer cross-multiplied endpoints -- never \lean{native\_decide} -- is checked by \lean{decide} to lie in the closed hull of the certified cells. Hence, at every time $t$ for which $d$ further steps of the orbit remain in $U$, the point at time $t$ lies in a certified cell (\lean{cert\_neg\_5\_3\_survivor\_bridge}, \lean{cert\_neg\_3\_2\_holed\_survivor\_bridge}, \lean{cert\_neg\_3\_2\_centered\_survivor\_bridge}, \lean{cert\_pos\_5\_3\_centered\_survivor\_bridge}). The only points not asserted to lie in the half-open cells are the finitely many right endpoints, which are included in the closed hull; the generic certificate is \lean{orbit\_closed\_mem\_cells\_of\_survives}.
+
 \begin{remark}[Literature comparison targets]
 \label{rem:lit}
 Classical distribution theorems establish interval-range obstructions of length $1/p$ for positive rational bases \citep{flp1995} and $(1+r-r^2)/p$ ($r=q/p$) for negative rational bases \citep{luzheng2026}. Notice that symbolic zero-topological-entropy exclusion allows wider certified intervals: companion rational searches report centered zero-entropy windows of widths $0.428$ ($+3/2$, $+28.4\%$ over $1/3$), $0.310$ ($+4/3$), $0.240$ ($+5/4$), $0.304$ ($+5/3$, $+52.0\%$ over $1/5$), $0.186$ ($+7/4$), and $0.157$ ($+8/3$), as well as negative-base centered windows $0.4284$ ($-3/2$), $0.3106$ ($-4/3$), $0.2408$ ($-5/4$), $0.2880$ ($-5/3$), $0.1862$ ($-7/4$), and $0.1579$ ($-8/3$). Only the four exact certificates listed above and the depth-$7$ $+5/3$ $0.3040$ check are asserted as verified artefacts in this repository; the remaining table widths and a $280$-state negative-$3/2$ variant $[0.157,0.440)\cup[0.560,0.843)$ remain empirical companion observations.
@@ -231,6 +233,7 @@ $(p,q)$ Weyl Fourier decay ($3/2\dots 8/3$) & \lean{GeneralPQDecay.\allowbreak g
 Karp cycle bound \& $44$-vertex baseline & \lean{GeneralPQDecay.\allowbreak karp\_cycle\_bound}, \lean{cert44\_cycle\_bound} & Proved (zero axioms) \\
 Zero-entropy SCC mother theorem & \lean{ZeroEntropyAutomaton.\allowbreak hasBranchOverlap\_sound}, \lean{zero\_entropy\_of\_no\_branching\_scc} & Proved (zero axioms) \\
 $-5/3$, $\pm 5/3$, $-3/2$ certificates & \lean{cert\_neg\_5\_3\_zero\_entropy}, \lean{cert\_neg\_3\_2\_holed\_zero\_entropy}, \lean{cert\_neg\_3\_2\_centered\_zero\_entropy}, \lean{cert\_pos\_5\_3\_centered\_zero\_entropy} & \lean{decide} (zero axioms) \\
+$U\to V_d$ survivor bridge (four regions) & \lean{orbit\_closed\_mem\_cells\_of\_survives}, \lean{cert\_neg\_3\_2\_holed\_survivor\_bridge}, \lean{cert\_neg\_3\_2\_centered\_survivor\_bridge} & \lean{decide} (zero axioms) \\
 \bottomrule
 \end{tabularx}
 \caption{Theorem-to-Lean traceability table for Paper~2.}

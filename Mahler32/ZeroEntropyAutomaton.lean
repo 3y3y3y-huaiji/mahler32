@@ -403,6 +403,356 @@ public theorem automaton_orbit_sound {p q N M : ℕ} {neg : Bool} (hq : 1 ≤ q)
     (hstep t ht)
 
 
+/-! ### 2b. Finite-depth survivor bridge `U → V_d` (pure kernel `decide`, zero axioms)
+
+The zero-entropy certificates above live on the survivor cells `V_d` produced by the exact
+preimage iteration in `scripts/generate_certificates.py --verify`.  This section closes the gap
+between the target region `U` and those cells inside Lean itself: a rational closed interval
+preimage iteration over-approximates the `d`-step survivor set, and a `decide`-checked containment
+certificate places every such interval in the closed hull of one of the automaton cells.  Hence any
+`StepPQ`-orbit that stays in `U` for `d` more steps has its point inside a certified cell.
+-/
+
+/-- A closed rational box with integer numerator/denominator endpoints.
+
+The endpoints are kept integral on purpose: `ℚ` comparisons are not kernel-reducible, so a
+certificate over `ℚ` cannot be discharged by `decide`.  Cross-multiplied integer comparisons are
+reducible, which makes the final containment check a genuine kernel computation. -/
+public structure PreBox where
+  loN : ℤ
+  loD : ℕ
+  hiN : ℤ
+  hiD : ℕ
+
+namespace PreBox
+
+/-- Lower endpoint as a rational. -/
+@[expose] public def loQ (B : PreBox) : ℚ := (B.loN : ℚ) / (B.loD : ℚ)
+
+/-- Upper endpoint as a rational. -/
+@[expose] public def hiQ (B : PreBox) : ℚ := (B.hiN : ℚ) / (B.hiD : ℚ)
+
+/-- Closed membership `lo ≤ x ≤ hi`. -/
+@[expose] public def mem (B : PreBox) (x : ℚ) : Prop := B.loQ ≤ x ∧ x ≤ B.hiQ
+
+instance (B : PreBox) (x : ℚ) : Decidable (B.mem x) := by
+  unfold PreBox.mem
+  infer_instance
+
+/-- Integer cross-multiplied closed non-emptiness test. -/
+@[expose] public def nonempty (B : PreBox) : Bool :=
+  decide (B.loN * (B.hiD : ℤ) ≤ B.hiN * (B.loD : ℤ))
+
+lemma nonempty_of_mem {B : PreBox} {x : ℚ} (hlo : 0 < B.loD) (hhi : 0 < B.hiD)
+    (h : B.mem x) : B.nonempty = true := by
+  unfold nonempty
+  apply decide_eq_true
+  have hle : B.loQ ≤ B.hiQ := le_trans h.1 h.2
+  unfold PreBox.loQ PreBox.hiQ at hle
+  rw [div_le_div_iff₀ (by exact_mod_cast hlo) (by exact_mod_cast hhi)] at hle
+  exact_mod_cast hle
+
+end PreBox
+
+/-- Clip a closed box to a half-open rational interval, comparing by exact integers. -/
+@[expose] public def clipBox (I : RatInterval) (B : PreBox) : PreBox :=
+  if _ : I.ln * (B.loD : ℤ) ≤ B.loN * (I.ld : ℤ) then
+    if _ : B.hiN * (I.hd : ℤ) ≤ I.hn * (B.hiD : ℤ) then
+      { loN := B.loN, loD := B.loD, hiN := B.hiN, hiD := B.hiD }
+    else
+      { loN := B.loN, loD := B.loD, hiN := I.hn, hiD := I.hd }
+  else
+    if _ : B.hiN * (I.hd : ℤ) ≤ I.hn * (B.hiD : ℤ) then
+      { loN := I.ln, loD := I.ld, hiN := B.hiN, hiD := B.hiD }
+    else
+      { loN := I.ln, loD := I.ld, hiN := I.hn, hiD := I.hd }
+
+public lemma clipBox_mem {I : RatInterval} {B : PreBox} {x : ℚ}
+    (hx : I.mem x) (hB : B.mem x) : (clipBox I B).mem x := by
+  obtain ⟨hx1, hx2⟩ := hx
+  simp only [PreBox.mem, PreBox.loQ, PreBox.hiQ] at hB ⊢
+  unfold clipBox
+  split_ifs <;>
+    exact ⟨by first | exact hx1 | exact hB.1,
+      by first | exact le_of_lt hx2 | exact hB.2⟩
+
+/-- Closed affine preimage of a box on branch `(k, m)`, in integer endpoints. -/
+@[expose] public def rawBox (neg : Bool) (J : PreBox) (p q : ℕ) (k : ℕ) (m : ℤ) : PreBox :=
+  if neg then
+    { loN := (k : ℤ) * (J.hiD : ℤ) - (q : ℤ) * (m * (J.hiD : ℤ) + J.hiN)
+      loD := p * J.hiD
+      hiN := (k : ℤ) * (J.loD : ℤ) - (q : ℤ) * (m * (J.loD : ℤ) + J.loN)
+      hiD := p * J.loD }
+  else
+    { loN := (q : ℤ) * (J.loN + m * (J.loD : ℤ)) - (k : ℤ) * (J.loD : ℤ)
+      loD := p * J.loD
+      hiN := (q : ℤ) * (J.hiN + m * (J.hiD : ℤ)) - (k : ℤ) * (J.hiD : ℤ)
+      hiD := p * J.hiD }
+
+public lemma rawBox_loQ_false {p q : ℕ} (hp : 0 < p) {J : PreBox} {k : ℕ} {m : ℤ}
+    (hJ : 0 < J.loD) :
+    (rawBox false J p q k m).loQ =
+      ((q : ℚ) * (J.loQ + (m : ℚ)) - (k : ℚ)) / (p : ℚ) := by
+  unfold rawBox PreBox.loQ
+  simp only [Bool.false_eq_true, ↓reduceIte]
+  field_simp [hJ.ne', hp.ne']
+  push_cast
+  ring_nf
+
+public lemma rawBox_hiQ_false {p q : ℕ} (hp : 0 < p) {J : PreBox} {k : ℕ} {m : ℤ}
+    (hJ : 0 < J.hiD) :
+    (rawBox false J p q k m).hiQ =
+      ((q : ℚ) * (J.hiQ + (m : ℚ)) - (k : ℚ)) / (p : ℚ) := by
+  unfold rawBox PreBox.hiQ
+  simp only [Bool.false_eq_true, ↓reduceIte]
+  field_simp [hJ.ne', hp.ne']
+  push_cast
+  ring_nf
+
+public lemma rawBox_loQ_true {p q : ℕ} (hp : 0 < p) {J : PreBox} {k : ℕ} {m : ℤ}
+    (hJ : 0 < J.hiD) :
+    (rawBox true J p q k m).loQ =
+      ((k : ℚ) - (m : ℚ) * (q : ℚ) - (q : ℚ) * J.hiQ) / (p : ℚ) := by
+  unfold rawBox PreBox.loQ PreBox.hiQ
+  simp only [↓reduceIte]
+  field_simp [hJ.ne', hp.ne']
+  push_cast
+  ring_nf
+
+public lemma rawBox_hiQ_true {p q : ℕ} (hp : 0 < p) {J : PreBox} {k : ℕ} {m : ℤ}
+    (hJ : 0 < J.loD) :
+    (rawBox true J p q k m).hiQ =
+      ((k : ℚ) - (m : ℚ) * (q : ℚ) - (q : ℚ) * J.loQ) / (p : ℚ) := by
+  unfold rawBox PreBox.hiQ PreBox.loQ
+  simp only [↓reduceIte]
+  field_simp [hJ.ne', hp.ne']
+  push_cast
+  ring_nf
+
+public lemma rawBox_mem {p q : ℕ} (hp : 0 < p) {neg : Bool} {J : PreBox} {k : ℕ} {m : ℤ}
+    {x y : ℚ} (hJlo : 0 < J.loD) (hJhi : 0 < J.hiD) (hy : J.mem y)
+    (hrel : (q : ℚ) * (y + (m : ℚ)) =
+      (if neg then -(p : ℚ) else (p : ℚ)) * x + (k : ℚ)) :
+    (rawBox neg J p q k m).mem x := by
+  have hpQ : (0 : ℚ) < (p : ℚ) := by exact_mod_cast hp
+  obtain ⟨hy1, hy2⟩ := hy
+  cases neg with
+  | false =>
+      simp only [Bool.false_eq_true, ↓reduceIte] at hrel
+      have hxeq : x = ((q : ℚ) * (y + (m : ℚ)) - (k : ℚ)) / (p : ℚ) := by
+        rw [eq_div_iff hpQ.ne']
+        linarith
+      rw [PreBox.mem, rawBox_loQ_false hp hJlo, rawBox_hiQ_false hp hJhi]
+      constructor
+      · rw [hxeq]
+        gcongr
+      · rw [hxeq]
+        gcongr
+  | true =>
+      simp only [↓reduceIte] at hrel
+      have hxeq : x = ((k : ℚ) - (m : ℚ) * (q : ℚ) - (q : ℚ) * y) / (p : ℚ) := by
+        rw [eq_div_iff hpQ.ne']
+        linarith
+      rw [PreBox.mem, rawBox_loQ_true hp hJhi, rawBox_hiQ_true hp hJlo]
+      constructor
+      · rw [hxeq]
+        gcongr
+      · rw [hxeq]
+        gcongr
+
+/-- One backward step: all closed preimage boxes of `S` clipped to the target `U`. -/
+@[expose] public def preBoxStep (p q : ℕ) (neg : Bool) (U : List RatInterval)
+    (S : List PreBox) : List PreBox :=
+  U.flatMap fun I => S.flatMap fun J => (List.range q).flatMap fun (k : ℕ) =>
+    (List.range (2 * p + 3)).flatMap fun (idx : ℕ) =>
+      let B := clipBox I (rawBox neg J p q k ((idx : ℤ) - (p : ℤ) - 1))
+      if B.nonempty then [B] else []
+
+/-- `d`-fold backward preimage iteration from the target `U`. -/
+@[expose] public def preIterate (p q : ℕ) (neg : Bool) (U : List RatInterval) :
+    ℕ → List PreBox
+  | 0 => U.map fun I => ⟨I.ln, I.ld, I.hn, I.hd⟩
+  | n + 1 => preBoxStep p q neg U (preIterate p q neg U n)
+
+/-- Well-formedness invariant: every box has positive denominators. -/
+@[expose] public def PreBox.wf (B : PreBox) : Prop := 0 < B.loD ∧ 0 < B.hiD
+
+public lemma rawBox_wf {p q : ℕ} (hp : 0 < p) {neg : Bool} {J : PreBox} {k : ℕ} {m : ℤ}
+    (hJ : J.wf) : (rawBox neg J p q k m).wf := by
+  unfold rawBox
+  cases neg with
+  | false => exact ⟨Nat.mul_pos hp hJ.1, Nat.mul_pos hp hJ.2⟩
+  | true => exact ⟨Nat.mul_pos hp hJ.2, Nat.mul_pos hp hJ.1⟩
+
+public lemma clipBox_wf {I : RatInterval} {B : PreBox} (hB : B.wf) : (clipBox I B).wf := by
+  simp only [PreBox.wf, clipBox]
+  split_ifs <;>
+    exact ⟨by first | exact I.ldPos | exact hB.1, by first | exact I.hdPos | exact hB.2⟩
+
+public lemma preIterate_wf {p : ℕ} (hp : 0 < p) (q : ℕ) (neg : Bool) (U : List RatInterval) :
+    ∀ (n : ℕ) (B : PreBox), B ∈ preIterate p q neg U n → B.wf := by
+  intro n
+  induction n with
+  | zero =>
+      intro B hB
+      simp only [preIterate, List.mem_map] at hB
+      obtain ⟨I, _, rfl⟩ := hB
+      exact ⟨I.ldPos, I.hdPos⟩
+  | succ n ih =>
+      intro B hB
+      simp only [preIterate, preBoxStep, List.mem_flatMap, List.mem_range] at hB
+      obtain ⟨I, _, J, hJ, k, _, idx, _, hmem⟩ := hB
+      by_cases hne : (clipBox I (rawBox neg J p q k ((idx : ℤ) - (p : ℤ) - 1))).nonempty = true
+      · simp only [hne, ite_true, List.mem_singleton] at hmem
+        subst hmem
+        exact clipBox_wf (rawBox_wf hp (ih J hJ))
+      · simp [hne] at hmem
+
+public lemma preBoxStep_sound {p q : ℕ} (hp : 0 < p) {neg : Bool} {U : List RatInterval}
+    {S : List PreBox} (hU0 : ∀ I ∈ U, 0 ≤ I.ln) (hU1 : ∀ I ∈ U, I.hn ≤ (I.hd : ℤ))
+    (hwf : ∀ J ∈ S, J.wf)
+    {x y : ℚ} (hx : ∃ I ∈ U, I.mem x) (hy : ∃ J ∈ S, J.mem y)
+    (hstep : StepPQ p q neg x y) :
+    ∃ B ∈ preBoxStep p q neg U S, B.mem x := by
+  obtain ⟨I, hIU, hxI⟩ := hx
+  obtain ⟨J, hJS, hyJ⟩ := hy
+  obtain ⟨hy0, hy1, k, hk, m, hrel⟩ := hstep
+  have hqpos : (0 : ℚ) < q := by
+    have hq1 : (1 : ℕ) ≤ q := by omega
+    exact_mod_cast hq1
+  have hIlo : (0 : ℚ) ≤ I.lo := by
+    unfold RatInterval.lo
+    exact div_nonneg (by exact_mod_cast hU0 I hIU) (by positivity)
+  have hIhi : I.hi ≤ 1 := by
+    unfold RatInterval.hi
+    rw [div_le_one (by exact_mod_cast I.hdPos)]
+    exact_mod_cast hU1 I hIU
+  have hx0 : 0 ≤ x := le_trans hIlo hxI.1
+  have hx1 : x < 1 := lt_of_lt_of_le hxI.2 hIhi
+  have hm_lo : -(p : ℤ) - 1 ≤ m := by
+    have hq_lo : -(p : ℚ) ≤ (q : ℚ) * (y + (m : ℚ)) := by
+      rw [hrel]
+      cases neg <;> simp <;> nlinarith [show (0 : ℚ) ≤ k from by positivity,
+        show (0 : ℚ) ≤ p from by positivity]
+    have hm_gt : -((p : ℚ) / q) - 1 < (m : ℚ) := by
+      have h1 : -((p : ℚ) / q) ≤ y + (m : ℚ) := by
+        rw [← neg_div, div_le_iff₀ hqpos]
+        linarith [hq_lo]
+      linarith
+    have hp_le : ((p : ℚ) / q) ≤ p :=
+      div_le_self (by positivity) (by exact_mod_cast (show (1 : ℕ) ≤ q by omega))
+    have : -((p : ℚ) + 1) < (m : ℚ) := by linarith
+    have hmZ : -((p : ℤ) + 1) < m := by exact_mod_cast this
+    grind
+  have hm_hi : m ≤ (p : ℤ) + 1 := by
+    have hq_hi : (q : ℚ) * (y + (m : ℚ)) < (p : ℚ) + q := by
+      rw [hrel]
+      have hk_lt : (k : ℚ) < q := by exact_mod_cast hk
+      cases neg <;> simp <;> nlinarith [show (0 : ℚ) ≤ p from by positivity]
+    have hm_lt : (m : ℚ) < (p : ℚ) / q + 1 := by
+      have h1 : y + (m : ℚ) < (p : ℚ) / q + 1 := by
+        have h1' : y + (m : ℚ) < ((p : ℚ) + q) / q := (lt_div_iff₀ hqpos).mpr (by linarith)
+        have hadd : ((p : ℚ) + q) / q = (p : ℚ) / q + 1 := by field_simp [hqpos.ne']
+        linarith
+      linarith
+    have hp_le : ((p : ℚ) / q) ≤ p :=
+      div_le_self (by positivity) (by exact_mod_cast (show (1 : ℕ) ≤ q by omega))
+    have : (m : ℚ) < (p : ℚ) + 1 := by linarith
+    have hmZ : m < (p : ℤ) + 1 := by exact_mod_cast this
+    grind
+  let idx : ℕ := (m + (p : ℤ) + 1).toNat
+  have hidx_lt : idx < 2 * p + 3 := by grind
+  have hidx_eq : ((idx : ℤ) - (p : ℤ) - 1) = m := by grind
+  have hJwf : J.wf := hwf J hJS
+  let B : PreBox := clipBox I (rawBox neg J p q k m)
+  have hBmem : B.mem x :=
+    clipBox_mem hxI (rawBox_mem hp hJwf.1 hJwf.2 hyJ hrel)
+  have hBwf : B.wf := clipBox_wf (rawBox_wf hp hJwf)
+  have hBne : B.nonempty = true := PreBox.nonempty_of_mem hBwf.1 hBwf.2 hBmem
+  refine ⟨B, ?_, hBmem⟩
+  simp only [preBoxStep, List.mem_flatMap, List.mem_range]
+  refine ⟨I, hIU, J, hJS, k, hk, idx, hidx_lt, ?_⟩
+  rw [hidx_eq]
+  change B ∈ (if B.nonempty then [B] else [])
+  simp [hBne]
+
+public lemma preIterate_sound {p q : ℕ} (hp : 0 < p) {neg : Bool} {U : List RatInterval}
+    (hU0 : ∀ I ∈ U, 0 ≤ I.ln) (hU1 : ∀ I ∈ U, I.hn ≤ (I.hd : ℤ))
+    {orb : ℕ → ℚ} {d : ℕ}
+    (hstep : ∀ i < d, StepPQ p q neg (orb i) (orb (i + 1)))
+    (hin : ∀ i ≤ d, ∃ I ∈ U, I.mem (orb i)) :
+    ∃ B ∈ preIterate p q neg U d, B.mem (orb 0) := by
+  induction d generalizing orb with
+  | zero =>
+      obtain ⟨I, hIU, hIx⟩ := hin 0 (Nat.zero_le 0)
+      exact ⟨⟨I.ln, I.ld, I.hn, I.hd⟩,
+        List.mem_map.mpr ⟨I, hIU, rfl⟩, ⟨hIx.1, le_of_lt hIx.2⟩⟩
+  | succ d ih =>
+      have hstep' : ∀ i < d, StepPQ p q neg (orb (i + 1)) (orb (i + 1 + 1)) := by
+        intro i hi
+        simpa [Nat.add_assoc] using hstep (i + 1) (by omega)
+      have hin' : ∀ i ≤ d, ∃ I ∈ U, I.mem (orb (i + 1)) := by
+        intro i hi
+        exact hin (i + 1) (by omega)
+      obtain ⟨B, hB, hBmem⟩ := ih (orb := fun i => orb (i + 1)) hstep' hin'
+      exact preBoxStep_sound hp hU0 hU1 (preIterate_wf hp q neg U d) (hin 0 (Nat.zero_le _))
+        ⟨B, hB, hBmem⟩ (hstep 0 (Nat.succ_pos d))
+
+/-- Closed-hull containment test for a box in a `RatInterval`, by integer cross-multiplication. -/
+@[expose] public def closedWithin (B : PreBox) (C : RatInterval) : Bool :=
+  decide (C.ln * (B.loD : ℤ) ≤ B.loN * (C.ld : ℤ) ∧
+    B.hiN * (C.hd : ℤ) ≤ C.hn * (B.hiD : ℤ))
+
+public lemma closedWithin_sound {B : PreBox} {C : RatInterval} {x : ℚ}
+    (hlo : 0 < B.loD) (hhi : 0 < B.hiD)
+    (h : closedWithin B C = true) (hx : B.mem x) : C.closedMem x := by
+  have h' := of_decide_eq_true h
+  constructor
+  · have hCB : C.lo ≤ B.loQ := by
+      unfold RatInterval.lo PreBox.loQ
+      rw [div_le_div_iff₀ (by exact_mod_cast C.ldPos) (by exact_mod_cast hlo)]
+      exact_mod_cast h'.1
+    exact le_trans hCB hx.1
+  · have hBC : B.hiQ ≤ C.hi := by
+      unfold PreBox.hiQ RatInterval.hi
+      rw [div_le_div_iff₀ (by exact_mod_cast hhi) (by exact_mod_cast C.hdPos)]
+      exact_mod_cast h'.2
+    exact le_trans hx.2 hBC
+
+public lemma any_closedWithin_sound {B : PreBox} {cells : List RatInterval} {x : ℚ}
+    (hlo : 0 < B.loD) (hhi : 0 < B.hiD)
+    (h : cells.any (closedWithin B) = true) (hx : B.mem x) :
+    ∃ C ∈ cells, C.closedMem x := by
+  rw [List.any_eq_true] at h
+  obtain ⟨C, hC, hw⟩ := h
+  exact ⟨C, hC, closedWithin_sound hlo hhi hw hx⟩
+
+/-- **Survivor-partition bridge.** If the `d`-fold closed preimage certificate of `U` is contained
+in the closed hull of the automaton cells, then every point of a `StepPQ`-orbit that stays in `U`
+for `d` further steps lies in the closed hull of one of those cells.  All hypotheses are
+kernel-decidable finite integer checks; no `native_decide` is involved. -/
+public theorem orbit_closed_mem_cells_of_survives {p q : ℕ} (hp : 0 < p) {neg : Bool}
+    {U cells : List RatInterval} {d : ℕ}
+    (hU0 : ∀ I ∈ U, 0 ≤ I.ln) (hU1 : ∀ I ∈ U, I.hn ≤ (I.hd : ℤ))
+    (hcheck : (preIterate p q neg U d).all (fun B => cells.any (closedWithin B)) = true)
+    {orb : ℕ → ℚ} {L : ℕ}
+    (hstep : ∀ t < L, StepPQ p q neg (orb t) (orb (t + 1)))
+    (hin : ∀ t ≤ L, ∃ I ∈ U, I.mem (orb t))
+    {t : ℕ} (ht : t + d ≤ L) :
+    ∃ C ∈ cells, C.closedMem (orb t) := by
+  have hstep' : ∀ i < d, StepPQ p q neg (orb (t + i)) (orb (t + i + 1)) := by
+    intro i hi
+    have hlt : t + i < L := by omega
+    simpa [Nat.add_assoc] using hstep (t + i) hlt
+  have hin' : ∀ i ≤ d, ∃ I ∈ U, I.mem (orb (t + i)) := by
+    intro i hi
+    exact hin (t + i) (by omega)
+  obtain ⟨B, hB, hBmem⟩ := preIterate_sound hp hU0 hU1 hstep' hin'
+  have hBwf : B.wf := preIterate_wf hp q neg U d B hB
+  rw [List.all_eq_true] at hcheck
+  exact any_closedWithin_sound hBwf.1 hBwf.2 (hcheck B hB) (by simpa using hBmem)
+
+
 /-! ### 3. Concrete machine-checked zero-entropy certificates (`-5/3`, `-3/2`, `+5/3`) -/
 
 public lemma cells_lo_nonneg {N : ℕ} (cells : Fin N → RatInterval)
@@ -602,6 +952,65 @@ public theorem cert_pos_5_3_centered_zero_entropy :
         hasBranchOverlap 5 3 false (cert_pos_5_3_centered.cells i)
           (cert_pos_5_3_centered.cells j)) L : ℝ) ≤ C * (1 + ε) ^ L :=
   zero_entropy_of_no_branching_scc cert_pos_5_3_centered
+
+/-! ### 4. End-to-end `U → V_d` bridge for the four certified regions -/
+
+/-- Target region of the `-5/3` centered certificate. -/
+@[expose] public def neg53Target : List RatInterval := [mkCell 89 250 161 250]
+
+/-- Target region of the `-3/2` holed certificate. -/
+@[expose] public def neg32HoledTarget : List RatInterval :=
+  [mkCell 147 1000 43 100, mkCell 57 100 853 1000]
+
+/-- Target region of the `-3/2` centered certificate. -/
+@[expose] public def neg32CenteredTarget : List RatInterval := [mkCell 1429 5000 3571 5000]
+
+/-- Target region of the `+5/3` centered certificate. -/
+@[expose] public def pos53CenteredTarget : List RatInterval := [mkCell 697 2000 1303 2000]
+
+/-- `-5/3` survivor bridge: one additional `StepPQ` step inside `U` already forces the point into
+the closed hull of one of the three certified cells. -/
+public theorem cert_neg_5_3_survivor_bridge {orb : ℕ → ℚ} {L : ℕ}
+    (hstep : ∀ t < L, StepPQ 5 3 true (orb t) (orb (t + 1)))
+    (hin : ∀ t ≤ L, ∃ I ∈ neg53Target, I.mem (orb t))
+    {t : ℕ} (ht : t + 1 ≤ L) :
+    ∃ C ∈ neg53List, C.closedMem (orb t) :=
+  orbit_closed_mem_cells_of_survives (p := 5) (q := 3) (neg := true)
+    (U := neg53Target) (cells := neg53List) (d := 1) (by norm_num) (by decide) (by decide)
+    (by decide) hstep hin ht
+
+/-- `-3/2` holed survivor bridge: six additional `StepPQ` steps inside the holed union force the
+point into the closed hull of one of the eighteen certified cells. -/
+public theorem cert_neg_3_2_holed_survivor_bridge {orb : ℕ → ℚ} {L : ℕ}
+    (hstep : ∀ t < L, StepPQ 3 2 true (orb t) (orb (t + 1)))
+    (hin : ∀ t ≤ L, ∃ I ∈ neg32HoledTarget, I.mem (orb t))
+    {t : ℕ} (ht : t + 6 ≤ L) :
+    ∃ C ∈ neg32HoledList, C.closedMem (orb t) :=
+  orbit_closed_mem_cells_of_survives (p := 3) (q := 2) (neg := true)
+    (U := neg32HoledTarget) (cells := neg32HoledList) (d := 6) (by norm_num) (by decide) (by decide)
+    (by decide) hstep hin ht
+
+/-- `-3/2` centered survivor bridge: seven additional steps inside `U` force the point into the
+closed hull of one of the twenty-six certified cells. -/
+public theorem cert_neg_3_2_centered_survivor_bridge {orb : ℕ → ℚ} {L : ℕ}
+    (hstep : ∀ t < L, StepPQ 3 2 true (orb t) (orb (t + 1)))
+    (hin : ∀ t ≤ L, ∃ I ∈ neg32CenteredTarget, I.mem (orb t))
+    {t : ℕ} (ht : t + 7 ≤ L) :
+    ∃ C ∈ neg32CenteredList, C.closedMem (orb t) :=
+  orbit_closed_mem_cells_of_survives (p := 3) (q := 2) (neg := true)
+    (U := neg32CenteredTarget) (cells := neg32CenteredList) (d := 7) (by norm_num) (by decide)
+    (by decide) (by decide) hstep hin ht
+
+/-- `+5/3` centered survivor bridge: three additional steps inside `U` force the point into the
+closed hull of one of the thirteen certified cells. -/
+public theorem cert_pos_5_3_centered_survivor_bridge {orb : ℕ → ℚ} {L : ℕ}
+    (hstep : ∀ t < L, StepPQ 5 3 false (orb t) (orb (t + 1)))
+    (hin : ∀ t ≤ L, ∃ I ∈ pos53CenteredTarget, I.mem (orb t))
+    {t : ℕ} (ht : t + 3 ≤ L) :
+    ∃ C ∈ pos53CenteredList, C.closedMem (orb t) :=
+  orbit_closed_mem_cells_of_survives (p := 5) (q := 3) (neg := false)
+    (U := pos53CenteredTarget) (cells := pos53CenteredList) (d := 3) (by norm_num) (by decide)
+    (by decide) (by decide) hstep hin ht
 
 end Mahler32.ZeroEntropyAutomaton
 

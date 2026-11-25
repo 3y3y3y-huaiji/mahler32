@@ -818,6 +818,32 @@ example :
     (1 / 2 : ℚ) < unionWidth [mkCell 147 1000 43 100, mkCell 57 100 853 1000] :=
   cert_neg_3_2_holed_width_gt_half.2
 
+/-- Statement lock: the generic finite-depth `U → V_d` survivor bridge. -/
+example {p q : ℕ} (hp : 0 < p) {neg : Bool} {U cells : List RatInterval} {d : ℕ}
+    (hU0 : ∀ I ∈ U, 0 ≤ I.ln) (hU1 : ∀ I ∈ U, I.hn ≤ (I.hd : ℤ))
+    (hcheck : (preIterate p q neg U d).all (fun B => cells.any (closedWithin B)) = true)
+    {orb : ℕ → ℚ} {L : ℕ}
+    (hstep : ∀ t < L, StepPQ p q neg (orb t) (orb (t + 1)))
+    (hin : ∀ t ≤ L, ∃ I ∈ U, I.mem (orb t))
+    {t : ℕ} (ht : t + d ≤ L) :
+    ∃ C ∈ cells, C.closedMem (orb t) :=
+  orbit_closed_mem_cells_of_survives hp hU0 hU1 hcheck hstep hin ht
+
+/-- Statement lock: end-to-end bridges for the four certified regions. -/
+example {orb : ℕ → ℚ} {L : ℕ}
+    (hstep : ∀ t < L, StepPQ 3 2 true (orb t) (orb (t + 1)))
+    (hin : ∀ t ≤ L, ∃ I ∈ neg32HoledTarget, I.mem (orb t))
+    {t : ℕ} (ht : t + 6 ≤ L) :
+    ∃ C ∈ neg32HoledList, C.closedMem (orb t) :=
+  cert_neg_3_2_holed_survivor_bridge hstep hin ht
+
+example {orb : ℕ → ℚ} {L : ℕ}
+    (hstep : ∀ t < L, StepPQ 5 3 false (orb t) (orb (t + 1)))
+    (hin : ∀ t ≤ L, ∃ I ∈ pos53CenteredTarget, I.mem (orb t))
+    {t : ℕ} (ht : t + 3 ≤ L) :
+    ∃ C ∈ pos53CenteredList, C.closedMem (orb t) :=
+  cert_pos_5_3_centered_survivor_bridge hstep hin ht
+
 end SpecCheck.ZeroEntropyAutomaton
 
 end

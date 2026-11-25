@@ -152,6 +152,18 @@ Evaluating $w_{\mathrm{crit}}=\log_q p$ from Theorem~\ref{thm:pqrep} numerically
 
 Stephan's program separates surviving words into a rational case and an algebraic--pair case \citep{stephan2026subspace,stephan2026third}. The conditional module \lean{Mahler32Conditional.\allowbreak AlgebraicPairBranch} formalises the gap in \citep{stephan2026subspace}, \S4.4: for any algebraic irrational multiplier $\delta$, violating index pairs $(a,c)$ ($2\le a<c$) with distinct gaps $c-a$ must be finite, assuming Schlickewei's $p$-adic subspace theorem over $\Q^3$.
 
+The axiom \lean{schlickewei\_subspace\_Q3} is the standard $S$-arithmetic subspace theorem for $S=\{\infty,2,3\}$, not an additional arithmetic input. Clearing denominators in the three-term relation and writing
+\[
+  x=(x_1,x_2,x_3)=(3^c,\;3^a2^{c-a},\;2^c n_p)\in\Z^3
+\]
+turns it into $A x_1+B x_2+C x_3=0$. At the two non-Archimedean places the powers cancel identically,
+\[
+  \textstyle\prod_{v\in\{2,3\}}\max_{1\le i\le3}|x_i|_v\le 3^{-a},
+  \qquad
+  \max_{1\le i\le3}|x_i|_\infty\le 2^c\max\bigl(3^c,\;3^a2^{c-a},\;2^c|n_p|\bigr).
+\]
+The approximation $|\delta((3/2)^c-(3/2)^a)-n_p|\le\vartheta^c$ bounds the Archimedean factor by $\vartheta^{-c}H(x)$, so the product of the three local contributions is $\vartheta^c\ll H(x)^{-\varepsilon}$ for every $\varepsilon>0$, which is exactly the height hypothesis of the $S$-arithmetic subspace theorem and yields the rational relation used below.
+
 \begin{theorem}[Algebraic--pair finiteness, conditional]
 \label{thm:algpair}
 Assume Schlickewei's $p$-adic subspace theorem in the form isolated as the axiom \lean{schlickewei\_subspace\_Q3}. For any algebraic irrational $\delta$ and $\vartheta\in(0,1)$, the set of pairs $2\le a<c$ with distinct gaps $c-a$ on which $\delta\bigl((3/2)^c-(3/2)^a\bigr)$ lies within distance $\vartheta^c$ of an integer is finite. Machine-checked as \lean{algebraic\_pair\_branch\_finite}.

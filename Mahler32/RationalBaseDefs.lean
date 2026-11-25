@@ -128,6 +128,11 @@ public structure RatInterval where
 @[expose] public def RatInterval.mem (I : RatInterval) (x : ℚ) : Prop :=
   I.lo ≤ x ∧ x < I.hi
 
+/-- Closed hull membership `lo ≤ x ≤ hi`; used by the finite-depth survivor bridge, whose
+preimage certificates are closed at the endpoints that the half-open convention leaves out. -/
+@[expose] public def RatInterval.closedMem (I : RatInterval) (x : ℚ) : Prop :=
+  I.lo ≤ x ∧ x ≤ I.hi
+
 /-- Width `hi - lo` of a rational interval. -/
 @[expose] public def RatInterval.width (I : RatInterval) : ℚ :=
   I.hi - I.lo
