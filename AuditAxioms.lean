@@ -158,6 +158,11 @@ public section
 #print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_3_2_centered_zero_entropy
 #print axioms Mahler32.ZeroEntropyAutomaton.cert_pos_5_3_centered_width
 #print axioms Mahler32.ZeroEntropyAutomaton.cert_pos_5_3_centered_zero_entropy
+#print axioms Mahler32.ZeroEntropyAutomaton.orbit_closed_mem_cells_of_survives
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_5_3_survivor_bridge
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_3_2_holed_survivor_bridge
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_neg_3_2_centered_survivor_bridge
+#print axioms Mahler32.ZeroEntropyAutomaton.cert_pos_5_3_centered_survivor_bridge
 
 -- `Mahler32.Basic` (imported transitively by every task module above) and
 -- `Mahler32.QuiverMonotone` (the mathlib4#44885 mirror consumed by `Mahler32.DAGBoundedGap`)

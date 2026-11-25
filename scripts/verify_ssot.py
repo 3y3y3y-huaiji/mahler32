@@ -70,6 +70,11 @@ LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 # ``PR #7``) must not survive in a paper source.  LaTeX escapes the hash as
 # ``\#``, hence the optional backslash.
 TRACKING_ID_RE = re.compile(r"(?:Issues?|PRs?)\s*~?\s*\\?#\s*\d+")
+# Workflow / script paths advertised in `formalization.yaml` (prose, backticks optional).
+FORMALIZATION_ARTIFACT_RE = re.compile(
+    r"(?:\.github/workflows/[A-Za-z0-9_./-]+\.ya?ml"
+    r"|scripts/[A-Za-z0-9_.-]+\.(?:py|sh))"
+)
 CODE_RE = re.compile(r"`([^`\n]+)`")
 MATH_CHARS = set("^+\\${}=* \t")
 
@@ -233,6 +238,19 @@ def check_ci_artifacts() -> None:
             fail(f"formalization.yaml does not mention core CI artifact: {rel}")
 
 
+def check_formalization_artifacts() -> None:
+    """Every workflow or script named in ``formalization.yaml`` must exist.
+
+    This is intentionally one-directional: the self-report may describe a gate
+    without that gate having to be one of ``CORE_CI_ARTIFACTS`` (for example a
+    new helper script), but it may not point at a file that has been removed.
+    """
+    text = read_text(ROOT / "formalization.yaml")
+    for rel in sorted(set(FORMALIZATION_ARTIFACT_RE.findall(text))):
+        if not (ROOT / rel).is_file():
+            fail(f"formalization.yaml references missing workflow/script: {rel}")
+
+
 def check_paper_tracking_ids() -> None:
     """Reject internal development identifiers in the paper sources.
 
@@ -306,6 +324,7 @@ def main() -> int:
     check_modules()
     check_stale_phrases()
     check_ci_artifacts()
+    check_formalization_artifacts()
     check_paper_tracking_ids()
     check_links()
 
