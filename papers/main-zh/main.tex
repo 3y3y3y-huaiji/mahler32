@@ -1,0 +1,579 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[UTF8]{ctex}
+\setCJKmainfont{Noto Serif CJK SC}[ItalicFont=Noto Serif CJK SC]
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans CJK SC}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{xurl}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=teal!55!black,urlcolor=blue!55!black,pdfencoding=auto]{hyperref}
+\bibliographystyle{plainnat}
+
+\newtheorem{theorem}{定理}[section]
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{corollary}[theorem]{推论}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\fract}[1]{\left\{#1\right\}}
+\newcommand{\Tr}{\operatorname{tr}}
+\emergencystretch=3em
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{有理基轨道 \texorpdfstring{$\{\xi(p/q)^{n}\}$}{xi(p/q)^n} 的符号排除区间、Fourier 衰减与 \texorpdfstring{$p$}{p}-adic 障碍}
+\author{Su MingKai\thanks{仓库：\url{https://github.com/3y3y3y-huaiji/mahler32} \;|\; aiXiv：\href{https://aixiv.online/abs/2611.03037}{2611.03037} \;|\; Zenodo DOI：\href{https://doi.org/10.5281/zenodo.24491265}{10.5281/zenodo.24491265}}}
+\date{2026 年 11 月}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+对 Mahler 映射 $T x = \{3x/2\}$ 及其互素有理基类比 $\alpha = \pm p/q$（$2 \le q < p$），我们研究哪些符号轨道能在一个给定区间内存活，以及存活轨道能分布到多远。一个同时的 Archimedean 与 $q$-adic Padé 比较把最终周期轨道 $U V^{w}$ 的排除归约为一个初等事实：一个整数不可能同时被 $q$ 高度整除又在 Archimedean 意义下很小；对每个互素 $(p,q)$，这给出临界重复指数 $\log_{q} p$。对 $9/4$ 模型，我们证明镜像与同余障碍、$2$-adic 与 $3$-adic 存活集在模 $36^{K}$ 下的 CRT 交集（其对径直径至多 $(9^{K} - 4^{K})/5$），以及定量的奇数频率 Fourier 衰减；最后一项被推广为对所有互素基的 Weyl 等分布估计。对 $3/2$ 映射，我们把确定性的单分支退出与双分支关系分开，构造显式的联合周期轨道，并证明：无内部分支的无环分量排序迫使符号熵为零，且带有精确有理证书。代数对分支的有限性是唯一的条件性陈述，它由 Schlickewei 子空间定理的一个显式孤立实例推出。
+\end{abstract}
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\section{引言}
+\label{sec:intro}
+
+Mahler \citep{mahler1968} 提出了 $\fract{\xi(3/2)^{n}}$ 的分布问题，此问题至今仍未解决。Flatto、Lagarias 与 Pollington \citep{flp1995} 证明了：对互素整数 $2 \le q < p$ 及任意正实数 $\xi$，$\{\xi(p/q)^{n}\}$ 的极限点满足
+\[
+  \limsup_{n\to\infty} \fract{\xi(p/q)^{n}} - \liminf_{n\to\infty} \fract{\xi(p/q)^{n}} \;\ge\; \frac{1}{p};
+\]
+这是极限点集范围的一个下界，而不是对该集合的确定。负基情形由 Lu 与 Zheng \citep{luzheng2026} 处理。Strauch \citep{strauch1997} 推导了 $\xi(3/2)^{n} \bmod 1$ 的每个分布函数所满足的函数方程，并将其与 Mahler 问题联系起来。符号与组合方面的工作见 \citep{lagarias2003,andrieu2025,cassaigne2026}；算术 Diophantine 界、分母障碍与正性限制见 \citep{stephan2026subspace,stephan2026minimal,stephan2026third,cook2026,calegari2025,elmv,dedeo2026}。底层递推 $a(n+1) = \lceil 3a(n)/2 \rceil$ 的奇偶序列是 OEIS A061419，其奇偶性是 OEIS A205083。
+
+困难是双边的。一个在障碍中存活许多步的符号词迫使相应的整数余项被 $q$ 高度整除，因为每一步向后都会清除一个 $q$ 因子；与此同时，该余项的 Archimedean 规模指数级地小。两个约束相互竞争，而这一竞争可以定量化：$q$-adic 一侧提供计数因子 $q^{L}$，Archimedean 一侧提供规模因子 $p^{L}$，临界斜率是 $\log_{q} p$。这正是下文重复指数背后的机制，也是 $9/4$ 模型允许精确有限障碍的原因：它的两个容许数字使 Archimedean 信息与 $2$-adic 信息保持同步。
+
+\subsection{主要结果}
+
+我们证明四组陈述。前三组是无条件的；第四组孤立出一个条件性的有限性定理。每个陈述的形式化状态都在其陈述处记录，并在第~\ref{sec:formal} 与第~\ref{sec:ai} 节中总结。
+
+\begin{theorem}[主定理 A：Pad\'e 比较与一般重复指数]
+\label{thm:mainA}
+设 $e, c \in \Q$，$e \neq 0$，$c \neq 1$。$e/(1-z)$ 的 Archimedean 与 $2$-adic 对角 Pad\'e 逼近满足
+\[
+  \frac{e}{1-c} - e(1+c) = \frac{e\,c^{2}}{1-c},
+\]
+且两者相等当且仅当 $c = 0$。再设 $2 \le q < p$ 互素，$d_{\min}, d_{\max} \in \N$ 且 $d_{\min} \le d_{\max}$，并令 $q g_{k+1} = p g_{k} + d_{k}$，其中 $d_{\min} \le d_{k} \le d_{\max}$，$g_{k} \in \N$。若 $g_{0} \ge 1$ 匹配（按第~\ref{sec:pq} 节的意义）一个最终周期词 $U V^{w}$，$|V| \ge 1$，则
+\[
+  w < \frac{\log p}{\log q} + \Bigl(\frac{\log p}{\log q} - 1\Bigr)\frac{|U|}{|V|}
+      + \frac{\log\bigl(g_{0} + d_{\max}/(p-q)\bigr)}{|V| \log q}.
+\]
+特别地，不存在 $g_{0}$ 对所有 $w \in \N$ 都匹配 $U V^{w}$。
+\end{theorem}
+
+\begin{theorem}[主定理 B：$9/4$ 模型与定量 Weyl 衰减]
+\label{thm:mainB}
+对递推 $4 g_{k+1} = 9 g_{k} + d_{k}$（$d_{k} \in \{2,3\}$），$[0,4^{K})$ 中的存活集基数为 $2^{K}$；镜像孪生满足 $g_{k} + \tilde g_{k} = 9^{k} 4^{N-k} - 1$；每个 $2K$ 步存活轨道的中点在模 $36^{K}$ 的 CRT 交集 $S_{K} \cap A_{K}$ 中，其重标度对径直径至多 $(9^{K} - 4^{K})/5$。若 $g_{0} + 3/5 \le 4^{m}$ 且 $g_{0}$ 匹配 $U V^{w}$，则
+\[
+  w < \frac{317}{200} + \frac{117}{200}\,\frac{|U|}{|V|} + \frac{m}{|V|}.
+\]
+最后，存在常数 $C, c > 0$，使得对每个奇数 $u$ 和每个 $K \ge 1$ 有 $\|\hat\mu_{K}(u)\| \le C K^{-c}$；并且对所有互素 $p > q \ge 2$，只要 $q \nmid u$，同样的衰减成立。
+\end{theorem}
+
+\begin{theorem}[主定理 C：$3/2$ 映射与零符号熵]
+\label{thm:mainC}
+不存在有理数 $x$，使确定性映射的四个连续迭代都落在 $[2/7,5/7)$ 中；而联合双分支关系在该区间内允许显式周期轨道，并且带洞障碍 $[5/24,11/24) \cup [13/24,19/24)$ 的存活集是有限的 $\{4/15, 2/5, 3/5, 11/15\}$。对每个带符号有理基 $\pm p/q$ 和每个有限有理划分，一个无内部分支的无环分量排序迫使游走计数、从而符号熵，次指数增长。
+\end{theorem}
+
+\noindent\emph{形式化状态.} 带洞存活集的精确性在定理~\ref{thm:holed} 中于论文层面证明；它没有被形式化。在 Lean 中，声明 \texttt{holed\_cage\_two\_cycle} 与 \texttt{holed\_cage\_transients} 只验证了这四个点位于障碍内以及四个 $\mathrm{Step}$ 转移成立，并未验证其它所有点都会离开。
+
+\begin{theorem}[主定理 D：代数对分支，条件性]
+\label{thm:mainD}
+假设 Schlickewei $p$-adic 子空间定理以下文固定的形式成立。对每个代数无理数 $\delta$ 和每个 $\vartheta \in (0,1)$，满足 $2 \le a < c$、间隔 $c-a$ 互不相同、且 $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ 到一个整数的距离小于 $\vartheta^{c}$ 的下标对集合是有限的。
+\end{theorem}
+
+定理~\ref{thm:mainA} 与定理~\ref{thm:mainB} 是无条件的，并在零公理核中形式化。定理~\ref{thm:mainC} 是无条件的：其有限陈述已形式化，而带洞存活集的精确性在论文中证明，并在陈述后如此标记。定理~\ref{thm:mainD} 是唯一条件性的结果；其假设被隔离在形式化的一个独立部分中，不在其它地方使用。
+
+\subsection{组织}
+
+第~\ref{sec:pade} 节证明 Pad\'e 比较。第~\ref{sec:pq} 节发展一般 $(p,q)$ 词演算与重复指数。第~\ref{sec:model94} 节处理 $(9,4)$ 同余模型、前缀重复界、模 $36^{K}$ 的 CRT 交集以及定量 Weyl 衰减。第~\ref{sec:threehalves} 节处理 $3/2$ 映射、有限状态零熵排除与转移界。第~\ref{sec:algpair} 节记录条件性的代数对分支。第~\ref{sec:formal} 节陈述形式化状态，第~\ref{sec:ai} 节包含 AI 协助声明。
+
+\section{同时的 Archimedean 与 \texorpdfstring{$2$}{2}-adic Pad\'e 比较}
+\label{sec:pade}
+
+固定 $e, c \in \Q$，考虑几何级数 $S(z) = e(1 + z + z^{2} + \cdots) = e/(1-z)$。其深度 $1$ 与深度 $2$ 的对角 Pad\'e 截断具有闭有理形式
+\begin{equation}
+  P_{2}(e,c) = \frac{e}{1-c}, \qquad P_{1}(e,c) = e(1+c),
+\end{equation}
+分别表示 Archimedean 赋值与基 $3/2$ 下的截断进位 $2$-adic 逼近。
+
+\begin{proposition}[Pad\'e 偏差恒等式]
+\label{prop:identity}
+对所有 $e, c \in \Q$，$c \neq 1$，
+\begin{equation}
+  P_{2}(e,c) - P_{1}(e,c) = \frac{e\,c^{2}}{1-c}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+直接展开：$e\bigl((1-c)^{-1} - (1+c)\bigr) = e \cdot c^{2}/(1-c)$。
+\end{proof}
+
+\begin{theorem}[相等性的唯一性]
+\label{thm:iff}
+设 $e, c \in \Q$，$e \neq 0$，$c \neq 1$。则 $P_{2}(e,c) = P_{1}(e,c)$ 当且仅当 $c = 0$。
+\end{theorem}
+
+\begin{proof}
+由命题~\ref{prop:identity}，差为 $e c^{2}/(1-c)$。由于 $c \neq 1$ 且 $e \neq 0$，该商为零当且仅当 $c^{2} = 0$，即 $c = 0$。
+\end{proof}
+
+该比较之所以有用，是因为它把双位解析陈述转化为一个整数约束。假设一个整化余项 $M$ 被 $2^{N}$ 整除，而 Archimedean 估计给出 $|M| < 2^{N}$。则 $M = 2^{N} k$ 迫使 $2^{N}|k| < 2^{N}$，故 $k = 0$，$M = 0$。这个初等观察应用于 $z = 2/3$ 处的整化 Pad\'e 余项，是把同时的可整除性与小性转化为消失所需的唯一算术输入。有理严格界 $(140/99)^{2} < 2 < (17/12)^{2}$ 在数值上分离两个尺度，并与该比较一同证明。
+
+\section{一般 \texorpdfstring{$(p,q)$}{(p,q)} 词与 \texorpdfstring{$\log_q p$}{log\_q p} 重复指数}
+\label{sec:pq}
+
+设 $2 \le q < p$ 为互素整数，$d_{\min}, d_{\max} \in \N$ 且 $0 \le d_{\min} \le d_{\max}$。词 $W = (d_{0}, \dots, d_{L-1})$ 称为对 $d_{\min} \le d_{\max}$ \emph{容许}，若对每个 $j$ 有 $d_{\min} \le d_{j} \le d_{\max}$。线性递推为
+\begin{equation}
+  q\, g_{k+1} = p\, g_{k} + d_{k}, \qquad k = 0, \dots, L-1,
+\end{equation}
+其中 $g_{0}, \dots, g_{L} \in \N$。我们说 $g_{0}$ \emph{匹配}词 $W$，若存在这样的非负整数 $g_{1}, \dots, g_{L}$；对 $W = U V^{w}$，这意味着拼接词 $U V^{w}$ 在其全长 $|U| + w|V|$ 上被匹配。迭代并清分母得到加权累积
+\begin{equation}
+  \omega_{p,q}(W) = \sum_{j=0}^{L-1} d_{j}\, p^{L-1-j} q^{j},
+\end{equation}
+以及精确恒等式 $q^{L} g_{L} = p^{L} g_{0} + \omega_{p,q}(W)$。对最终周期词 $W = U V^{w}$，附上 $q$-adic 与 Archimedean 极限点
+\begin{equation}
+  q^{*}(U,V) = -\,\frac{(p^{|V|} - q^{|V|})\, \omega_{p,q}(U) + q^{|U|}\, \omega_{p,q}(V)}
+    {p^{|U|}\,\bigl(p^{|V|} - q^{|V|}\bigr)} \; \in \Q .
+  \label{eq:qstar}
+\end{equation}
+
+\begin{lemma}[极限点的位置]
+\label{lem:qstar}
+对容许的 $U, V$，$|V| \ge 1$，
+\[
+  -\frac{d_{\max}}{p-q} \;\le\; q^{*}(U,V) \;\le\; -\frac{d_{\min}}{p-q}.
+\]
+\end{lemma}
+
+\begin{proof}
+数字界给出：对每个词 $W$，$(p-q)\, \omega_{p,q}(W)$ 介于 $d_{\min}(p^{|W|} - q^{|W|})$ 与 $d_{\max}(p^{|W|} - q^{|W|})$ 之间。把这两个不等式代入 \eqref{eq:qstar}，并利用 $p^{|V|} > q^{|V|}$，即得结论。
+\end{proof}
+
+\begin{theorem}[双位隔离]
+\label{thm:isolation}
+设 $g_{0} \ge 1$，$|V| \ge 1$，并假设 $g_{0}$ 匹配 $U V^{w}$。则
+\begin{equation}
+  q^{|U| + w|V|} \;\le\; \bigl(g_{0} - q^{*}(U,V)\bigr)\, p^{|U|}\, \bigl(p^{|V|} - q^{|V|}\bigr)
+  \;<\; \Bigl(g_{0} + \frac{d_{\max}}{p-q}\Bigr)\, p^{|U| + |V|}.
+  \label{eq:isolation}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+令 $r = |U|$，$s = |V|$。在 $U V^{w}$ 中清幂得到整数恒等式
+\begin{equation}
+  p^{ws} N = q^{r + ws} \bigl((p^{s} - q^{s}) g_{L} + \omega_{p,q}(V)\bigr),
+  \label{eq:key}
+\end{equation}
+其中 $N = (g_{0} - q^{*}(U,V))\, p^{r} (p^{s} - q^{s})$。由于 $\gcd(p,q) = 1$，因子 $q^{r+ws}$ 必须整除 $N$；特别地 $q^{r+ws} \le N$，即下界。对上界，引理~\ref{lem:qstar} 给出 $g_{0} - q^{*}(U,V) \le g_{0} + d_{\max}/(p-q)$，且 $p^{r}(p^{s} - q^{s}) < p^{r+s}$；相乘即得严格不等式。$N$ 的整性正是 Archimedean 界与 $q$-adic 界变得可比较之处：若 $N$ 严格介于 $0$ 与 $q^{r+ws}$ 之间，恒等式 \eqref{eq:key} 将迫使一个非零整数既被 $q^{r+ws}$ 整除又小于 $q^{r+ws}$。
+\end{proof}
+
+\begin{corollary}[不存在无限周期族]
+\label{cor:noinf}
+在定理~\ref{thm:isolation} 的假设下，$g_{0}$ 不可能对所有 $w \in \N$ 都匹配 $U V^{w}$。
+\end{corollary}
+
+\begin{proof}
+反设不然。取 $w = (g_{0} + d_{\max} + 1) p^{r+s}$，结合 \eqref{eq:isolation} 的两侧得到 $q^{r+ws} < (g_{0} + d_{\max} + 1) p^{r+s} \le w$。另一方面 $w < q^{w} \le q^{r+ws}$，矛盾。
+\end{proof}
+
+\begin{theorem}[临界重复指数 $\log_{q} p$]
+\label{thm:pqrep}
+在定理~\ref{thm:isolation} 的假设下，
+\[
+  w < \frac{\log p}{\log q} + \Bigl(\frac{\log p}{\log q} - 1\Bigr)\frac{|U|}{|V|}
+      + \frac{\log\bigl(g_{0} + d_{\max}/(p-q)\bigr)}{|V| \log q}.
+\]
+\end{theorem}
+
+\begin{proof}
+对 \eqref{eq:isolation} 的上界取对数：
+\[
+  (r + ws) \log q < \log\bigl(g_{0} + d_{\max}/(p-q)\bigr) + (r+s)\log p .
+\]
+解出 $w$ 并除以 $s \log q > 0$，得
+\[
+  w < \frac{(r+s)\log p - r \log q}{s \log q} + \frac{\log(g_{0} + d_{\max}/(p-q))}{s \log q},
+\]
+其中第一个分式等于 $\tfrac{\log p}{\log q} + \bigl(\tfrac{\log p}{\log q} - 1\bigr)\tfrac{r}{s}$。
+\end{proof}
+
+\begin{remark}[与定性范围结果的关系]
+\label{rem:qualitative}
+定性一侧是经典的：Flatto、Lagarias 与 Pollington \citep{flp1995} 对互素 $2 \le q < p$ 与每个正实数 $\xi$ 证明了下界 $\limsup_{n\to\infty}\fract{\xi(p/q)^{n}} - \liminf_{n\to\infty}\fract{\xi(p/q)^{n}} \ge 1/p$，而 Lu 与 Zheng \citep{luzheng2026} 处理负基类比。定理~\ref{thm:isolation}--\ref{thm:pqrep} 的增量是定量而非定性的：双位隔离给出显式线性排除包络，临界斜率为 $\log_{q} p$，并带有所述的 $w$ 界，以及零公理形式化。这里不声称关于最终周期性的任何新定性断言。
+\end{remark}
+
+\begin{remark}[临界斜率]
+对主要的互素基计算 $\log_{q} p$，得
+\[
+  \begin{array}{c|cccccc}
+    p/q & 5/4 & 4/3 & 7/4 & 5/3 & 3/2 \text{ 与 } 9/4 & 8/3 \\ \hline
+    \log_{q} p & 1.1610 & 1.2619 & 1.4037 & 1.4650 & 1.5850 & 1.8928
+  \end{array}
+\]
+这些是线性排除包络，与 \citep{flp1995,luzheng2026} 的分布下界互补。
+\end{remark}
+
+\section{\texorpdfstring{$(9,4)$}{(9,4)} 同余模型：重复界与 Fourier 衰减}
+\label{sec:model94}
+
+\subsection{存活集、镜像对称与同余障碍}
+
+双分支 $9/4$ 递推为
+\begin{equation}
+  4\, g_{k+1} = 9\, g_{k} + d_{k}, \qquad d_{k} \in \{2,3\}.
+  \label{eq:94}
+\end{equation}
+每个容许的 $g_{k}$ 满足 $g_{k} \bmod 4 \in \{1,2\}$，且递推 \eqref{eq:94} 的 $K$ 步在 $[0,4^{K})$ 中的存活集 $S_{K}$ 的基数为 $2^{K}$。
+
+\begin{theorem}[前缀重复指数界]
+\label{thm:94rep}
+设 $g_{0} \ge 1$，且 $g_{0} + 3/5 \le 4^{m}$。若 $g_{0}$ 匹配最终周期词 $U V^{w}$，$|V| \ge 1$，则
+\[
+  w < \frac{317}{200} + \frac{117}{200}\,\frac{|U|}{|V|} + \frac{m}{|V|}.
+\]
+特别地，不存在 $g_{0}$ 对所有 $w$ 都匹配 $U V^{w}$。
+\end{theorem}
+
+\begin{proof}
+令 $r = |U|$，$s = |V|$。定理~\ref{thm:isolation} 的双位隔离特化为
+\[
+  4^{r+ws} \le (g_{0} - q^{*}(U,V))\, 9^{r}\bigl(9^{s} - 4^{s}\bigr) < \Bigl(g_{0} + \frac35\Bigr) 9^{r+s}.
+\]
+故 $4^{r+ws} < 4^{m} 9^{r+s}$。取 $200$ 次幂并利用 $9^{200} < 4^{317}$，得
+\[
+  4^{200(r+ws)} < 4^{200m + 317(r+s)},
+\]
+于是 $200(r+ws) < 200m + 317(r+s)$，整理得 $200ws < 200m + 117r + 317s$，即所述界。取比 $m/s + (117/200)(r/s) + 317/200$ 更大的 $w$ 与之矛盾，从而证明第二项断言。
+\end{proof}
+
+\begin{theorem}[镜像守恒]
+\label{thm:mirror}
+设 $N \ge 1$，$g_{0} < 4^{N}$，且 $g_{0}$ 经 $k \le N$ 步递推 \eqref{eq:94} 到达 $g_{k}$。则镜像孪生 $\tilde g_{0} = 4^{N} - 1 - g_{0}$ 经 $k$ 步到达 $\tilde g_{k}$，且
+\[
+  g_{k} + \tilde g_{k} = 9^{k}\, 4^{N-k} - 1.
+\]
+\end{theorem}
+
+\begin{proof}
+对 $k$ 归纳。替换 $g \mapsto 4^{N} - 1 - g$ 交换两个容许剩余类 $\{1,2\}$；在每一步把两个递推相加，数字相互抵消，常数项乘以 $9$，这正是 $k$ 步后的所述恒等式。
+\end{proof}
+
+\begin{theorem}[偶层镜像灭绝与禁用和]
+\label{thm:evenlevel}
+设 $N = 2m$，$m \ge 1$。镜像孪生不能同时存活递推 \eqref{eq:94} 的 $N+2$ 步。更一般地，若 $c \equiv 2 \pmod 4$ 且 $g_{0} + g_{1} = c\,4^{k} - 1$，则 $g_{0}$ 与 $g_{1}$ 不能同时存活 $k+1$ 步。
+\end{theorem}
+
+\begin{proof}
+假设 $g_{0}$ 与其镜像 $4^{2m} - 1 - g_{0}$ 都存活 $2m+2$ 步，并令 $g_{N}, \tilde g_{N}$ 为它们经 $2m$ 步后的值。定理~\ref{thm:mirror} 给出 $g_{N} + \tilde g_{N} = 9^{2m} - 1 \equiv 0 \pmod 4$。由于 $g_{N}, \tilde g_{N}$ 各自仍存活两步，它们模 $4$ 的剩余为 $1$ 或 $2$；和同余于 $0$ 迫使两者剩余都为 $2$。从剩余 $2$ 出发的一步为 $g \mapsto (9g+2)/4 = 9\lfloor g/4\rfloor + 5$，于是
+\[
+  4\,(g_{N+1} + \tilde g_{N+1}) = 9^{2m+1} - 5, \qquad
+  (g_{N+1} + \tilde g_{N+1}) \equiv 1 \pmod 4,
+\]
+因为 $9^{2m+1} \equiv 9 \pmod{16}$ 且 $(9^{2m+1} - 5)/4 \equiv 1 \pmod 4$。但 $g_{N+1}$ 与 $\tilde g_{N+1}$ 各仍存活一步，故再次都落在剩余 $1$ 或 $2$ 中；$\{1,2\}$ 中两个元素之和模 $4$ 只能是 $2$、$3$ 或 $0$，绝不可能是 $1$。这一矛盾证明了镜像陈述。禁用和陈述是对和影子施加同样的论证：对 $k$ 归纳可证，和为 $c\,4^{k} - 1$（$c \equiv 2 \pmod 4$）的一对会在最后一步到达不容许的剩余 $2$。
+\end{proof}
+
+\begin{theorem}[奇数层的四点排除]
+\label{thm:klein}
+设 $N \ge 3$ 为奇数，$g < 4^{N-1}$，$1 \le \delta \le 3$。则四个数 $g$、$g + \delta\,4^{N-1}$、$4^{N} - 1 - g$ 与 $4^{N} - 1 - (g + \delta\,4^{N-1})$ 不能同时存活递推 \eqref{eq:94} 的 $N+1$ 步。
+\end{theorem}
+
+\begin{proof}
+设 $g$ 与 $g + \delta\,4^{N-1}$ 都存活 $N+1$ 步；令 $A', B'$ 为它们在时刻 $N-1$ 的值，$a_{N}, b_{N}$ 为时刻 $N$ 的值，其镜像孪生为 $\bar a_{N}, \bar b_{N}$。时刻 $N-1$ 的差影子给出
+\[
+  B' - A' = \delta\, 9^{N-1} \equiv \delta \pmod 4.
+\]
+由于 $A'$ 与 $B'$ 都存活第 $N$ 步，它们各自模 $4$ 的剩余为 $1$ 或 $2$；$\{1,2\}$ 中两个元素之差不可能模 $4$ 等于 $2$，这立即排除 $\delta = 2$。对 $\delta \in \{1,3\}$，从时刻 $N-1$ 到时刻 $N$ 的步进把差递推作用于 $B' - A' = \delta\, 9^{N-1}$：当 $\delta = 1$ 时得 $b_{N} - a_{N} = (9^{N} - 1)/4$，当 $\delta = 3$ 时得 $b_{N} - a_{N} = (3 \cdot 9^{N} + 1)/4$。因为 $N$ 为奇数，$9^{N} \equiv 9 \pmod{16}$，故 $\delta = 1$ 时 $b_{N} - a_{N} \equiv 2 \pmod 4$，$\delta = 3$ 时 $b_{N} - a_{N} \equiv 3 \pmod 4$。另一方面，层 $N$ 的镜像守恒给出 $a_{N} + \bar a_{N} = b_{N} + \bar b_{N} = 9^{N} - 1 \equiv 0 \pmod 4$。由于 $a_{N}, \bar a_{N}, b_{N}, \bar b_{N}$ 四者都再存活一步，它们各自模 $4$ 的剩余为 $1$ 或 $2$，迫使 $a_{N} \equiv b_{N} \equiv 2 \pmod 4$，从而 $b_{N} - a_{N} \equiv 0 \pmod 4$，矛盾。
+\end{proof}
+
+\begin{lemma}[有限窗口提升]
+\label{lem:lift}
+对所有使 $\mathrm{step}(g)$ 有定义的 $k, t, g$，有 $\mathrm{step}(g + 4^{k+1} t) = \mathrm{step}(g) + 9 \cdot 4^{k} t$；并且存活 $k$ 步在 $g$ 中以 $4^{k}$ 为周期。在公共窗口 $[0, 4^{4}) = [0,256)$ 中有有限计数
+\[
+  8 \cdot \#\{\, g < 256 : g \text{ 存活 } 6 \text{ 步} \,\}
+  \;\le\;
+  3 \cdot \#\{\, g < 256 : g \text{ 存活 } 4 \text{ 步} \,\},
+\]
+其中两侧分别为 $8 \cdot 4 = 32$ 与 $3 \cdot 16 = 48$。这里不断言一般 $N$ 的不等式 $8\,|S_{N+2}| \le 3\,|S_{N}|$；全局基数为 $|S_{N+2}| = 2^{N+2}$ 与 $|S_{N}| = 2^{N}$。
+\end{lemma}
+
+\begin{proof}
+把 $g + 4^{k+1} t$ 代入 \eqref{eq:94} 并模 $4$ 约化，可见容许剩余不变，而仿射像平移 $9 \cdot 4^{k} t$。块不等式则是 $256$ 个剩余上的有限计数：其中恰有 $4$ 个存活六步，$16$ 个存活四步。
+\end{proof}
+
+\begin{theorem}[和差恒等式；无进位基 $9$ 数字守恒]
+\label{thm:shadows}
+两条存活轨道的和与差服从由数字和驱动的精确仿射递推。对数字和恒等式，从左到右处理数字词 $d_{0}, \dots, d_{L-1}$，其输入余数为 $r_{0}, \dots, r_{L-1}$，输出数字 $a'_{0}, \dots, a'_{L-1}$ 由
+\[
+  4a'_{k} + r_{k+1} = 9r_{k} + d_{k}, \qquad r_{k+1} = (9r_{k} + d_{k}) \bmod 4
+\]
+定义，并记 $r_{\mathrm{final}} = r_{L}$。则基 $9$ 数字和恒等式
+\[
+  4 \sum_{k=0}^{L-1} a'_{k}
+  = 8 \sum_{k=0}^{L-1} r_{k} + \sum_{k=0}^{L-1} d_{k} + r_{0} - r_{\mathrm{final}}
+\]
+在无进位传播的情况下成立。
+\end{theorem}
+
+\subsection{\texorpdfstring{$2$}{2}-adic 与 \texorpdfstring{$3$}{3}-adic 存活集的 CRT 交集}
+
+\begin{theorem}[模 $36^{K}$ 的 CRT 交集]
+\label{thm:cantor}
+设 $K \ge 1$。若 $g_{0}$ 存活递推 \eqref{eq:94} 的 $2K$ 步并在 $K$ 步后到达 $g_{K}$，则 $g_{K} \bmod 36^{K}$ 落在 $S_{K} \cap A_{K}$ 中，其中
+\begin{align*}
+  S_{K} &= \{\, x : x \text{ 存活 } K \text{ 步}\,\}, \\
+  A_{K} &= \bigl\{\, a : (4^{K} a) \bmod 9^{K} = \omega_{9,4}(W) \text{，其中 } W \text{ 为合法的 } K \text{ 位数字词} \,\bigr\}.
+\end{align*}
+每个 $a \in A_{K}$ 满足 $2(9^{K} - 4^{K}) \le 5\,((4^{K} a) \bmod 9^{K}) \le 3(9^{K} - 4^{K})$。此外 $A_{K} \neq \varnothing$：由于 $|S_{2K}| = 2^{2K} > 0$，存在 $2K$ 步存活轨道，对其应用第一个断言即得 $S_{K} \cap A_{K}$ 中的元素。
+\end{theorem}
+
+\begin{proof}
+正向部分是在时刻 $K$ 处拆分 $2K$ 步存活性的定义。反向部分，恒等式 $4^{K} g_{K} = \omega_{9,4}(W) + 9^{K} g_{0}$ 把陈述归约为数字界 $2(9^{K} - 4^{K}) \le 5\, \omega_{9,4}(W) \le 3(9^{K} - 4^{K})$，后者由 $d_{j} \in \{2,3\}$ 以权重 $4^{j} 9^{K-1-j}$ 求和得到。被 $5$ 整除由 $9 \equiv 4 \pmod 5$ 得到。非空性方面，$|S_{2K}| = 2^{2K}$ 已在第~\ref{sec:model94} 节指出。
+\end{proof}
+
+\begin{corollary}[对径直径]
+\label{cor:antipodal}
+对 $a_{1}, a_{2} \in A_{K}$，
+\[
+  \bigl|(4^{K} a_{1} \bmod 9^{K}) - (4^{K} a_{2} \bmod 9^{K})\bigr| \le \frac{9^{K} - 4^{K}}{5}.
+\]
+\end{corollary}
+
+\subsection{Fourier 衰减与定量 Weyl 等分布}
+
+对 $K \ge 1$，定义归一化变换
+\begin{equation}
+  \hat\mu_{K}(u) = 2^{-K} \sum_{g \in S_{K}} e\!\left(\frac{u g}{4^{K}}\right), \qquad e(\theta) = \exp(2\pi i \theta).
+\end{equation}
+
+\begin{theorem}[精确收缩与余弦乘积]
+\label{thm:contraction}
+对每个 $K \ge 1$ 与 $u \in \Z$，
+\[
+  \hat\mu_{K+1}(4u) = \hat\mu_{K}(u),
+\]
+并且，取 $w \equiv 9^{-1} \pmod{4^{K}}$，有
+\[
+  \bigl\|\hat\mu_{K}(u)\bigr\|
+  = \prod_{m=0}^{K-1} \left|\cos\!\left(\frac{\pi\, w^{K-m} u}{4^{m+1}}\right)\right|.
+\]
+\end{theorem}
+
+\begin{theorem}[全局奇频率衰减]
+\label{thm:94global}
+存在常数 $C > 0$ 与 $c > 0$，使得对每个 $K \ge 1$ 与每个奇数 $u$，
+\[
+  \|\hat\mu_{K}(u)\| \le C\, K^{-c}.
+\]
+\end{theorem}
+
+\begin{proof}
+定理~\ref{thm:contraction} 的余弦乘积被 $\gamma^{R}$ 控制，其中 $\gamma = \cos(\pi/18) < 1$，$R = \lfloor \log_{4} K \rfloor$，因为每个数字贡献一个到最近整数距离至少 $1/18$ 的因子。由于 $K < 4^{R+1}$，有 $\gamma^{R} = \gamma^{-1} \gamma^{R+1} \le C K^{-c}$，其中 $c = -\log \gamma / \log 4$，$C = \gamma^{-1}$。
+\end{proof}
+
+\begin{corollary}[收缩与衰减的复合]
+对每个 $v < K$ 与每个奇数 $u$，$\|\hat\mu_{K}(4^{v} u)\| \le C (K-v)^{-c}$。
+\end{corollary}
+
+\begin{theorem}[互素 \texorpdfstring{$(p,q)$}{(p,q)} 的定量 Weyl 等分布]
+\label{thm:pqweyl}
+设 $2 \le q < p$ 互素，$\hat\mu^{pq}_{K}$ 为连续数字模型 $q g_{k+1} = p g_{k} + d_{k}$（$d_{k} \in \{d_{0}, d_{0}+1\}$）的变换。则 $|S^{pq}_{K}| = 2^{K}$，$\hat\mu^{pq}_{K+1}(q u) = \hat\mu^{pq}_{K}(u)$，且存在 $C, c > 0$，使得对每个 $K \ge 1$ 与每个满足 $q \nmid u$ 的 $u$，
+\[
+  \|\hat\mu^{pq}_{K}(u)\| \le C\, K^{-c}.
+\]
+该界在基 $3/2$、$4/3$、$5/4$、$5/3$、$7/4$ 与 $8/3$ 处是显式的。
+\end{theorem}
+
+\begin{proof}
+$q$-收缩与基数计数是精确的。$p$-乘法递推同样是余弦乘积，而不相交块命中把至少一个数字定位在距整数至少 $1/(2(p+q))$ 处。沿 $u$ 的基 $q$ 数字迭代，并利用 $q \nmid u$，得到 $\gamma^{R}$，其中 $\gamma = \cos(\pi/(2(p+q))) < 1$；到 $K^{-c}$ 的过渡与定理~\ref{thm:94global} 中相同的对数估计。
+\end{proof}
+
+\begin{remark}[双势证书：框架与实例]
+\label{rem:dualpotential}
+指数衰减由一个有限收缩证书补充。在一个具有严格正顶点势 $\varphi$ 的有限有向图上，若边权 $w$ 对每条边满足 $w(u,v)\varphi(v) \le \lambda \varphi(u)$，其中 $\lambda < 1$，则沿每条闭路径 $p$ 有 $\prod_{e \in p} w(e) \le \lambda^{|p|}$。形式化对任意 \texttt{DualPotentialCert} 完整证明了这个蕴涵，并在两个具体容器 \texttt{cert42} 与 \texttt{cert44} 处实例化。目前这些容器是常数权基线：边关系是完全图，$\varphi \equiv 1$，权重为一致的 $161/162$（分别 $249/250$），因此它们用精确有理数见证接口，但 \emph{不是}具体的几何势表，也不与 $\hat\mu_{K}$ 耦合。定理~\ref{thm:94global} 的衰减估计由余弦乘积独立证明；填充几何表是另一项工作，这里不作声称。
+\end{remark}
+
+\section{\texorpdfstring{$3/2$}{3/2} 映射的符号排除：确定性与联合分支}
+\label{sec:threehalves}
+
+\subsection{两个分支}
+
+令
+\[
+  T_{0}(x) = \fract{3x/2}, \qquad T_{1}(x) = \fract{3x/2 + 1/2},
+\]
+并令 $\mathrm{Step}(x,y)$ 为联合关系 $y = T_{0}(x)$ 或 $y = T_{1}(x)$。真实的 Mahler 轨道每一步都可能切换分支，因此真正的符号对象是 $\mathrm{Step}$，而不是任一单分支。确定性有理实现为
+\[
+  T_{q}(x) = \frac{3x}{2} \ \text{ 若 } \frac{3x}{2} < 1, \qquad T_{q}(x) = \frac{3x}{2} - 1 \ \text{ 否则.}
+\]
+
+\begin{theorem}[$[2/7,5/7)$ 中不存在四项确定性轨道]
+\label{thm:exit}
+不存在 $x \in \Q$，使 $x, T_{q}(x), T_{q}^{2}(x), T_{q}^{3}(x)$ 都落在 $[2/7,5/7)$ 中。
+\end{theorem}
+
+\begin{proof}
+设 $x \in [2/7,5/7)$。若 $3x/2 \ge 1$，则 $T_{q}(x) = 3x/2 - 1 < 1/14 < 2/7$，不可能；故 $3x/2 < 1$，$T_{q}(x) = 3x/2$，且由 $T_{q}(x) < 5/7$ 得 $x < 10/21$。在 $y = 3x/2$ 处重复同样的论证：若 $3y/2 \ge 1$，则 $T_{q}^{2}(x) = 9x/4 - 1 < 1/14 < 2/7$，故 $3y/2 < 1$，$T_{q}^{2}(x) = 9x/4$，且 $x < 20/63$。现在 $z = 9x/4 \in [9/14,5/7)$。若 $3z/2 < 1$，则 $T_{q}^{3}(x) = 27x/8 \ge 27/28 > 5/7$；否则 $T_{q}^{3}(x) = 27x/8 - 1 < 1/14 < 2/7$。两种情形都离开障碍。
+\end{proof}
+
+确定性退出对联合关系没有任何说明。下面的见证都是精确有理恒等式。
+
+\begin{theorem}[联合轨道与环]
+\label{thm:joint}
+联合关系在 $[2/7,5/7)$ 内允许六项轨道
+\[
+  \tfrac37 \xrightarrow{T_{0}} \tfrac9{14} \xrightarrow{T_{1}} \tfrac{13}{28}
+  \xrightarrow{T_{0}} \tfrac{39}{56} \xrightarrow{T_{1}} \tfrac{61}{112}
+  \xrightarrow{T_{1}} \tfrac{71}{224}
+\]
+以及有理环 $2/5 \leftrightarrow 3/5$ 与 $4/13 \to 6/13 \to 9/13 \to 7/13 \to 4/13$。
+\end{theorem}
+
+\begin{theorem}[带洞有限存活集]
+\label{thm:holed}
+在障碍 $[5/24,11/24) \cup [13/24,19/24)$ 上，联合存活集恰为 $\{4/15,2/5,3/5,11/15\}$；它包含 $2$-环 $2/5 \leftrightarrow 3/5$ 与暂态点 $4/15 \mapsto 2/5$、$11/15 \mapsto 3/5$。
+\end{theorem}
+
+\begin{proof}
+记 $U = L \cup R$，其中 $L = [5/24,11/24)$，$R = [13/24,19/24)$，并令 $A = [5/16,11/24)$，$B = [13/24,11/16)$。
+
+\emph{第 1 步.} 对 $x \in L$，有 $3x/2 \in [5/16,11/16)$；若 $x < 1/3$，则 $T_{1}(x) = 3x/2 + 1/2 \in [13/16,1)$；若 $x \ge 1/3$，则 $T_{1}(x) = 3x/2 - 1/2 \in [0,3/16)$。故两种情形下都有 $T_{1}(x) \notin U$。对 $x \in R$，有 $3x/2 \in [13/16,19/16)$；若 $x < 2/3$，则 $T_{0}(x) = 3x/2 \in [13/16,1)$；若 $x \ge 2/3$，则 $T_{0}(x) = 3x/2 - 1 \in [0,1/16)$，故 $T_{0}(x) \notin U$。因此每个满足 $\mathrm{Step}(x) \in U$ 的 $x \in U$ 都有 $\mathrm{Step}(x) \in U \cap [5/16,11/16) = A \cup B$。
+
+\emph{第 2 步.} 对 $x \in A$，只有 $T_{0}$ 可能留在 $U$ 中，且 $T_{0}(x) = 3x/2 \in [15/32,11/16)$ 与 $U$ 的交仅落在 $B$；故 $x \in A$ 存活一步当且仅当 $x \in A_{1} = [13/36,11/24)$，且 $T_{0}(A_{1}) = B$。对 $x \in B$，只有 $T_{1}$ 可能留在 $U$ 中，且 $T_{1}(x) = 3x/2 - 1/2$ 与 $U$ 的交仅落在 $A$；故 $x \in B$ 存活一步当且仅当 $x \in B_{1} = [13/24,23/36)$，且 $T_{1}(B_{1}) = A$。于是 $A_{1}$ 上的第二迭代为 $G_{A} = T_{1} \circ T_{0}$，它在 $A_{2} = [13/36,23/54)$ 上以斜率 $9/4$ 双射到 $A$，不动点为 $2/5$。同样，$G_{B} = T_{0} \circ T_{1}$ 在 $B_{2} = [31/54,23/36)$ 上以斜率 $9/4$ 双射到 $B$，不动点为 $3/5$。由于 $G_{A}^{-1}$ 以比例 $4/9$ 把 $A$ 收缩进 $A_{2}$，$A$ 中整个前向轨道都留在 $U$ 的点构成 $\bigcap_{n \ge 0} G_{A}^{-n}(A) = \{2/5\}$；$B$ 中类似地构成 $\{3/5\}$。
+
+\emph{第 3 步.} $2/5$ 与 $3/5$ 在 $\mathrm{Step}$ 下的 $U$ 中原像分别为 $\{4/15,3/5\}$ 与 $\{2/5,11/15\}$。因此联合存活集恰为 $\{4/15,2/5,3/5,11/15\}$，并具有所述的转移。
+
+预像迭代 $V_{0} = U$，$V_{n+1} = U \cap (T_{0}^{-1} V_{n} \cup T_{1}^{-1} V_{n})$ 在任何有限阶段都不会变成这个四点集：它的四个分量几何收缩并收敛到这四个点。上面的收缩论证才真正识别了极限。
+\end{proof}
+
+\noindent\emph{形式化状态.} 四个点、它们在障碍中的成员关系以及四个 $\mathrm{Step}$ 转移由内核检查：相关声明为 \texttt{holed\_cage\_two\_cycle} 与 \texttt{holed\_cage\_transients}。对其它所有点的排除是上面的论文证明，未被形式化；证书脚本只确认到深度 $24$ 的四分量计数。
+
+\begin{remark}[宽度与 $8/57$ 的算术来源]
+区间 $[2/7,5/7)$ 的宽度为 $3/7$，而 $[1/7,3/7) \cup [4/7,6/7)$ 的宽度为 $4/7 > 1/2$。对左洞族 $[\delta,1/2)$ 与分支限制映射 $F$（$F = T_{0}$ 在 $[0,1/3)$ 上，$F = T_{1}$ 在 $[1/3,1/2)$ 上），阈值
+\[
+  \delta^{*} = \frac{8}{57} = \frac23 \cdot \frac{4}{19} = T_{0}^{-1}\!\left(\frac{4}{19}\right)
+\]
+分离出三个精确区域：$\delta > 4/19$ 在有限步内清空；$8/57 < \delta \le 4/19$ 保留一个有限的零熵存活集，其中包含 $3$-环 $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$；$\delta < 8/57$ 通过折叠 $T_{1} \circ T_{0}^{3}$ 把 $[8/81,8/57)$ 映到 $[0,4/19)$ 而获得正熵。
+\end{remark}
+
+\subsection{有限状态零熵排除}
+
+现在从单个障碍转向任意带符号有理基。设 $\alpha = \pm p/q$，$2 \le q < p$，并令 $\mathcal{I} = \{I_{0}, \dots, I_{N-1}\}$ 为 $[0,1)$ 的一个子集的有限有理划分。每个区间以 $[\ell n/\ell d, h n/h d)$ 存储，分母为正整数；分支重叠谓词是一个精确的整数交叉相乘检验：当两个分支的整数像相交时，两个单元重叠。
+
+\begin{theorem}[零熵有限状态障碍]
+\label{thm:ze}
+设 $\mathrm{adj} : \mathrm{Fin}\,N \to \mathrm{Fin}\,N \to \mathrm{Bool}$ 与 $\mathrm{comp} : \mathrm{Fin}\,N \to \mathrm{Fin}\,M$ 满足：
+\begin{enumerate}[leftmargin=1.5em]
+  \item $\mathrm{adj}\,i\,j = \mathrm{true}$ 蕴含 $\mathrm{comp}\,i \le \mathrm{comp}\,j$；
+  \item 每个顶点 $i$ 至多有一个出邻点 $j$ 满足 $\mathrm{comp}\,j = \mathrm{comp}\,i$。
+\end{enumerate}
+则游走总数满足 $W(L) \le N\bigl(N(L+1)\bigr)^{M}$，且对每个 $\varepsilon > 0$ 存在 $C > 0$，使对所有 $L \in \N$ 有 $W(L) \le C (1+\varepsilon)^{L}$。
+\end{theorem}
+
+\begin{proof}
+在一个分量内部，游走是被迫的，所以在 $M$ 个分量之间分配步数的方式至多按总长度多项式增长；对至多 $N$ 个起点与 $M$ 个分量求和即得多项式界。多项式最终被 $(1+\varepsilon)^{L}$ 支配，这就是零熵陈述。
+\end{proof}
+
+\begin{theorem}[精确证书]
+\label{thm:certs}
+以下有理区域对定理~\ref{thm:ze} 的自动机允许精确有限证书：
+\begin{center}
+\footnotesize
+\begin{tabular}{@{}L{0.48\textwidth}L{0.24\textwidth}cc@{}}
+\toprule
+区域 & 宽度 & 单元数 & 分量数 \\
+\midrule
+$-5/3$：$[89/250,161/250)$ & $36/125 = 0.2880$ & $3$ & $3$ \\
+$-3/2$ 带洞：$[147/1000,43/100)\allowbreak\cup[57/100,853/1000)$ & $283/500 = 0.5660$ & $18$ & $15$ \\
+$-3/2$：$[1429/5000,3571/5000)$ & $1071/2500 = 0.4284$ & $26$ & $16$ \\
+$+5/3$：$[697/2000,1303/2000)$ & $303/1000 = 0.3030$ & $13$ & $9$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+带洞区域的总宽度为 $283/500 > 1/2$。对每个区域，内核还检查从环境并集 $U$ 到存活划分的有限深度桥：一个以整数端点、通过交叉相乘比较的闭有理预像迭代包含在证书单元的闭包中，因此任何在 $U$ 中停留到证书深度的轨道都落在某个证书单元中。
+\end{theorem}
+
+\begin{proof}
+每一行都是有限整数计算。分支重叠谓词、分量排序与无内部分支都是机器整数上的闭陈述，由内核求值判定；存活划分由精确有理预像迭代独立产生。
+\end{proof}
+
+\begin{remark}[证书宽度不是轨道排除界]
+\label{rem:certwidths}
+这里不声称这些证书区域排除了任何有理基的轨道。定理~\ref{thm:ze} 与定理~\ref{thm:certs} 界定编码图中的游走计数，并证明在 $U$ 中停留到证书深度的轨道落在某个证书单元中；它们没有证明任何轨道离开该区域，本文也没有给出从自动机到轨道 $\{\xi(p/q)^{n}\}$ 的通道。特别地，不声称四个证书区域的宽度可与 \citep{flp1995,luzheng2026} 的区间范围界相比较。这里不断言更宽的经验观察窗口；只有四个精确证书与深度 $7$ 的 $+5/3$ 检验是经验证的产物。
+\end{remark}
+
+\subsection{转移与扩张界}
+
+在 $[0,1/2)$ 上定义映射 $U(x) = (3x/2) \bmod (1/2)$。
+
+\begin{theorem}[映射 $U$ 的转移界]
+\label{thm:cup}
+$U$ 保持 $[0,1/2)$，具有精确 $3$-环 $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$，在每一分支上把距离扩张 $3/2$，并满足 $2{:}1$ 长度恒等式
+\[
+  \bigl|[1/3,1/2]\bigr| = 2\,\bigl|[1/6,1/4]\bigr|,
+  \qquad\text{即}\qquad \frac12 - \frac13 = 2\Bigl(\frac14 - \frac16\Bigr),
+\]
+这正是缩放 $x \mapsto 2x/3$ 在长度上的精确内容。
+\end{theorem}
+
+\begin{proof}
+环与扩张都是直接的有理恒等式。长度恒等式为 $1/2 - 1/3 = 2(1/4 - 1/6)$，而缩放 $x \mapsto 2x/3$ 把 $[1/4,1/2]$ 映到 $[1/6,1/3]$，把长度缩放 $2/3$。这里不构造也不使用任何不变测度。
+\end{proof}
+
+\section{代数对分支}
+\label{sec:algpair}
+
+Stephan 的程序把存活词分为有理情形与代数对情形 \citep{stephan2026subspace,stephan2026minimal,stephan2026third}；代数对归约本身是 \citep{stephan2026minimal} 中孤立出的那一个。对代数无理乘子 $\delta$，违反下标对 $(a,c)$（$2 \le a < c$，间隔 $c-a$ 互不相同）是那些使 $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ 到一个整数的距离小于 $\vartheta^{c}$ 的对。
+
+\begin{theorem}[代数对有限性，条件性]
+\label{thm:algpair}
+假设 Schlickewei $p$-adic 子空间定理以本文孤立出的形式成立。则对每个代数无理数 $\delta$ 与每个 $\vartheta \in (0,1)$，具有互不相同间隔的违反对集合是有限的。
+\end{theorem}
+
+\begin{proof}
+在三项关系中清分母并写
+\[
+  (x_{1},x_{2},x_{3}) = (3^{c}, 3^{a} 2^{c-a}, 2^{c} n_{p}) \in \Z^{3},
+\]
+把关系变为 $A x_{1} + B x_{2} + C x_{3} = 0$。在两个非 Archimedean 位，幂恒等地抵消，而 Archimedean 逼近把剩余局部因子界定为 $\vartheta^{-c}$ 乘以高度。三个局部贡献的乘积因此满足 $\vartheta^{c} \ll H(x)^{-\varepsilon}$，其中 $\varepsilon > 0$ 是固定的（一个这样的 $\varepsilon$ 就足够），这就是 $S$-算术子空间定理的高度假设。所得有理关系按 $C = 0$ 与否分裂。若 $C = 0$，齐性在无限多个不同间隔上固定 $(3/2)^{c-a}$，与严格单调性矛盾。若 $C \neq 0$，解出 $n_{p}$ 得 $|\delta - \alpha| \le |\delta + \beta|(2/3)^{c-a} + (2\vartheta/3)^{c} \to 0$，迫使 $\delta \in \Q$，与无理性矛盾。
+\end{proof}
+
+两个子情形无需公理即被证明：齐性消元与非齐性有理极限都是无条件的。只有有限性定理本身使用孤立假设，而包含它的模块是一个独立库，因此该假设无法进入零公理核。
+
+孤立假设是一个 \emph{特化后归约} 陈述，而不是一般 $S$-算术子空间定理。具体地，Lean 公理把关于 $\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)$ 的 Diophantine 逼近条件作为假设，并返回有理线性关系；产生 $(3^{c}, 3^{a}2^{c-a}, 2^{c}n_{p}) \in \Z^{3}$ 的清分母过程，以及验证 $S$-算术乘积高度满足 $\vartheta^{c} \ll H(x)^{-\varepsilon}$ 的步骤，都在上文的论文证明中完成，但没有形式化。内核无条件检查的是得到关系之后的一切：$C = 0$ 与 $C \ne 0$ 的收尾论证。因此本节的可信基是该特化推论本身，而不是从教科书定理到它的形式推导。
+
+最后，\citet[定理~5.15]{stephan2026minimal} 把该代数对分支作为假设；定理~\ref{thm:algpair} 在所述子空间假设下提供它。
+
+\section{形式化验证与可复现性}
+\label{sec:formal}
+
+第~\ref{sec:pade}--\ref{sec:threehalves} 节中未被形式化的陈述都在陈述处标记为仅论文；其余都是内核检查的。内核检查的陈述在 Lean~4 与 Mathlib 中形式化，固定为 Lean~4.36.0 与 Mathlib~4.36.0。零公理核由模块 \texttt{Mahler32} 构建，只依赖命题外延性、经典选择与商可靠性这几条标准公理；它不包含未完成证明，也不包含原生机判定过程。本文讨论承载第~\ref{sec:pade}--\ref{sec:threehalves} 节论证的模块；仓库还包含辅助与外围发展（例如 \texttt{Base6LightCone}、\texttt{SyracuseGates}、\texttt{ArnoldTongue5State}、\texttt{ArnoldTongue7State}、\texttt{DAGBoundedGap}、\texttt{Fib11Free}、\texttt{WalshZeroCorr} 与 \texttt{HInvariance}），它们不用于主要定理。它们都从 \texttt{Mahler32Core.lean} 可达，并由 \texttt{AuditAxioms.lean} 审计；README 记录完整的模块到内容清单。第~\ref{sec:algpair} 节的条件陈述位于独立库 \texttt{Mahler32Conditional}，它是唯一被允许附加该假设的声明。该假设是特化后归约形式：从一般子空间定理到它的通道，包括清分母与高度估计，仅在论文中验证，而两个收尾情形在 Lean 中检查。
+
+有两项仅论文，并在陈述处如此标记。第一项是定理~\ref{thm:holed} 中带洞存活集对其它所有点的排除：Lean 通过 \texttt{holed\_cage\_two\_cycle} 与 \texttt{holed\_cage\_transients} 验证四个点及其四个 $\mathrm{Step}$ 转移，但精确性是论文证明。第二项是证书宽度与轨道排除界的比较，本文不做此比较（注~\ref{rem:certwidths}）。引理~\ref{lem:lift} 的有限窗口不等式、定理~\ref{thm:cantor} 的区间夹逼、定理~\ref{thm:contraction} 的余弦乘积以及定理~\ref{thm:cup} 的长度恒等式都有内核检查的声明；此前未列出的声明 \texttt{Tcup\_mem}、\texttt{Tcup\_dist}、\texttt{two\_one\_split} 与 \texttt{scale\_two\_thirds} 现已加入 \texttt{AuditAxioms.lean}。
+
+可复现性是分层的。构建运行 \texttt{lake build -KwarningAsError=true} 并对核做 lint。公理纪律由内核公理检查审计，拒绝标准三元组之外的任何公理；条件库则按白名单检查，只添加孤立假设。精确有理证书由证书脚本断言并重新生成。可信基被独立探测：\texttt{leanchecker} 重放每个模块，而 \texttt{nanoda}（Lean 内核的一个独立 Rust 实现）在 \texttt{lean4export} 导出的核心与条件环境上重新类型检查。工作流文件被 lint，LaTeX 源被检查环境平衡、引用与构建警告。仓库维护完整的定理到声明映射，存档快照可在标题页记录的 Zenodo DOI 下获得。
+
+\section{AI 协助声明}
+\label{sec:ai}
+
+本 Lean 开发与本文准备在大型语言模型的大量协助下完成。数学方向、陈述选择与每个断言审阅均由作者负责；模型协助了 elaboration、策略搜索、起草与持续集成迭代。每个标记为内核检查的陈述都经 Lean~4 内核与独立内核检查。两项仅论文内容——定理~\ref{thm:holed} 中带洞存活集的精确性，以及注~\ref{rem:certwidths} 中证书宽度的不比较——全文如此标记；条件陈述也全文如此标记。本文没有任何数值或结构断言依赖于未经验证的模型输出。
+
+\bibliography{refs}
+
+\end{document}

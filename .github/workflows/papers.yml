@@ -36,8 +36,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        paper:
-          - main
+        include:
+          - paper: main
+            latexmk_flag: -pdf
+          - paper: main-zh
+            latexmk_flag: -xelatex
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -48,7 +51,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             latexmk lmodern texlive-latex-base texlive-latex-recommended \
-            texlive-latex-extra texlive-bibtex-extra texlive-fonts-recommended
+            texlive-latex-extra texlive-bibtex-extra texlive-fonts-recommended \
+            texlive-xetex texlive-lang-chinese fonts-noto-cjk
 
       - name: Check LaTeX & BibTeX sources
         run: |
@@ -59,7 +63,7 @@ jobs:
         working-directory: papers/${{ matrix.paper }}
         run: |
           set -euo pipefail
-          latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+          latexmk ${{ matrix.latexmk_flag }} -interaction=nonstopmode -halt-on-error main.tex
           ls -lh main.pdf
           python3 ../../scripts/check_latex.py --source --build .
 
@@ -81,14 +85,16 @@ jobs:
       - name: Download PDF artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: pdf-main
+          pattern: pdf-*
           path: artifacts
+          merge-multiple: false
 
-      - name: Assemble PDF and checksums
+      - name: Assemble PDFs and checksums
         run: |
           set -euo pipefail
           mkdir -p dist
-          cp artifacts/main.pdf dist/main.pdf
+          cp artifacts/pdf-main/main.pdf dist/main.pdf
+          cp artifacts/pdf-main-zh/main.pdf dist/main-zh.pdf
           ( cd dist && sha256sum ./*.pdf > SHA256SUMS.txt )
           ls -lh dist
 
@@ -103,6 +109,7 @@ jobs:
           set -euo pipefail
           assets=(
             dist/main.pdf
+            dist/main-zh.pdf
             dist/SHA256SUMS.txt
           )
           if gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
