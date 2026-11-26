@@ -22,6 +22,8 @@ i.e. [OEIS A061419](https://oeis.org/A061419), whose parity is
 [OEIS A205083](https://oeis.org/A205083) (shifted by one index: `A205083(n) = a(n+1) mod 2`).
 The recurrence is the `3/2` dynamical system of Mahler (1968).
 
+**Paper:** [PDF](papers/main/main.pdf) · [LaTeX source](papers/main/main.tex) · [Zenodo DOI](https://doi.org/10.5281/zenodo.24491265).
+
 ## Main results
 
 | Result | Content | Status |
@@ -70,8 +72,10 @@ reproducibility and the LaTeX build.
 ## Paper
 
 The two former companion papers are merged into a single pure-mathematics paper,
-[*Symbolic exclusion intervals, Fourier decay, and p-adic obstructions for rational-base orbits*](papers/main/main.tex)
-(source and `refs.bib`), organised as introduction and main results, proofs, a short
+[*Symbolic exclusion intervals, Fourier decay, and p-adic obstructions for rational-base orbits*](papers/main/main.tex).
+The rendered [PDF](papers/main/main.pdf) (12 pages) is committed next to the source `main.tex` and
+`refs.bib`, so it can be read directly on GitHub. The text is organised as introduction and main
+results, proofs, a short
 formal-verification section, and an AI-assistance statement. The `v1.0.0` snapshot is archived on
 Zenodo under DOI [10.5281/zenodo.24491265](https://doi.org/10.5281/zenodo.24491265); prebuilt PDFs
 and checksums are attached to the [latest GitHub Release](https://github.com/3y3y3y-huaiji/mahler32/releases/latest).
