@@ -28,8 +28,9 @@ Formalised here:
 * **Piecewise expansion** (`Tcup_dist`): on either branch, `Tcup` stretches distances by exactly
   `3/2`.
 
-* **The `2 : 1` mass split** (`two_one_split`, `scale_two_thirds`): the exact rational lengths
-  behind the mass transport `μ([1/6,1/4]) = μ([1/3,1/2])` under `x ↦ 2x/3`.
+* **The `2 : 1` length split** (`two_one_split`, `scale_two_thirds`): the exact rational length
+  identity `1/2 - 1/3 = 2 * (1/4 - 1/6)` and the scaling `x ↦ 2x/3`.  No invariant measure is
+  constructed or used.
 -/
 
 public section
@@ -76,9 +77,9 @@ public theorem Tcup_dist {x y : ℚ}
   rw [Tcup_of_lt hx, Tcup_of_lt hy]
   ring
 
-/-- **The `2 : 1` mass split.**  The half-open interval `[1/6, 1/4]` has exactly half the length of
-`[1/3, 1/2]`, which is the arithmetic content of the transport identity
-`μ([1/6,1/4]) = μ([1/3,1/2])` for a measure carried by `x ↦ 2x/3`. -/
+/-- **The `2 : 1` length split.**  The half-open interval `[1/6, 1/4]` has exactly half the length of
+`[1/3, 1/2]`, which is the arithmetic content of the length identity `|[1/3,1/2]| = 2 |[1/6,1/4]|`.
+No invariant measure is asserted. -/
 public theorem two_one_split : (1 : ℚ) / 2 - 1 / 3 = 2 * (1 / 4 - 1 / 6) := by
   norm_num
 

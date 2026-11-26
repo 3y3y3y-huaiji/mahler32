@@ -66,6 +66,10 @@ public section
 
 #print axioms Mahler32.DiscreteFluidCertificates.cup_cycle
 #print axioms Mahler32.DiscreteFluidCertificates.cup_period_three
+#print axioms Mahler32.DiscreteFluidCertificates.Tcup_mem
+#print axioms Mahler32.DiscreteFluidCertificates.Tcup_dist
+#print axioms Mahler32.DiscreteFluidCertificates.two_one_split
+#print axioms Mahler32.DiscreteFluidCertificates.scale_two_thirds
 
 #print axioms Mahler32.Fib11Free.fib_count
 #print axioms Mahler32.Fib11Free.survivors_four
