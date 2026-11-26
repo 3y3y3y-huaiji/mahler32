@@ -32,11 +32,13 @@ adds `2`).  Seven groups of results are proved:
 6. `base9_transducer_exact` / `base9_digit_sum_conservation` — the carry-free base-9 transducer and
    its exact digit-sum conservation law.
 7. `finite_roof_block_certificate` — the kernel-checked finite-roof mirror-block bound
-   `8 · |S_{N+2}| ≤ 3 · |S_N|` in the `4^4 = 256` window, together with the **general lifting
-   engine** `step94_add_four_pow`, `iter94_add_four_pow`, `survives94_add_four_pow`: survival to
-   any fixed horizon `k` is periodic with period `4^k`, so a finite window at horizon `k` exhausts
-   all `N` for that horizon.  The roof ratio itself at larger moduli (`4^6, 4^7, 4^9`) remains a
-   script certificate.
+   `8 · #{g < 256 : survives94 6 g} ≤ 3 · #{g < 256 : survives94 4 g}` in the common window
+   `[0, 4^4) = [0,256)` (the two sides are `8 · 4 = 32` and `3 · 16 = 48`), together with the
+   **general lifting engine** `step94_add_four_pow`, `iter94_add_four_pow`,
+   `survives94_add_four_pow`: survival to any fixed horizon `k` is periodic with period `4^k`, so a
+   finite window at horizon `k` exhausts all residues for that horizon.  The analogous ratios at
+   larger moduli (`4^6, 4^7, 4^9`) remain a script certificate; no general-`N` inequality
+   `8|S_{N+2}| ≤ 3|S_N|` is asserted.
 
 The general statements in groups 1–6 and the locality/lifting lemmas are proved over all `N`;
 group 7's roof ratio at a fixed window is kernel `decide`, with wider moduli reproduced by

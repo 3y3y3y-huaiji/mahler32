@@ -32,11 +32,13 @@ and the **two-branch joint relation** is the central modelling point of the file
   the single-branch emptying depth `3` of `Tq` says nothing about the joint relation.
 
 * **The finite-state holed obstruction** (`holedCage`): the union `[5/24, 11/24) ∪ [13/24, 19/24)`
-  has, under the joint relation, the exact finite survivor set `{4/15, 2/5, 3/5, 11/15}`
-  (`holed_cage_two_cycle`, `holed_cage_transients`): a genuine `2`-cycle `2/5 ↔ 3/5` together with
-  the two transients `4/15 ↦ 2/5` and `11/15 ↦ 3/5`.  This is the machine-checked "finite-state /
-  zero-entropy" core obstruction; the *full* survivor-count and SCC analysis for the other barriers
-  is reproduced by `scripts/generate_certificates.py`.
+  has, under the joint relation, the survivor set `{4/15, 2/5, 3/5, 11/15}`: a genuine `2`-cycle
+  `2/5 ↔ 3/5` together with the two transients `4/15 ↦ 2/5` and `11/15 ↦ 3/5`.  The declarations
+  `holed_cage_two_cycle` and `holed_cage_transients` check that these four points lie in the barrier
+  and that the four `Step` transitions hold; they do **not** check that every other point leaves.
+  That exclusion is the paper proof of Theorem 5.3 and is not formalised.  The *full*
+  survivor-count and SCC analysis for the other barriers is reproduced numerically by
+  `scripts/generate_certificates.py`.
 
 * **Width bookkeeping** (`width_three_sevenths`, `width_four_sevenths`): the widths that make the
   single-interval and the holed `4/7` barriers interesting.
@@ -45,7 +47,7 @@ The joint relation is analysed in `scripts/generate_certificates.py`: exact rati
 `V_n = U ∩ (T0⁻¹ Vₙ₋₁ ∪ T1⁻¹ Vₙ₋₁)`, finite-depth Markov partitions with SCC / branching tests, and
 exact rational periodic cycles.  The computation shows `[28/97,69/97)` and `[2/7,5/7)` keep infinite
 joint survivor sets of zero topological entropy (sub-exponential cylinder growth), while the holed
-obstruction above has the finite survivor set proved here.  The general signed rational automaton
+obstruction above has a finite survivor set whose exactness is proved in the paper, not in Lean.  The general signed rational automaton
 formalisation lives in `Mahler32.ZeroEntropyAutomaton`.  The constant `8/57 = T0⁻¹(4/19)` is the
 exact preimage of the cup `3`-cycle `4/19 ↦ 6/19 ↦ 9/19`; it is *not* a single-branch emptying
 threshold, and the left-hole family `[δ,1/2)` instead has the three exact regimes verified in the
@@ -249,9 +251,10 @@ public theorem holed_cage_two_cycle :
   · right; constructor <;> norm_num
 
 /-- **The two transients of the holed obstruction**: `4/15 ↦ 2/5` and `11/15 ↦ 3/5`.  Together
-with `holed_cage_two_cycle` these are the exact finite survivor set `{4/15, 2/5, 3/5, 11/15}` of
-the joint relation on `[5/24,11/24) ∪ [13/24,19/24)` (the excludedness of any other point is the
-script certificate of `scripts/generate_certificates.py`). -/
+with `holed_cage_two_cycle` these are the four points of the survivor set `{4/15, 2/5, 3/5, 11/15}`
+of the joint relation on `[5/24,11/24) ∪ [13/24,19/24)`.  The exclusion of every other point is
+proved in the paper (Theorem 5.3); it is not formalised here, and
+`scripts/generate_certificates.py` only corroborates the four-component count to depth 24. -/
 public theorem holed_cage_transients :
     Step (4 / 15) (2 / 5) ∧ Step (11 / 15) (3 / 5) ∧
       holedCage (4 / 15) ∧ holedCage (11 / 15) := by
