@@ -3,7 +3,7 @@
 
 Usage:
     python3 scripts/check_latex.py --source
-    python3 scripts/check_latex.py --build papers/paper1_transcendence
+    python3 scripts/check_latex.py --build papers/main
 """
 
 from __future__ import annotations

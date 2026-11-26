@@ -1,0 +1,531 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{xurl}
+\usepackage{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=teal!55!black,urlcolor=blue!55!black,pdfencoding=auto]{hyperref}
+\bibliographystyle{plainnat}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\fract}[1]{\left\{#1\right\}}
+\newcommand{\Tr}{\operatorname{tr}}
+\emergencystretch=1.5em
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{Symbolic exclusion intervals, Fourier decay, and \texorpdfstring{$p$}{p}-adic obstructions for rational-base orbits \texorpdfstring{$\{\xi(p/q)^{n}\}$}{xi(p/q)^n}}
+\author{Su MingKai\thanks{Repository: \url{https://github.com/3y3y3y-huaiji/mahler32} \;|\; Zenodo DOI: \href{https://doi.org/10.5281/zenodo.24491265}{10.5281/zenodo.24491265}}}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For the Mahler map $T x = \fract{3x/2}$ and its coprime rational-base analogues $\alpha = \pm p/q$ with $2 \le q < p$, we study which symbolic orbits can survive a prescribed interval and how far the surviving orbit distributes. A simultaneous Archimedean and $q$-adic Pad\'e comparison reduces the exclusion of eventually periodic orbits $U V^{w}$ to the elementary fact that an integer cannot be simultaneously highly $q$-divisible and Archimedean-small; for every coprime $(p,q)$ this yields the critical repetition exponent $\log_{q} p$. For the $9/4$ model we prove mirror and congruence obstructions, a CRT intersection modulo $36^{K}$ of the $2$-adic and $3$-adic survivor sets with antipodal diameter at most $(9^{K} - 4^{K})/5$, and quantitative odd-frequency Fourier decay, the last extended to a Weyl equidistribution estimate for all coprime bases. For the $3/2$ map we separate the deterministic single-branch exit from the two-branch relation, construct explicit joint periodic orbits, and show that an acyclic component ordering with no internal branching forces zero symbolic entropy, with exact rational certificates. The finiteness of the algebraic-pair branch is the only conditional statement, and it is proved from a single explicitly isolated instance of Schlickewei's subspace theorem.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+\label{sec:intro}
+
+Mahler \citep{mahler1968} asked for the distribution of $\fract{\xi(3/2)^{n}}$, and the question remains open. The qualitative picture was fixed by Flatto, Lagarias and Pollington \citep{flp1995}, who determined the set of limit points of $\{\xi(p/q)^{n}\}$ for rational bases and showed that a positive proportion of the circle is unavoidable for such orbits; the negative-base analogue is due to Lu and Zheng \citep{luzheng2026}. Distribution functions for $\xi(3/2)^{n} \bmod 1$ were constructed by Strauch \citep{strauch1997}. The symbolic and combinatorial side is developed in \citep{lagarias2003,andrieu2026,cassaigne2026}; the arithmetic Diophantine bounds, denominator barriers and positivity limitations appear in \citep{stephan2026subspace,stephan2026minimal,stephan2026third,cook2026,calegari2025,elmv,dedeo2026,tao2026}. The parity sequence of the underlying recursion $a(n+1) = \lceil 3a(n)/2 \rceil$ is OEIS A061419, and its parity is OEIS A205083.
+
+The difficulty is two-sided. A symbolic word that survives a barrier for many steps forces an integer remainder that is highly divisible by $q$, because each backward step clears a factor of $q$; at the same time the Archimedean size of that remainder is exponentially small. The two constraints compete, and the competition can be made quantitative: the $q$-adic side supplies a counting factor $q^{L}$, the Archimedean side a size factor $p^{L}$, and the critical slope is $\log_{q} p$. This is the mechanism behind the repetition exponent below, and it is also the reason the $9/4$ model admits exact finite obstructions: its two admissible digits keep the Archimedean and the $2$-adic information in step.
+
+\subsection{Main results}
+
+We prove four groups of statements. The first three are unconditional and lie in the zero-axiom core; the fourth isolates one conditional finiteness theorem.
+
+\begin{theorem}[Main Theorem A: Pad\'e comparison and the general repetition exponent]
+\label{thm:mainA}
+Let $e, c \in \Q$ with $e \neq 0$ and $c \neq 1$. The Archimedean and $2$-adic diagonal Pad\'e approximants of $e/(1-z)$ satisfy
+\[
+  \frac{e}{1-c} - e(1+c) = \frac{e\,c^{2}}{1-c},
+\]
+and they coincide if and only if $c = 0$. Let further $2 \le q < p$ be coprime and let $q g_{k+1} = p g_{k} + d_{k}$ with $d_{\min} \le d_{k} \le d_{\max}$. If $g_{0} \ge 1$ matches an eventually periodic word $U V^{w}$ with $|V| \ge 1$, then
+\[
+  w < \frac{\log p}{\log q} + \Bigl(\frac{\log p}{\log q} - 1\Bigr)\frac{|U|}{|V|}
+      + \frac{\log\bigl(g_{0} + d_{\max}/(p-q)\bigr)}{|V| \log q}.
+\]
+In particular no $g_{0}$ matches $U V^{w}$ for all $w \in \N$.
+\end{theorem}
+
+\begin{theorem}[Main Theorem B: the $9/4$ model and quantitative Weyl decay]
+\label{thm:mainB}
+For the recurrence $4 g_{k+1} = 9 g_{k} + d_{k}$ with $d_{k} \in \{2,3\}$ the survivor set in $[0,4^{K})$ has cardinality $2^{K}$; mirror twins satisfy $g_{k} + \tilde g_{k} = 9^{k} 4^{N-k} - 1$; and every $2K$-step survivor has its midpoint in the CRT intersection $S_{K} \cap A_{K}$ modulo $36^{K}$, whose rescaled antipodal diameter is at most $(9^{K} - 4^{K})/5$. If $g_{0} + 3/5 \le 4^{m}$ and $g_{0}$ matches $U V^{w}$, then
+\[
+  w < \frac{317}{200} + \frac{117}{200}\,\frac{|U|}{|V|} + \frac{m}{|V|}.
+\]
+Finally there are constants $C, c > 0$ with $\|\hat\mu_{K}(u)\| \le C K^{-c}$ for every odd $u$ and every $K \ge 1$, and the same decay holds for all coprime $p > q \ge 2$ whenever $q \nmid u$.
+\end{theorem}
+
+\begin{theorem}[Main Theorem C: the $3/2$ map and zero symbolic entropy]
+\label{thm:mainC}
+No rational $x$ has four consecutive iterates of the deterministic map inside $[2/7,5/7)$, whereas the joint two-branch relation admits explicit periodic orbits there and the holed barrier $[5/24,11/24) \cup [13/24,19/24)$ has finite survivor set $\{4/15, 2/5, 3/5, 11/15\}$. For every signed rational base $\pm p/q$ and every finite rational partition, an acyclic component ordering with no internal branching forces the walk counts, hence the symbolic entropy, to grow sub-exponentially.
+\end{theorem}
+
+\begin{theorem}[Main Theorem D: the algebraic-pair branch, conditional]
+\label{thm:mainD}
+Assume Schlickewei's $p$-adic subspace theorem in the form fixed below. For every algebraic irrational $\delta$ and every $\vartheta \in (0,1)$, the set of index pairs $2 \le a < c$ with distinct gaps $c-a$ for which $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ lies within distance $\vartheta^{c}$ of an integer is finite.
+\end{theorem}
+
+Theorems~\ref{thm:mainA}, \ref{thm:mainB} and~\ref{thm:mainC} are unconditional and are proved without extra axioms. Theorem~\ref{thm:mainD} is the only conditional result; its hypothesis is isolated in a separate part of the formalisation and is not used anywhere else.
+
+\subsection{Organisation}
+
+Section~\ref{sec:pade} proves the Pad\'e comparison. Section~\ref{sec:pq} develops the general $(p,q)$ word calculus and the repetition exponent. Section~\ref{sec:model94} treats the $(9,4)$ congruence model, the prefix repetition bound, the CRT intersection modulo $36^{K}$, and quantitative Weyl decay. Section~\ref{sec:threehalves} treats the $3/2$ map, finite-state zero-entropy exclusion, and transfer bounds. Section~\ref{sec:algpair} records the conditional algebraic-pair branch. Section~\ref{sec:formal} states the formal status, and Section~\ref{sec:ai} contains the assistance disclosure.
+
+\section{Simultaneous Archimedean and \texorpdfstring{$2$}{2}-adic Pad\'e comparison}
+\label{sec:pade}
+
+Fix $e, c \in \Q$ and consider the geometric series $S(z) = e(1 + z + z^{2} + \cdots) = e/(1-z)$. Its depth-$1$ and depth-$2$ diagonal Pad\'e truncations have the closed rational forms
+\begin{equation}
+  P_{2}(e,c) = \frac{e}{1-c}, \qquad P_{1}(e,c) = e(1+c),
+\end{equation}
+representing respectively the Archimedean evaluation and the carry-truncated $2$-adic approximation in base $3/2$.
+
+\begin{proposition}[Pad\'e discrepancy identity]
+\label{prop:identity}
+For all $e, c \in \Q$ with $c \neq 1$,
+\begin{equation}
+  P_{2}(e,c) - P_{1}(e,c) = \frac{e\,c^{2}}{1-c}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By direct expansion, $e\bigl((1-c)^{-1} - (1+c)\bigr) = e \cdot c^{2}/(1-c)$.
+\end{proof}
+
+\begin{theorem}[Uniqueness of agreement]
+\label{thm:iff}
+Let $e, c \in \Q$ with $e \neq 0$ and $c \neq 1$. Then $P_{2}(e,c) = P_{1}(e,c)$ if and only if $c = 0$.
+\end{theorem}
+
+\begin{proof}
+By Proposition~\ref{prop:identity} the difference equals $e c^{2}/(1-c)$. Since $c \neq 1$ and $e \neq 0$, this quotient vanishes exactly when $c^{2} = 0$, that is, when $c = 0$.
+\end{proof}
+
+The comparison is useful because it turns a two-place analytic statement into one integer constraint. Suppose an integralised remainder $M$ is divisible by $2^{N}$ while the Archimedean estimate gives $|M| < 2^{N}$. Then $M = 2^{N} k$ forces $2^{N}|k| < 2^{N}$, hence $k = 0$ and $M = 0$. This elementary observation, applied to the integralised Pad\'e remainder at $z = 2/3$, is the only arithmetic input needed to convert simultaneous divisibility and smallness into vanishing. The rational strictness bounds $(140/99)^{2} < 2 < (17/12)^{2}$ separate the two scales numerically and are proved alongside the comparison.
+
+\section{General \texorpdfstring{$(p,q)$}{(p,q)} words and the \texorpdfstring{$\log_q p$}{log\_q p} repetition exponent}
+\label{sec:pq}
+
+Let $2 \le q < p$ be coprime integers. A word $W = (d_{0}, \dots, d_{L-1})$ is \emph{admissible} for $d_{\min} \le d_{\max}$ when $d_{\min} \le d_{j} \le d_{\max}$ for every $j$. The linear recurrence is
+\begin{equation}
+  q\, g_{k+1} = p\, g_{k} + d_{k}, \qquad k = 0, \dots, L-1.
+\end{equation}
+Iterating and clearing denominators gives the weighted accumulation
+\begin{equation}
+  \omega_{p,q}(W) = \sum_{j=0}^{L-1} d_{j}\, p^{L-1-j} q^{j},
+\end{equation}
+with the exact identity $q^{L} g_{L} = p^{L} g_{0} + \omega_{p,q}(W)$. For an eventually periodic word $W = U V^{w}$ one attaches the $q$-adic and Archimedean limit point
+\begin{equation}
+  q^{*}(U,V) = -\,\frac{(p^{|V|} - q^{|V|})\, \omega_{p,q}(U) + q^{|U|}\, \omega_{p,q}(V)}
+    {p^{|U|}\,\bigl(p^{|V|} - q^{|V|}\bigr)} \; \in \Q .
+  \label{eq:qstar}
+\end{equation}
+
+\begin{lemma}[Location of the limit point]
+\label{lem:qstar}
+For admissible $U, V$ with $|V| \ge 1$,
+\[
+  -\frac{d_{\max}}{p-q} \;\le\; q^{*}(U,V) \;\le\; -\frac{d_{\min}}{p-q}.
+\]
+\end{lemma}
+
+\begin{proof}
+The digit bounds give $(p-q)\, \omega_{p,q}(W)$ between $d_{\min}(p^{|W|} - q^{|W|})$ and $d_{\max}(p^{|W|} - q^{|W|})$ for every word $W$. Substituting these two inequalities into \eqref{eq:qstar} and using $p^{|V|} > q^{|V|}$ yields the claim.
+\end{proof}
+
+\begin{theorem}[Two-place isolation]
+\label{thm:isolation}
+Let $g_{0} \ge 1$, $|V| \ge 1$, and suppose $g_{0}$ matches $U V^{w}$. Then
+\begin{equation}
+  q^{|U| + w|V|} \;\le\; \bigl(g_{0} - q^{*}(U,V)\bigr)\, p^{|U|}\, \bigl(p^{|V|} - q^{|V|}\bigr)
+  \;<\; \Bigl(g_{0} + \frac{d_{\max}}{p-q}\Bigr)\, p^{|U| + |V|}.
+  \label{eq:isolation}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $r = |U|$ and $s = |V|$. Clearing powers in $U V^{w}$ yields the integer identity
+\begin{equation}
+  p^{ws} N = q^{r + ws} \bigl((p^{s} - q^{s}) g_{L} + \omega_{p,q}(V)\bigr),
+  \label{eq:key}
+\end{equation}
+where $N = (g_{0} - q^{*}(U,V))\, p^{r} (p^{s} - q^{s})$. Since $\gcd(p,q) = 1$, the factor $q^{r+ws}$ must divide $N$; in particular $q^{r+ws} \le N$, which is the lower bound. For the upper bound, Lemma~\ref{lem:qstar} gives $g_{0} - q^{*}(U,V) \le g_{0} + d_{\max}/(p-q)$, and $p^{r}(p^{s} - q^{s}) < p^{r+s}$; multiplying gives the strict inequality. The integrality of $N$ is exactly where the Archimedean and $q$-adic bounds become comparable: were $N$ strictly between $0$ and $q^{r+ws}$, the identity \eqref{eq:key} would force a nonzero integer to be both divisible by $q^{r+ws}$ and smaller than $q^{r+ws}$.
+\end{proof}
+
+\begin{corollary}[No infinite periodic family]
+\label{cor:noinf}
+Under the hypotheses of Theorem~\ref{thm:isolation}, it is impossible that $g_{0}$ matches $U V^{w}$ for all $w \in \N$.
+\end{corollary}
+
+\begin{proof}
+Assume the contrary. Choosing $w = (g_{0} + d_{\max} + 1) p^{r+s}$ and combining the two sides of \eqref{eq:isolation} gives $q^{r+ws} < (g_{0} + d_{\max} + 1) p^{r+s} \le w$. On the other hand $w < q^{w} \le q^{r+ws}$, a contradiction.
+\end{proof}
+
+\begin{theorem}[Critical repetition exponent $\log_{q} p$]
+\label{thm:pqrep}
+Under the hypotheses of Theorem~\ref{thm:isolation},
+\[
+  w < \frac{\log p}{\log q} + \Bigl(\frac{\log p}{\log q} - 1\Bigr)\frac{|U|}{|V|}
+      + \frac{\log\bigl(g_{0} + d_{\max}/(p-q)\bigr)}{|V| \log q}.
+\]
+\end{theorem}
+
+\begin{proof}
+Take logarithms in the upper bound of \eqref{eq:isolation}:
+\[
+  (r + ws) \log q < \log\bigl(g_{0} + d_{\max}/(p-q)\bigr) + (r+s)\log p .
+\]
+Solving for $w$ and dividing by $s \log q > 0$ gives
+\[
+  w < \frac{(r+s)\log p - r \log q}{s \log q} + \frac{\log(g_{0} + d_{\max}/(p-q))}{s \log q},
+\]
+and the first fraction equals $\tfrac{\log p}{\log q} + \bigl(\tfrac{\log p}{\log q} - 1\bigr)\tfrac{r}{s}$.
+\end{proof}
+
+\begin{remark}[Critical slopes]
+Evaluating $\log_{q} p$ for the principal coprime bases gives
+\[
+  \begin{array}{c|cccccc}
+    p/q & 5/4 & 4/3 & 7/4 & 5/3 & 3/2 \text{ and } 9/4 & 8/3 \\ \hline
+    \log_{q} p & 1.1610 & 1.2619 & 1.4037 & 1.4650 & 1.5850 & 1.8928
+  \end{array}
+\]
+These are linear exclusion envelopes, complementary to the distribution lower bounds of \citep{flp1995,luzheng2026}.
+\end{remark}
+
+\section{The \texorpdfstring{$(9,4)$}{(9,4)} congruence model: repetition bounds and Fourier decay}
+\label{sec:model94}
+
+\subsection{Survivor sets, mirror symmetry, and congruence obstructions}
+
+The two-branch $9/4$ recurrence is
+\begin{equation}
+  4\, g_{k+1} = 9\, g_{k} + d_{k}, \qquad d_{k} \in \{2,3\}.
+  \label{eq:94}
+\end{equation}
+Every admissible $g_{k}$ satisfies $g_{k} \bmod 4 \in \{1,2\}$, and the set $S_{K}$ of $g \in [0,4^{K})$ surviving $K$ steps of \eqref{eq:94} has cardinality $2^{K}$.
+
+\begin{theorem}[Prefix repetition-exponent bound]
+\label{thm:94rep}
+Let $g_{0} \ge 1$ and suppose $g_{0} + 3/5 \le 4^{m}$. If $g_{0}$ matches the eventually periodic word $U V^{w}$ with $|V| \ge 1$, then
+\[
+  w < \frac{317}{200} + \frac{117}{200}\,\frac{|U|}{|V|} + \frac{m}{|V|}.
+\]
+In particular no $g_{0}$ matches $U V^{w}$ for all $w$.
+\end{theorem}
+
+\begin{proof}
+Let $r = |U|$ and $s = |V|$. The two-place isolation of Theorem~\ref{thm:isolation} specialises to
+\[
+  4^{r+ws} \le (g_{0} - q^{*}(U,V))\, 9^{r}\bigl(9^{s} - 4^{s}\bigr) < \Bigl(g_{0} + \frac35\Bigr) 9^{r+s}.
+\]
+Hence $4^{r+ws} < 4^{m} 9^{r+s}$. Raising to the power $200$ and using $9^{200} < 4^{317}$ gives
+\[
+  4^{200(r+ws)} < 4^{200m + 317(r+s)},
+\]
+so $200(r+ws) < 200m + 317(r+s)$, which rearranges to
+$200ws < 200m + 117r + 317s$ and yields the stated bound. Choosing $w$ larger than $m/s + (117/200)(r/s) + 317/200$ contradicts it, proving the second claim.
+\end{proof}
+
+\begin{theorem}[Mirror conservation]
+\label{thm:mirror}
+Let $N \ge 1$, $g_{0} < 4^{N}$, and suppose $g_{0}$ reaches $g_{k}$ after $k \le N$ steps of \eqref{eq:94}. Then the mirror twin $\tilde g_{0} = 4^{N} - 1 - g_{0}$ reaches $\tilde g_{k}$ after $k$ steps, with
+\[
+  g_{k} + \tilde g_{k} = 9^{k}\, 4^{N-k} - 1.
+\]
+\end{theorem}
+
+\begin{proof}
+Induct on $k$. The substitution $g \mapsto 4^{N} - 1 - g$ reverses the two admissible residues $\{1,2\}$; summing the two recursions at each step cancels the digit and multiplies the constant term by $9$, which is exactly the stated identity after $k$ steps.
+\end{proof}
+
+\begin{theorem}[Even-level mirror extinction and forbidden sums]
+\label{thm:evenlevel}
+Let $N = 2m$ with $m \ge 1$. Mirror twins cannot both survive $N+2$ steps of \eqref{eq:94}. More generally, if $c \equiv 2 \pmod 4$ and $g_{0} + g_{1} = c\,4^{k} - 1$, then $g_{0}$ and $g_{1}$ cannot both survive $k+1$ steps.
+\end{theorem}
+
+\begin{proof}
+Suppose $g_{0}$ and its mirror $4^{2m} - 1 - g_{0}$ both survive $2m+2$ steps, and let $g_{N}, \tilde g_{N}$ be their values after $2m$ steps. Theorem~\ref{thm:mirror} gives $g_{N} + \tilde g_{N} = 9^{2m} - 1 \equiv 0 \pmod 4$. Each of $g_{N}, \tilde g_{N}$ still survives two steps, so each has residue $1$ or $2$ modulo $4$; a sum congruent to $0$ forces both residues to equal $2$. A step from residue $2$ is $g \mapsto (9g+2)/4 = 9\lfloor g/4\rfloor + 5$, whence
+\[
+  4\,(g_{N+1} + \tilde g_{N+1}) = 9^{2m+1} - 5, \qquad
+  (g_{N+1} + \tilde g_{N+1}) \equiv 1 \pmod 4,
+\]
+because $9^{2m+1} \equiv 9 \pmod{16}$ and $(9^{2m+1} - 5)/4 \equiv 1 \pmod 4$. But $g_{N+1}$ and $\tilde g_{N+1}$ each still survive one step, so both again lie in residue $1$ or $2$; a sum of two elements of $\{1,2\}$ is congruent to $2$, $3$ or $0$ modulo $4$, never to $1$. This contradiction proves the mirror statement. The forbidden-sum statement is the same argument applied to the sum shadow: an induction on $k$ shows that a pair summing to $c\,4^{k} - 1$ with $c \equiv 2 \pmod 4$ reaches the inadmissible residue $2$ at the final step.
+\end{proof}
+
+\begin{theorem}[Four-point exclusion at odd levels]
+\label{thm:klein}
+Let $N \ge 3$ be odd, $g < 4^{N-1}$, and $1 \le \delta \le 3$. Then the four numbers $g$, $g + \delta\,4^{N-1}$, $4^{N} - 1 - g$ and $4^{N} - 1 - (g + \delta\,4^{N-1})$ cannot all survive $N+1$ steps of \eqref{eq:94}.
+\end{theorem}
+
+\begin{proof}
+Let $g$ and $g + \delta\,4^{N-1}$ both survive $N+1$ steps, and let $a_{N}, b_{N}$ be their values at time $N$, with mirror twins $\bar a_{N}, \bar b_{N}$. The difference shadow gives the exact identity
+\[
+  b_{N} - a_{N} = \delta\, 9^{N-1}.
+\]
+Mirror conservation at level $N$ gives $a_{N} + \bar a_{N} = b_{N} + \bar b_{N} = 9^{N} - 1 \equiv 0 \pmod 4$. Since all four of $a_{N}, \bar a_{N}, b_{N}, \bar b_{N}$ survive at least one more step, each has residue $1$ or $2$ modulo $4$; a sum congruent to $0$ forces every one of them to have residue $2$. Hence $b_{N} - a_{N} \equiv 0 \pmod 4$. On the other hand $9^{N-1} \equiv 1 \pmod 4$, so $\delta\,9^{N-1} \equiv \delta \pmod 4$. For $\delta \in \{1,3\}$ this is $1$ or $3$, a contradiction. For $\delta = 2$ the difference has residue $2$, which is not an admissible predecessor residue of \eqref{eq:94}, so the assumed orbit cannot exist.
+\end{proof}
+
+\begin{lemma}[Finite-window lifting]
+\label{lem:lift}
+For all $k, t, g$, one has $\mathrm{step}(g + 4^{k+1} t) = \mathrm{step}(g) + 9 \cdot 4^{k} t$ in the sense that survival to $k$ steps has period $4^{k}$ in $g$. Consequently $8\,|S_{N+2}| \le 3\,|S_{N}|$ at the window $4^{4} = 256$.
+\end{lemma}
+
+\begin{proof}
+Substituting $g + 4^{k+1} t$ into \eqref{eq:94} and reducing modulo $4$ shows that the admissible residue is unchanged, while the affine image shifts by $9 \cdot 4^{k} t$. The block inequality is then a finite count over the $256$ residues.
+\end{proof}
+
+\begin{theorem}[Sum and difference identities; carry-free base-$9$ digit conservation]
+\label{thm:shadows}
+The sum and difference of two surviving orbits obey exact affine recursions driven by the digit sums. Moreover the base-$9$ digit-sum identity
+\[
+  4 \sum(\text{output digits}) = 8 \sum(\text{incoming remainders}) + \sum(\text{input digits}) + r_{0} - r_{\text{final}}
+\]
+holds without carry propagation.
+\end{theorem}
+
+\subsection{A CRT intersection of \texorpdfstring{$2$}{2}-adic and \texorpdfstring{$3$}{3}-adic survivor sets}
+
+\begin{theorem}[CRT intersection modulo $36^{K}$]
+\label{thm:cantor}
+Let $K \ge 1$. If $g_{0}$ survives $2K$ steps of \eqref{eq:94} and reaches $g_{K}$ after $K$ steps, then $g_{K} \bmod 36^{K}$ lies in $S_{K} \cap A_{K}$, where
+\begin{align*}
+  S_{K} &= \{\, x : x \text{ survives } K \text{ steps}\,\}, \\
+  A_{K} &= \bigl\{\, a : (4^{K} a) \bmod 9^{K} = \omega_{9,4}(W) \text{ for a valid } K\text{-digit word } W \,\bigr\}.
+\end{align*}
+Every $a \in A_{K}$ satisfies $2(9^{K} - 4^{K}) \le 5\,((4^{K} a) \bmod 9^{K}) \le 3(9^{K} - 4^{K})$, and $18 \in A_{K}$ for every $K \ge 1$, because $5 \mid 9^{K} - 4^{K}$.
+\end{theorem}
+
+\begin{proof}
+The forward half is the definition of survival to $2K$ steps split at time $K$. For the reverse half, the identity $4^{K} g_{K} = \omega_{9,4}(W) + 9^{K} g_{0}$ reduces the statement to the digit bounds $2(9^{K} - 4^{K}) \le 5\, \omega_{9,4}(W) \le 3(9^{K} - 4^{K})$, which follow from $d_{j} \in \{2,3\}$ summed with weights $4^{j} 9^{K-1-j}$. Divisibility by $5$ follows from $9 \equiv 4 \pmod 5$.
+\end{proof}
+
+\begin{corollary}[Antipodal diameter]
+\label{cor:antipodal}
+For $a_{1}, a_{2} \in A_{K}$,
+\[
+  \bigl|(4^{K} a_{1} \bmod 9^{K}) - (4^{K} a_{2} \bmod 9^{K})\bigr| \le \frac{9^{K} - 4^{K}}{5}.
+\]
+\end{corollary}
+
+\subsection{Fourier decay and quantitative Weyl equidistribution}
+
+For $K \ge 1$ define the normalised transform
+\begin{equation}
+  \hat\mu_{K}(u) = 2^{-K} \sum_{g \in S_{K}} e\!\left(\frac{u g}{4^{K}}\right), \qquad e(\theta) = \exp(2\pi i \theta).
+\end{equation}
+
+\begin{theorem}[Exact contraction and cosine product]
+\label{thm:contraction}
+For every $K \ge 1$ and $u \in \Z$,
+\[
+  \hat\mu_{K+1}(4u) = \hat\mu_{K}(u),
+\]
+and $\hat\mu_{K}(u)$ admits a product representation as a product of cosines over the $K$ base-$4$ digits of $u$.
+\end{theorem}
+
+\begin{theorem}[Global odd-frequency decay]
+\label{thm:94global}
+There exist constants $C > 0$ and $c > 0$ such that
+\[
+  \|\hat\mu_{K}(u)\| \le C\, K^{-c}
+\]
+for every $K \ge 1$ and every odd integer $u$.
+\end{theorem}
+
+\begin{proof}
+The cosine product of Theorem~\ref{thm:contraction} is bounded by $\gamma^{R}$ with $\gamma = \cos(\pi/18) < 1$ and $R = \lfloor \log_{4} K \rfloor$, because each digit contributes a factor at distance at least $1/18$ from the nearest half-integer. Since $K < 4^{R+1}$, one has $\gamma^{R} = \gamma^{-1} \gamma^{R+1} \le C K^{-c}$ with $c = -\log \gamma / \log 4$ and $C = \gamma^{-1}$.
+\end{proof}
+
+\begin{corollary}[Contraction composed with decay]
+For every $v < K$ and every odd $u$, $\|\hat\mu_{K}(4^{v} u)\| \le C (K-v)^{-c}$.
+\end{corollary}
+
+\begin{theorem}[Quantitative Weyl equidistribution for coprime \texorpdfstring{$(p,q)$}{(p,q)}]
+\label{thm:pqweyl}
+Let $2 \le q < p$ be coprime and let $\hat\mu^{pq}_{K}$ be the transform of the consecutive-digit model $q g_{k+1} = p g_{k} + d_{k}$ with $d_{k} \in \{d_{0}, d_{0}+1\}$. Then $|S^{pq}_{K}| = 2^{K}$, $\hat\mu^{pq}_{K+1}(q u) = \hat\mu^{pq}_{K}(u)$, and there exist $C, c > 0$ with
+\[
+  \|\hat\mu^{pq}_{K}(u)\| \le C\, K^{-c}
+\]
+for every $K \ge 1$ and every $u$ with $q \nmid u$. The bound is explicit at the bases $3/2$, $4/3$, $5/4$, $5/3$, $7/4$ and $8/3$.
+\end{theorem}
+
+\begin{proof}
+The $q$-contraction and the cardinality count are exact. The $p$-multiplication recursion is again a cosine product, and disjoint-block hitting locates at least one digit at distance at least $1/(2(p+q))$ from an integer. Iterating along the base-$q$ digits of $u$ and using $q \nmid u$ gives $\gamma^{R}$ with $\gamma = \cos(\pi/(2(p+q))) < 1$; the passage to $K^{-c}$ is the same logarithm estimate as in Theorem~\ref{thm:94global}.
+\end{proof}
+
+\begin{remark}[Dual-potential certificate]
+The exponential decay is complemented by a finite contractive certificate. On a finite directed graph with strictly positive vertex potential $\varphi$, an edge weight $w$ satisfying $w(u,v)\varphi(v) \le \lambda \varphi(u)$ for every edge and some $\lambda < 1$ forces $\sum_{\text{paths}} \prod w \le \lambda^{|p|}$ along every closed path. The $42$- and $44$-vertex baseline graphs used in the formalisation realise this inequality explicitly; no numerical input beyond exact rationals is required.
+\end{remark}
+
+\section{Symbolic exclusion for the \texorpdfstring{$3/2$}{3/2} map: deterministic and joint branches}
+\label{sec:threehalves}
+
+\subsection{The two branches}
+
+Let
+\[
+  T_{0}(x) = \fract{3x/2}, \qquad T_{1}(x) = \fract{3x/2 + 1/2},
+\]
+and let $\mathrm{Step}(x,y)$ be the joint relation $y = T_{0}(x)$ or $y = T_{1}(x)$. A genuine Mahler orbit may switch branches at every step, so the true symbolic object is $\mathrm{Step}$, not either branch alone. The deterministic rational implementation is
+\[
+  T_{q}(x) = \frac{3x}{2} \ \text{ if } \frac{3x}{2} < 1, \qquad T_{q}(x) = \frac{3x}{2} - 1 \ \text{ otherwise.}
+\]
+
+\begin{theorem}[No four-term deterministic orbit in $[2/7,5/7)$]
+\label{thm:exit}
+There is no $x \in \Q$ such that $x, T_{q}(x), T_{q}^{2}(x), T_{q}^{3}(x)$ all lie in $[2/7,5/7)$.
+\end{theorem}
+
+\begin{proof}
+Let $x \in [2/7,5/7)$. If $3x/2 \ge 1$, then $T_{q}(x) = 3x/2 - 1$ and $T_{q}(x) \ge 6/7$, impossible; hence $x < 10/21$ and $T_{q}(x) = 3x/2$. Repeating, $T_{q}^{2}(x) = 9x/4$ and $x < 20/63$. Now $z = 9x/4 \in [9/14,5/7)$. If $3z/2 < 1$, then $T_{q}^{3}(x) = 27x/8 \ge 27/28 > 5/7$; otherwise $T_{q}^{3}(x) = 27x/8 - 1 < 1/14 < 2/7$. Both alternatives miss the barrier.
+\end{proof}
+
+The deterministic exit says nothing about the joint relation. The following witnesses are exact rational identities.
+
+\begin{theorem}[Joint orbits and cycles]
+\label{thm:joint}
+The joint relation admits the six-term orbit
+\[
+  \tfrac37 \xrightarrow{T_{0}} \tfrac9{14} \xrightarrow{T_{1}} \tfrac{13}{28}
+  \xrightarrow{T_{0}} \tfrac{39}{56} \xrightarrow{T_{1}} \tfrac{61}{112}
+  \xrightarrow{T_{1}} \tfrac{71}{224}
+\]
+inside $[2/7,5/7)$, and the rational cycles $2/5 \leftrightarrow 3/5$ and $4/13 \to 6/13 \to 9/13 \to 7/13 \to 4/13$.
+\end{theorem}
+
+\begin{theorem}[Holed finite survivor set]
+\label{thm:holed}
+On the barrier $[5/24,11/24) \cup [13/24,19/24)$ the joint survivor set is exactly $\{4/15,2/5,3/5,11/15\}$; it contains the $2$-cycle $2/5 \leftrightarrow 3/5$ and the transients $4/15 \mapsto 2/5$, $11/15 \mapsto 3/5$.
+\end{theorem}
+
+\begin{proof}
+The displayed steps are direct rational identities. The exactness of the survivor set is certified by the closed preimage iteration $V_{0} = U$, $V_{n+1} = U \cap (T_{0}^{-1} V_{n} \cup T_{1}^{-1} V_{n})$ in exact rational arithmetic; after finitely many steps the iteration stabilises at the four displayed points, and every other point leaves $U$.
+\end{proof}
+
+\begin{remark}[Widths and the arithmetic origin of $8/57$]
+The interval $[2/7,5/7)$ has width $3/7$, while $[1/7,3/7) \cup [4/7,6/7)$ has width $4/7 > 1/2$. For the left-hole family $[\delta,1/2)$ under the branch-restricted map $F$ ($F = T_{0}$ on $[0,1/3)$, $F = T_{1}$ on $[1/3,1/2)$), the threshold
+\[
+  \delta^{*} = \frac{8}{57} = \frac23 \cdot \frac{4}{19} = T_{0}^{-1}\!\left(\frac{4}{19}\right)
+\]
+separates three exact regimes: $\delta > 4/19$ empties in finitely many steps; $8/57 < \delta \le 4/19$ retains a finite zero-entropy survivor set containing the $3$-cycle $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$; and $\delta < 8/57$ acquires positive entropy through the fold $T_{1} \circ T_{0}^{3}$ mapping $[8/81,8/57)$ onto $[0,4/19)$.
+\end{remark}
+
+\subsection{Finite-state zero-entropy exclusion}
+
+We now pass from a single barrier to arbitrary signed rational bases. Let $\alpha = \pm p/q$ with $2 \le q < p$ and let $\mathcal{I} = \{I_{0}, \dots, I_{N-1}\}$ be a finite rational partition of a subset of $[0,1)$. Each interval is stored as $[\ell n/\ell d, h n/h d)$ with positive integer denominators, and the branch-overlap predicate is an exact integer cross-multiplication test: two cells overlap when the integer images of the two branches meet.
+
+\begin{theorem}[Zero-entropy finite-state obstruction]
+\label{thm:ze}
+Let $\mathrm{adj} : \mathrm{Fin}\,N \to \mathrm{Fin}\,N \to \mathrm{Bool}$ and $\mathrm{comp} : \mathrm{Fin}\,N \to \mathrm{Fin}\,M$ satisfy:
+\begin{enumerate}[leftmargin=1.5em]
+  \item $\mathrm{adj}\,i\,j = \mathrm{true}$ implies $\mathrm{comp}\,i \le \mathrm{comp}\,j$;
+  \item every vertex $i$ has at most one out-neighbour $j$ with $\mathrm{comp}\,j = \mathrm{comp}\,i$.
+\end{enumerate}
+Then the total number of walks satisfies $W(L) \le N\bigl(N(L+1)\bigr)^{M}$, and for every $\varepsilon > 0$ there is $C > 0$ with $W(L) \le C (1+\varepsilon)^{L}$ for all $L \in \N$.
+\end{theorem}
+
+\begin{proof}
+Within one component the walk is forced, so the number of ways to spend steps among the $M$ components grows at most polynomially in the total length; summing over the at most $N$ starting vertices and $M$ components gives the polynomial bound. A polynomial is eventually dominated by $(1+\varepsilon)^{L}$, which is the zero-entropy statement.
+\end{proof}
+
+\begin{theorem}[Exact certificates]
+\label{thm:certs}
+The following rational regions admit exact finite certificates for the automaton of Theorem~\ref{thm:ze}:
+\begin{center}
+\footnotesize
+\begin{tabular}{@{}L{0.48\textwidth}L{0.24\textwidth}cc@{}}
+\toprule
+Region & width & cells & components \\
+\midrule
+$-5/3$: $[89/250,161/250)$ & $36/125 = 0.2880$ & $3$ & $3$ \\
+$-3/2$ holed: $[147/1000,43/100)\allowbreak\cup[57/100,853/1000)$ & $283/500 = 0.5660$ & $18$ & $15$ \\
+$-3/2$: $[1429/5000,3571/5000)$ & $1071/2500 = 0.4284$ & $26$ & $16$ \\
+$+5/3$: $[697/2000,1303/2000)$ & $303/1000 = 0.3030$ & $13$ & $9$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The holed region has total width $283/500 > 1/2$. For each region the kernel also checks the finite-depth bridge from the ambient union $U$ to the survivor partition: a closed rational preimage iteration with integer endpoints compared by cross multiplication is contained in the closed hull of the certified cells, so any orbit staying in $U$ for the certified depth lies in a certified cell.
+\end{theorem}
+
+\begin{proof}
+Each row is a finite integer computation. The branch-overlap predicate, the component ordering and the absence of internal branching are all closed statements over machine integers, discharged by kernel evaluation; the survivor partitions are produced independently by exact rational preimage iteration.
+\end{proof}
+
+\begin{remark}
+The widths of the four certified regions exceed the classical interval-range bounds of length $1/p$ for positive bases and $(1 + r - r^{2})/p$, $r = q/p$, for negative bases \citep{flp1995,luzheng2026}. Wider empirically observed windows are not asserted here; only the four exact certificates and the depth-$7$ $+5/3$ check are verified artefacts.
+\end{remark}
+
+\subsection{Invariant-measure and transfer bounds}
+
+On $[0,1/2)$ define the map $U(x) = (3x/2) \bmod (1/2)$.
+
+\begin{theorem}[Transport bounds for the map $U$]
+\label{thm:cup}
+$U$ preserves $[0,1/2)$, has the exact $3$-cycle $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$, expands branchwise distances by $3/2$, and satisfies the $2{:}1$ transport balance $\mu([1/6,1/4]) = \mu([1/3,1/2])$ for a measure carried by $x \mapsto 2x/3$.
+\end{theorem}
+
+\begin{proof}
+The cycle and the expansion are direct rational identities. The balance is the identity $1/2 - 1/3 = 2(1/4 - 1/6)$.
+\end{proof}
+
+\section{The algebraic-pair branch}
+\label{sec:algpair}
+
+Stephan's program separates surviving words into a rational case and an algebraic-pair case \citep{stephan2026subspace,stephan2026third}. For an algebraic irrational multiplier $\delta$, violating index pairs $(a,c)$ with $2 \le a < c$ and distinct gaps $c-a$ are those for which $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ lies within distance $\vartheta^{c}$ of an integer.
+
+\begin{theorem}[Algebraic-pair finiteness, conditional]
+\label{thm:algpair}
+Assume Schlickewei's $p$-adic subspace theorem in the form isolated for this purpose. For every algebraic irrational $\delta$ and every $\vartheta \in (0,1)$, the set of violating pairs with distinct gaps is finite.
+\end{theorem}
+
+\begin{proof}
+Clearing denominators in the three-term relation and writing
+\[
+  (x_{1},x_{2},x_{3}) = (3^{c}, 3^{a} 2^{c-a}, 2^{c} n_{p}) \in \Z^{3}
+\]
+turns the relation into $A x_{1} + B x_{2} + C x_{3} = 0$. At the two non-Archimedean places the powers cancel identically, and the Archimedean approximation bounds the remaining local factor by $\vartheta^{-c}$ times the height. The product of the three local contributions is therefore $\vartheta^{c} \ll H(x)^{-\varepsilon}$ for every $\varepsilon > 0$, which is the height hypothesis of the $S$-arithmetic subspace theorem. The resulting rational relation splits on whether $C = 0$. If $C = 0$, homogeneity fixes $(3/2)^{c-a}$ on an infinite set of distinct gaps, contradicting strict monotonicity. If $C \neq 0$, solving for $n_{p}$ gives $|\delta - \alpha| \le |\delta + \beta|(2/3)^{c-a} + (2\vartheta/3)^{c} \to 0$, forcing $\delta \in \Q$ and contradicting irrationality.
+\end{proof}
+
+The two sub-cases are proved without axioms: the homogeneous elimination and the inhomogeneous rationality limit are unconditional. Only the finiteness theorem itself uses the isolated hypothesis, and the module containing it is a separate library, so the hypothesis cannot enter the zero-axiom core.
+
+\section{Formal verification and reproducibility}
+\label{sec:formal}
+
+All unconditional statements in Sections~\ref{sec:pade}--\ref{sec:threehalves} are formalised in Lean~4 with Mathlib, pinned to Lean~4.36.0 and Mathlib~4.36.0. The zero-axiom core is built from the module \texttt{Mahler32} and depends only on the standard axioms of propositional extensionality, classical choice and quotient soundness; it contains no unfinished proofs and no native-code decision procedure. The conditional statement of Section~\ref{sec:algpair} lives in the separate library \texttt{Mahler32Conditional}, which is the only declaration permitted the extra hypothesis.
+
+Reproducibility is layered. The build runs \texttt{lake build -KwarningAsError=true} and lints the core. Axiom discipline is audited by a kernel-axiom check that rejects any axiom outside the standard triple, and the conditional library is checked against a whitelist that adds only the isolated hypothesis. Exact rational certificates are asserted and regenerated by the certificate script. The trusted base is probed independently: \texttt{leanchecker} replays every module, while \texttt{nanoda}, a separate Rust implementation of the Lean kernel fed by \texttt{lean4export}, re-type-checks the exported core and conditional environments. The workflow files are linted, and the LaTeX sources are checked for balanced environments, citations and build warnings. A complete theorem-to-declaration map is maintained in the repository, and the archived snapshot is available under the Zenodo DOI recorded on the title page.
+
+\section{AI assistance statement}
+\label{sec:ai}
+
+The Lean development and the preparation of this manuscript were carried out with substantial assistance from large language models. The mathematical direction, the choice of statements and the review of every claim were the author's; the models assisted with elaboration, tactic search, drafting and continuous-integration iteration. Every unconditional statement is checked by the Lean~4 kernel and by the independent kernel; the conditional statement is marked as such throughout. No numerical or structural claim in this paper rests on unverified model output.
+
+\bibliography{refs}
+
+\end{document}
