@@ -23,7 +23,7 @@ i.e. [OEIS A061419](https://oeis.org/A061419), whose parity is
 [OEIS A205083](https://oeis.org/A205083) (shifted by one index: `A205083(n) = a(n+1) mod 2`).
 The recurrence is the `3/2` dynamical system of Mahler (1968).
 
-**Paper:** [PDF](papers/main/main.pdf) · [LaTeX source](papers/main/main.tex) · [aiXiv:2611.03037](https://aixiv.online/abs/2611.03037) · [Release PDFs](https://github.com/3y3y3y-huaiji/mahler32/releases/latest) · [Zenodo DOI](https://doi.org/10.5281/zenodo.24491265).
+**Paper:** [PDF](papers/main/main.pdf) · [LaTeX source](papers/main/main.tex) · [中文版 PDF](papers/main-zh/main.pdf) · [中文 LaTeX 源](papers/main-zh/main.tex) · [aiXiv:2611.03037](https://aixiv.online/abs/2611.03037) · [Release PDFs](https://github.com/3y3y3y-huaiji/mahler32/releases/latest) · [Zenodo DOI](https://doi.org/10.5281/zenodo.24491265).
 
 ## Main results
 
@@ -77,10 +77,12 @@ The two former companion papers are merged into a single pure-mathematics paper,
 ([aiXiv:2611.03037](https://aixiv.online/abs/2611.03037)).
 The CI-compiled [PDF](papers/main/main.pdf) is committed next to the source `main.tex` and
 `refs.bib`, and is attached alongside `SHA256SUMS.txt` on every tagged
-[GitHub Release](https://github.com/3y3y3y-huaiji/mahler32/releases/latest). The text is
-organised as introduction and main results, proofs, a short formal-verification section, and an
-AI-assistance statement. The `v1.0.0` snapshot is archived on Zenodo under DOI
-[10.5281/zenodo.24491265](https://doi.org/10.5281/zenodo.24491265).
+[GitHub Release](https://github.com/3y3y3y-huaiji/mahler32/releases/latest). A full Chinese
+translation is maintained at [`papers/main-zh/main.tex`](papers/main-zh/main.tex) with its
+compiled [PDF](papers/main-zh/main.pdf); it is built with XeLaTeX (`ctex` + Noto CJK) and attached
+to the same release as `main-zh.pdf`. The text is organised as introduction and main results,
+proofs, a short formal-verification section, and an AI-assistance statement. The `v1.0.0` snapshot
+is archived on Zenodo under DOI [10.5281/zenodo.24491265](https://doi.org/10.5281/zenodo.24491265).
 Citation metadata is in [`CITATION.cff`](CITATION.cff) and [`.zenodo.json`](.zenodo.json).
 
 The formal engineering assets — [`AGENTS.md`](AGENTS.md), [`docs/`](docs/),
