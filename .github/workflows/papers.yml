@@ -81,15 +81,14 @@ jobs:
       - name: Download PDF artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: pdf-*
-          # Keep each artifact in its own directory; it is named `main.pdf`.
+          name: pdf-main
           path: artifacts
 
       - name: Assemble PDF and checksums
         run: |
           set -euo pipefail
           mkdir -p dist
-          cp artifacts/pdf-main/main.pdf dist/main.pdf
+          cp artifacts/main.pdf dist/main.pdf
           ( cd dist && sha256sum ./*.pdf > SHA256SUMS.txt )
           ls -lh dist
 
