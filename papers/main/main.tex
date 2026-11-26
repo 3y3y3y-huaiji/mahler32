@@ -50,13 +50,17 @@ For the Mahler map $T x = \{3x/2\}$ and its coprime rational-base analogues $\al
 \section{Introduction}
 \label{sec:intro}
 
-Mahler \citep{mahler1968} asked for the distribution of $\fract{\xi(3/2)^{n}}$, and the question remains open. The qualitative picture was fixed by Flatto, Lagarias and Pollington \citep{flp1995}, who determined the set of limit points of $\{\xi(p/q)^{n}\}$ for rational bases and showed that a positive proportion of the circle is unavoidable for such orbits; the negative-base analogue is due to Lu and Zheng \citep{luzheng2026}. Distribution functions for $\xi(3/2)^{n} \bmod 1$ were constructed by Strauch \citep{strauch1997}. The symbolic and combinatorial side is developed in \citep{lagarias2003,andrieu2025,cassaigne2026}; the arithmetic Diophantine bounds, denominator barriers and positivity limitations appear in \citep{stephan2026subspace,stephan2026minimal,stephan2026third,cook2026,calegari2025,elmv,dedeo2026}. The parity sequence of the underlying recursion $a(n+1) = \lceil 3a(n)/2 \rceil$ is OEIS A061419, and its parity is OEIS A205083.
+Mahler \citep{mahler1968} asked for the distribution of $\fract{\xi(3/2)^{n}}$, and the question remains open. Flatto, Lagarias and Pollington \citep{flp1995} proved that for coprime integers $2 \le q < p$ and every positive real $\xi$ the limit points of $\{\xi(p/q)^{n}\}$ satisfy
+\[
+  \limsup_{n\to\infty} \fract{\xi(p/q)^{n}} - \liminf_{n\to\infty} \fract{\xi(p/q)^{n}} \;\ge\; \frac{1}{p};
+\]
+this is a lower bound on the range of the limit-point set, not a determination of that set. The negative-base analogue is due to Lu and Zheng \citep{luzheng2026}. Strauch \citep{strauch1997} derived the functional equation satisfied by every distribution function of $\xi(3/2)^{n} \bmod 1$ and related it to Mahler's problem. The symbolic and combinatorial side is developed in \citep{lagarias2003,andrieu2025,cassaigne2026}; the arithmetic Diophantine bounds, denominator barriers and positivity limitations appear in \citep{stephan2026subspace,stephan2026minimal,stephan2026third,cook2026,calegari2025,elmv,dedeo2026}. The parity sequence of the underlying recursion $a(n+1) = \lceil 3a(n)/2 \rceil$ is OEIS A061419, and its parity is OEIS A205083.
 
 The difficulty is two-sided. A symbolic word that survives a barrier for many steps forces an integer remainder that is highly divisible by $q$, because each backward step clears a factor of $q$; at the same time the Archimedean size of that remainder is exponentially small. The two constraints compete, and the competition can be made quantitative: the $q$-adic side supplies a counting factor $q^{L}$, the Archimedean side a size factor $p^{L}$, and the critical slope is $\log_{q} p$. This is the mechanism behind the repetition exponent below, and it is also the reason the $9/4$ model admits exact finite obstructions: its two admissible digits keep the Archimedean and the $2$-adic information in step.
 
 \subsection{Main results}
 
-We prove four groups of statements. The first three are unconditional and lie in the zero-axiom core; the fourth isolates one conditional finiteness theorem.
+We prove four groups of statements. The first three are unconditional; the fourth isolates one conditional finiteness theorem. The formal status of each statement is recorded where the statement is made and is summarised in Sections~\ref{sec:formal} and~\ref{sec:ai}.
 
 \begin{theorem}[Main Theorem A: Pad\'e comparison and the general repetition exponent]
 \label{thm:mainA}
@@ -64,7 +68,7 @@ Let $e, c \in \Q$ with $e \neq 0$ and $c \neq 1$. The Archimedean and $2$-adic d
 \[
   \frac{e}{1-c} - e(1+c) = \frac{e\,c^{2}}{1-c},
 \]
-and they coincide if and only if $c = 0$. Let further $2 \le q < p$ be coprime and let $q g_{k+1} = p g_{k} + d_{k}$ with $d_{\min} \le d_{k} \le d_{\max}$. If $g_{0} \ge 1$ matches an eventually periodic word $U V^{w}$ with $|V| \ge 1$, then
+and they coincide if and only if $c = 0$. Let further $2 \le q < p$ be coprime, let $d_{\min}, d_{\max} \in \N$ with $d_{\min} \le d_{\max}$, and let $q g_{k+1} = p g_{k} + d_{k}$ with $d_{\min} \le d_{k} \le d_{\max}$ and $g_{k} \in \N$. If $g_{0} \ge 1$ matches (in the sense of Section~\ref{sec:pq}) an eventually periodic word $U V^{w}$ with $|V| \ge 1$, then
 \[
   w < \frac{\log p}{\log q} + \Bigl(\frac{\log p}{\log q} - 1\Bigr)\frac{|U|}{|V|}
       + \frac{\log\bigl(g_{0} + d_{\max}/(p-q)\bigr)}{|V| \log q}.
@@ -86,12 +90,14 @@ Finally there are constants $C, c > 0$ with $\|\hat\mu_{K}(u)\| \le C K^{-c}$ fo
 No rational $x$ has four consecutive iterates of the deterministic map inside $[2/7,5/7)$, whereas the joint two-branch relation admits explicit periodic orbits there and the holed barrier $[5/24,11/24) \cup [13/24,19/24)$ has finite survivor set $\{4/15, 2/5, 3/5, 11/15\}$. For every signed rational base $\pm p/q$ and every finite rational partition, an acyclic component ordering with no internal branching forces the walk counts, hence the symbolic entropy, to grow sub-exponentially.
 \end{theorem}
 
+\noindent\emph{Formal status.} The exactness of the holed survivor set is proved on paper in Theorem~\ref{thm:holed}; it is not formalised. In Lean the declarations \texttt{holed\_cage\_two\_cycle} and \texttt{holed\_cage\_transients} certify only that the four points lie in the barrier and that the four $\mathrm{Step}$ transitions hold, not that every other point leaves.
+
 \begin{theorem}[Main Theorem D: the algebraic-pair branch, conditional]
 \label{thm:mainD}
 Assume Schlickewei's $p$-adic subspace theorem in the form fixed below. For every algebraic irrational $\delta$ and every $\vartheta \in (0,1)$, the set of index pairs $2 \le a < c$ with distinct gaps $c-a$ for which $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ lies within distance $\vartheta^{c}$ of an integer is finite.
 \end{theorem}
 
-Theorems~\ref{thm:mainA}, \ref{thm:mainB} and~\ref{thm:mainC} are unconditional and are proved without extra axioms. Theorem~\ref{thm:mainD} is the only conditional result; its hypothesis is isolated in a separate part of the formalisation and is not used anywhere else.
+Theorems~\ref{thm:mainA} and~\ref{thm:mainB} are unconditional and are formalised in the zero-axiom core. Theorem~\ref{thm:mainC} is unconditional: its finite statements are formalised, while the exactness of the holed survivor set is proved on paper and marked as such after the statement. Theorem~\ref{thm:mainD} is the only conditional result; its hypothesis is isolated in a separate part of the formalisation and is not used anywhere else.
 
 \subsection{Organisation}
 
@@ -132,11 +138,11 @@ The comparison is useful because it turns a two-place analytic statement into on
 \section{General \texorpdfstring{$(p,q)$}{(p,q)} words and the \texorpdfstring{$\log_q p$}{log\_q p} repetition exponent}
 \label{sec:pq}
 
-Let $2 \le q < p$ be coprime integers. A word $W = (d_{0}, \dots, d_{L-1})$ is \emph{admissible} for $d_{\min} \le d_{\max}$ when $d_{\min} \le d_{j} \le d_{\max}$ for every $j$. The linear recurrence is
+Let $2 \le q < p$ be coprime integers and let $d_{\min}, d_{\max} \in \N$ with $0 \le d_{\min} \le d_{\max}$. A word $W = (d_{0}, \dots, d_{L-1})$ is \emph{admissible} for $d_{\min} \le d_{\max}$ when $d_{\min} \le d_{j} \le d_{\max}$ for every $j$. The linear recurrence is
 \begin{equation}
-  q\, g_{k+1} = p\, g_{k} + d_{k}, \qquad k = 0, \dots, L-1.
+  q\, g_{k+1} = p\, g_{k} + d_{k}, \qquad k = 0, \dots, L-1,
 \end{equation}
-Iterating and clearing denominators gives the weighted accumulation
+with $g_{0}, \dots, g_{L} \in \N$. We say that $g_{0}$ \emph{matches} the word $W$ when such nonnegative integers $g_{1}, \dots, g_{L}$ exist; for $W = U V^{w}$ this means that the concatenated word $U V^{w}$ is matched for its full length $|U| + w|V|$. Iterating and clearing denominators gives the weighted accumulation
 \begin{equation}
   \omega_{p,q}(W) = \sum_{j=0}^{L-1} d_{j}\, p^{L-1-j} q^{j},
 \end{equation}
@@ -210,7 +216,7 @@ and the first fraction equals $\tfrac{\log p}{\log q} + \bigl(\tfrac{\log p}{\lo
 
 \begin{remark}[Relation to the qualitative range results]
 \label{rem:qualitative}
-The qualitative side is classical: Flatto, Lagarias and Pollington \citep{flp1995} determined the range and limit-point structure of $\{\xi(p/q)^{n}\}$ for rational bases, and Lu and Zheng \citep{luzheng2026} treat the negative-base analogue. The increment of Theorems~\ref{thm:isolation}--\ref{thm:pqrep} is quantitative rather than qualitative: the two-place isolation yields an explicit linear exclusion envelope with critical slope $\log_{q} p$ and the stated bound on $w$, together with a zero-axiom formalisation. No new qualitative assertion about eventual periodicity is claimed here.
+The qualitative side is classical: Flatto, Lagarias and Pollington \citep{flp1995} proved the lower bound $\limsup_{n\to\infty}\fract{\xi(p/q)^{n}} - \liminf_{n\to\infty}\fract{\xi(p/q)^{n}} \ge 1/p$ for coprime $2 \le q < p$ and every positive real $\xi$, and Lu and Zheng \citep{luzheng2026} treat the negative-base analogue. The increment of Theorems~\ref{thm:isolation}--\ref{thm:pqrep} is quantitative rather than qualitative: the two-place isolation yields an explicit linear exclusion envelope with critical slope $\log_{q} p$ and the stated bound on $w$, together with a zero-axiom formalisation. No new qualitative assertion about eventual periodicity is claimed here.
 \end{remark}
 
 \begin{remark}[Critical slopes]
@@ -299,18 +305,29 @@ Since both $A'$ and $B'$ survive step $N$, each has residue $1$ or $2$ modulo $4
 
 \begin{lemma}[Finite-window lifting]
 \label{lem:lift}
-For all $k, t, g$, one has $\mathrm{step}(g + 4^{k+1} t) = \mathrm{step}(g) + 9 \cdot 4^{k} t$ in the sense that survival to $k$ steps has period $4^{k}$ in $g$. Consequently $8\,|S_{N+2}| \le 3\,|S_{N}|$ at the window $4^{4} = 256$.
+For all $k, t, g$ with $\mathrm{step}(g)$ defined, one has $\mathrm{step}(g + 4^{k+1} t) = \mathrm{step}(g) + 9 \cdot 4^{k} t$, and survival to $k$ steps is periodic with period $4^{k}$ in $g$. In the common window $[0, 4^{4}) = [0,256)$ one has the finite count
+\[
+  8 \cdot \#\{\, g < 256 : g \text{ survives } 6 \text{ steps} \,\}
+  \;\le\;
+  3 \cdot \#\{\, g < 256 : g \text{ survives } 4 \text{ steps} \,\},
+\]
+where the two sides are $8 \cdot 4 = 32$ and $3 \cdot 16 = 48$. No general-$N$ inequality $8\,|S_{N+2}| \le 3\,|S_{N}|$ is asserted; the global cardinalities are $|S_{N+2}| = 2^{N+2}$ and $|S_{N}| = 2^{N}$.
 \end{lemma}
 
 \begin{proof}
-Substituting $g + 4^{k+1} t$ into \eqref{eq:94} and reducing modulo $4$ shows that the admissible residue is unchanged, while the affine image shifts by $9 \cdot 4^{k} t$. The block inequality is then a finite count over the $256$ residues.
+Substituting $g + 4^{k+1} t$ into \eqref{eq:94} and reducing modulo $4$ shows that the admissible residue is unchanged, while the affine image shifts by $9 \cdot 4^{k} t$. The block inequality is then a finite count over the $256$ residues: exactly $4$ of them survive six steps and $16$ survive four steps.
 \end{proof}
 
 \begin{theorem}[Sum and difference identities; carry-free base-$9$ digit conservation]
 \label{thm:shadows}
-The sum and difference of two surviving orbits obey exact affine recursions driven by the digit sums. Moreover the base-$9$ digit-sum identity
+The sum and difference of two surviving orbits obey exact affine recursions driven by the digit sums. For the digit-sum identity, process a digit word $d_{0}, \dots, d_{L-1}$ from left to right with incoming remainders $r_{0}, \dots, r_{L-1}$ and output digits $a'_{0}, \dots, a'_{L-1}$ defined by
 \[
-  4 \sum(\text{output digits}) = 8 \sum(\text{incoming remainders}) + \sum(\text{input digits}) + r_{0} - r_{\text{final}}
+  4a'_{k} + r_{k+1} = 9r_{k} + d_{k}, \qquad r_{k+1} = (9r_{k} + d_{k}) \bmod 4,
+\]
+and write $r_{\mathrm{final}} = r_{L}$. Then the base-$9$ digit-sum identity
+\[
+  4 \sum_{k=0}^{L-1} a'_{k}
+  = 8 \sum_{k=0}^{L-1} r_{k} + \sum_{k=0}^{L-1} d_{k} + r_{0} - r_{\mathrm{final}}
 \]
 holds without carry propagation.
 \end{theorem}
@@ -324,11 +341,11 @@ Let $K \ge 1$. If $g_{0}$ survives $2K$ steps of \eqref{eq:94} and reaches $g_{K
   S_{K} &= \{\, x : x \text{ survives } K \text{ steps}\,\}, \\
   A_{K} &= \bigl\{\, a : (4^{K} a) \bmod 9^{K} = \omega_{9,4}(W) \text{ for a valid } K\text{-digit word } W \,\bigr\}.
 \end{align*}
-Every $a \in A_{K}$ satisfies $2(9^{K} - 4^{K}) \le 5\,((4^{K} a) \bmod 9^{K}) \le 3(9^{K} - 4^{K})$, and $18 \in A_{K}$ for every $K \ge 1$, because $5 \mid 9^{K} - 4^{K}$.
+Every $a \in A_{K}$ satisfies $2(9^{K} - 4^{K}) \le 5\,((4^{K} a) \bmod 9^{K}) \le 3(9^{K} - 4^{K})$. Moreover $A_{K} \neq \varnothing$: a $2K$-step survivor exists because $|S_{2K}| = 2^{2K} > 0$, and the first assertion applied to it produces an element of $S_{K} \cap A_{K}$.
 \end{theorem}
 
 \begin{proof}
-The forward half is the definition of survival to $2K$ steps split at time $K$. For the reverse half, the identity $4^{K} g_{K} = \omega_{9,4}(W) + 9^{K} g_{0}$ reduces the statement to the digit bounds $2(9^{K} - 4^{K}) \le 5\, \omega_{9,4}(W) \le 3(9^{K} - 4^{K})$, which follow from $d_{j} \in \{2,3\}$ summed with weights $4^{j} 9^{K-1-j}$. Divisibility by $5$ follows from $9 \equiv 4 \pmod 5$.
+The forward half is the definition of survival to $2K$ steps split at time $K$. For the reverse half, the identity $4^{K} g_{K} = \omega_{9,4}(W) + 9^{K} g_{0}$ reduces the statement to the digit bounds $2(9^{K} - 4^{K}) \le 5\, \omega_{9,4}(W) \le 3(9^{K} - 4^{K})$, which follow from $d_{j} \in \{2,3\}$ summed with weights $4^{j} 9^{K-1-j}$. Divisibility by $5$ follows from $9 \equiv 4 \pmod 5$. For non-emptiness, $|S_{2K}| = 2^{2K}$ was noted in Section~\ref{sec:model94}.
 \end{proof}
 
 \begin{corollary}[Antipodal diameter]
@@ -352,7 +369,11 @@ For every $K \ge 1$ and $u \in \Z$,
 \[
   \hat\mu_{K+1}(4u) = \hat\mu_{K}(u),
 \]
-and $\hat\mu_{K}(u)$ admits a product representation as a product of cosines over the $K$ base-$4$ digits of $u$.
+and, with $w \equiv 9^{-1} \pmod{4^{K}}$,
+\[
+  \bigl\|\hat\mu_{K}(u)\bigr\|
+  = \prod_{m=0}^{K-1} \left|\cos\!\left(\frac{\pi\, w^{K-m} u}{4^{m+1}}\right)\right|.
+\]
 \end{theorem}
 
 \begin{theorem}[Global odd-frequency decay]
@@ -410,7 +431,7 @@ There is no $x \in \Q$ such that $x, T_{q}(x), T_{q}^{2}(x), T_{q}^{3}(x)$ all l
 \end{theorem}
 
 \begin{proof}
-Let $x \in [2/7,5/7)$. If $3x/2 \ge 1$, then $T_{q}(x) = 3x/2 - 1$ and $T_{q}(x) \ge 6/7$, impossible; hence $x < 10/21$ and $T_{q}(x) = 3x/2$. Repeating, $T_{q}^{2}(x) = 9x/4$ and $x < 20/63$. Now $z = 9x/4 \in [9/14,5/7)$. If $3z/2 < 1$, then $T_{q}^{3}(x) = 27x/8 \ge 27/28 > 5/7$; otherwise $T_{q}^{3}(x) = 27x/8 - 1 < 1/14 < 2/7$. Both alternatives miss the barrier.
+Let $x \in [2/7,5/7)$. If $3x/2 \ge 1$, then $T_{q}(x) = 3x/2 - 1 < 1/14 < 2/7$, impossible; hence $3x/2 < 1$, $T_{q}(x) = 3x/2$, and $T_{q}(x) < 5/7$ gives $x < 10/21$. Repeating the same argument at $y = 3x/2$: if $3y/2 \ge 1$ then $T_{q}^{2}(x) = 9x/4 - 1 < 1/14 < 2/7$, so $3y/2 < 1$, $T_{q}^{2}(x) = 9x/4$, and $x < 20/63$. Now $z = 9x/4 \in [9/14,5/7)$. If $3z/2 < 1$, then $T_{q}^{3}(x) = 27x/8 \ge 27/28 > 5/7$; otherwise $T_{q}^{3}(x) = 27x/8 - 1 < 1/14 < 2/7$. Both alternatives miss the barrier.
 \end{proof}
 
 The deterministic exit says nothing about the joint relation. The following witnesses are exact rational identities.
@@ -432,8 +453,18 @@ On the barrier $[5/24,11/24) \cup [13/24,19/24)$ the joint survivor set is exact
 \end{theorem}
 
 \begin{proof}
-The displayed steps are direct rational identities. The exactness of the survivor set is certified by the closed preimage iteration $V_{0} = U$, $V_{n+1} = U \cap (T_{0}^{-1} V_{n} \cup T_{1}^{-1} V_{n})$ in exact rational arithmetic; after finitely many steps the iteration stabilises at the four displayed points, and every other point leaves $U$.
+Write $U = L \cup R$ with $L = [5/24,11/24)$ and $R = [13/24,19/24)$, and set $A = [5/16,11/24)$, $B = [13/24,11/16)$.
+
+\emph{Step 1.} For $x \in L$ one has $3x/2 \in [5/16,11/16)$; if $x < 1/3$ then $T_{1}(x) = 3x/2 + 1/2 \in [13/16,1)$, and if $x \ge 1/3$ then $T_{1}(x) = 3x/2 - 1/2 \in [0,3/16)$, so in either case $T_{1}(x) \notin U$. For $x \in R$ one has $3x/2 \in [13/16,19/16)$; if $x < 2/3$ then $T_{0}(x) = 3x/2 \in [13/16,1)$, and if $x \ge 2/3$ then $T_{0}(x) = 3x/2 - 1 \in [0,1/16)$, so $T_{0}(x) \notin U$. Hence every $x \in U$ with $\mathrm{Step}(x) \in U$ satisfies $\mathrm{Step}(x) \in U \cap [5/16,11/16) = A \cup B$.
+
+\emph{Step 2.} For $x \in A$ only $T_{0}$ can remain in $U$, and $T_{0}(x) = 3x/2 \in [15/32,11/16)$ meets $U$ only in $B$; thus $x \in A$ survives one step exactly when $x \in A_{1} = [13/36,11/24)$, and $T_{0}(A_{1}) = B$. For $x \in B$ only $T_{1}$ can remain in $U$, and $T_{1}(x) = 3x/2 - 1/2$ meets $U$ only in $A$; thus $x \in B$ survives one step exactly when $x \in B_{1} = [13/24,23/36)$, and $T_{1}(B_{1}) = A$. Consequently the second iterate on $A_{1}$ is $G_{A} = T_{1} \circ T_{0}$, and on $A_{2} = [13/36,23/54)$ it maps bijectively onto $A$ with slope $9/4$; its fixed point is $2/5$. Likewise $G_{B} = T_{0} \circ T_{1}$ maps $B_{2} = [31/54,23/36)$ bijectively onto $B$ with slope $9/4$ and fixed point $3/5$. Since $G_{A}^{-1}$ contracts $A$ into $A_{2}$ with ratio $4/9$, the points of $A$ whose full forward orbit stays in $U$ form $\bigcap_{n \ge 0} G_{A}^{-n}(A) = \{2/5\}$; similarly those in $B$ form $\{3/5\}$.
+
+\emph{Step 3.} The preimages in $U$ of $2/5$ and of $3/5$ under $\mathrm{Step}$ are $\{4/15,3/5\}$ and $\{2/5,11/15\}$, respectively. Hence the joint survivor set is exactly $\{4/15,2/5,3/5,11/15\}$, with the displayed transitions.
+
+The preimage iteration $V_{0} = U$, $V_{n+1} = U \cap (T_{0}^{-1} V_{n} \cup T_{1}^{-1} V_{n})$ never becomes this four-point set at a finite stage: its four components shrink geometrically and converge to the four points. The contraction argument above is what identifies the limit.
 \end{proof}
+
+\noindent\emph{Formal status.} The four points, their barrier membership and the four $\mathrm{Step}$ transitions are kernel-checked (\texttt{holed\_cage\_two\_cycle}, \texttt{holed\_cage\_transients}). The exclusion of every other point is the paper proof above and is not formalised; the certificate script only confirms the four-component count to depth $24$.
 
 \begin{remark}[Widths and the arithmetic origin of $8/57$]
 The interval $[2/7,5/7)$ has width $3/7$, while $[1/7,3/7) \cup [4/7,6/7)$ has width $4/7 > 1/2$. For the left-hole family $[\delta,1/2)$ under the branch-restricted map $F$ ($F = T_{0}$ on $[0,1/3)$, $F = T_{1}$ on $[1/3,1/2)$), the threshold
@@ -484,21 +515,27 @@ The holed region has total width $283/500 > 1/2$. For each region the kernel als
 Each row is a finite integer computation. The branch-overlap predicate, the component ordering and the absence of internal branching are all closed statements over machine integers, discharged by kernel evaluation; the survivor partitions are produced independently by exact rational preimage iteration.
 \end{proof}
 
-\begin{remark}
-The widths of the four certified regions exceed the classical interval-range bounds of length $1/p$ for positive bases and $(1 + r - r^{2})/p$, $r = q/p$, for negative bases \citep{flp1995,luzheng2026}. Wider empirically observed windows are not asserted here; only the four exact certificates and the depth-$7$ $+5/3$ check are verified artefacts.
+\begin{remark}[Certified widths are not orbit-exclusion bounds]
+\label{rem:certwidths}
+It is not claimed that these certified regions exclude an orbit of a rational base. Theorems~\ref{thm:ze} and~\ref{thm:certs} bound walk counts in a coding graph and show that an orbit staying in $U$ for the certified depth lies in a certified cell; they do not show that any orbit leaves the region, and no passage from the automaton to orbits $\{\xi(p/q)^{n}\}$ is given here. In particular the widths of the four certified regions are not claimed to be comparable with the interval-range bounds of \citep{flp1995,luzheng2026}. Wider empirically observed windows are not asserted here; only the four exact certificates and the depth-$7$ $+5/3$ check are verified artefacts.
 \end{remark}
 
-\subsection{Invariant-measure and transfer bounds}
+\subsection{Transfer and expansion bounds}
 
 On $[0,1/2)$ define the map $U(x) = (3x/2) \bmod (1/2)$.
 
 \begin{theorem}[Transport bounds for the map $U$]
 \label{thm:cup}
-$U$ preserves $[0,1/2)$, has the exact $3$-cycle $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$, expands branchwise distances by $3/2$, and satisfies the $2{:}1$ transport balance $\mu([1/6,1/4]) = \mu([1/3,1/2])$ for a measure carried by $x \mapsto 2x/3$.
+$U$ preserves $[0,1/2)$, has the exact $3$-cycle $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$, expands branchwise distances by $3/2$, and satisfies the $2{:}1$ length identity
+\[
+  \bigl|[1/3,1/2]\bigr| = 2\,\bigl|[1/6,1/4]\bigr|,
+  \qquad\text{that is,}\qquad \frac12 - \frac13 = 2\Bigl(\frac14 - \frac16\Bigr),
+\]
+which is the exact content of the scaling $x \mapsto 2x/3$ on lengths.
 \end{theorem}
 
 \begin{proof}
-The cycle and the expansion are direct rational identities. The balance is the identity $1/2 - 1/3 = 2(1/4 - 1/6)$.
+The cycle and the expansion are direct rational identities. The length identity is $1/2 - 1/3 = 2(1/4 - 1/6)$, and the scaling $x \mapsto 2x/3$ sends $[1/4,1/2]$ onto $[1/6,1/3]$, scaling lengths by $2/3$. No invariant measure is constructed or used.
 \end{proof}
 
 \section{The algebraic-pair branch}
@@ -516,24 +553,28 @@ Clearing denominators in the three-term relation and writing
 \[
   (x_{1},x_{2},x_{3}) = (3^{c}, 3^{a} 2^{c-a}, 2^{c} n_{p}) \in \Z^{3}
 \]
-turns the relation into $A x_{1} + B x_{2} + C x_{3} = 0$. At the two non-Archimedean places the powers cancel identically, and the Archimedean approximation bounds the remaining local factor by $\vartheta^{-c}$ times the height. The product of the three local contributions is therefore $\vartheta^{c} \ll H(x)^{-\varepsilon}$ for every $\varepsilon > 0$, which is the height hypothesis of the $S$-arithmetic subspace theorem. The resulting rational relation splits on whether $C = 0$. If $C = 0$, homogeneity fixes $(3/2)^{c-a}$ on an infinite set of distinct gaps, contradicting strict monotonicity. If $C \neq 0$, solving for $n_{p}$ gives $|\delta - \alpha| \le |\delta + \beta|(2/3)^{c-a} + (2\vartheta/3)^{c} \to 0$, forcing $\delta \in \Q$ and contradicting irrationality.
+turns the relation into $A x_{1} + B x_{2} + C x_{3} = 0$. At the two non-Archimedean places the powers cancel identically, and the Archimedean approximation bounds the remaining local factor by $\vartheta^{-c}$ times the height. The product of the three local contributions is therefore $\vartheta^{c} \ll H(x)^{-\varepsilon}$ for a fixed $\varepsilon > 0$ (one such $\varepsilon$ suffices), which is the height hypothesis of the $S$-arithmetic subspace theorem. The resulting rational relation splits on whether $C = 0$. If $C = 0$, homogeneity fixes $(3/2)^{c-a}$ on an infinite set of distinct gaps, contradicting strict monotonicity. If $C \neq 0$, solving for $n_{p}$ gives $|\delta - \alpha| \le |\delta + \beta|(2/3)^{c-a} + (2\vartheta/3)^{c} \to 0$, forcing $\delta \in \Q$ and contradicting irrationality.
 \end{proof}
 
 The two sub-cases are proved without axioms: the homogeneous elimination and the inhomogeneous rationality limit are unconditional. Only the finiteness theorem itself uses the isolated hypothesis, and the module containing it is a separate library, so the hypothesis cannot enter the zero-axiom core.
 
 The isolated hypothesis is a \emph{specialised post-reduction} statement, not the general $S$-arithmetic subspace theorem. Concretely, the Lean axiom takes the Diophantine approximation condition on $\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)$ as hypothesis and returns the rational linear relation; the clearing of denominators that produces $(3^{c}, 3^{a}2^{c-a}, 2^{c}n_{p}) \in \Z^{3}$ and the verification that the $S$-arithmetic product height satisfies $\vartheta^{c} \ll H(x)^{-\varepsilon}$ are carried out in the paper proof above but are not formalised. What the kernel checks unconditionally is everything after the relation has been obtained: the $C = 0$ and $C \ne 0$ closing arguments. The trusted base of this section is therefore the specialised corollary itself, not a formal derivation of it from the textbook theorem.
 
+Finally, \citet[Theorem~5.15]{stephan2026minimal} assumes this algebraic-pair branch as a hypothesis; Theorem~\ref{thm:algpair} supplies it under the stated subspace hypothesis.
+
 \section{Formal verification and reproducibility}
 \label{sec:formal}
 
-All unconditional statements in Sections~\ref{sec:pade}--\ref{sec:threehalves} are formalised in Lean~4 with Mathlib, pinned to Lean~4.36.0 and Mathlib~4.36.0. The zero-axiom core is built from the module \texttt{Mahler32} and depends only on the standard axioms of propositional extensionality, classical choice and quotient soundness; it contains no unfinished proofs and no native-code decision procedure. The paper discusses the modules that carry the argument of Sections~\ref{sec:pade}--\ref{sec:threehalves}; the repository additionally contains auxiliary and peripheral developments (for instance \texttt{Base6LightCone}, \texttt{SyracuseGates}, \texttt{ArnoldTongue5State}, \texttt{ArnoldTongue7State}, \texttt{DAGBoundedGap}, \texttt{Fib11Free}, \texttt{WalshZeroCorr} and \texttt{HInvariance}) that are not needed for the main theorems. All are reachable from \texttt{Mahler32Core.lean} and audited by \texttt{AuditAxioms.lean}, and the README records a complete module-to-content inventory. The conditional statement of Section~\ref{sec:algpair} lives in the separate library \texttt{Mahler32Conditional}, which is the only declaration permitted the extra hypothesis. That hypothesis is the specialised post-reduction form: the passage from the general subspace theorem to it, including the denominator clearing and the height estimate, is verified on paper only, while the two closing cases are checked in Lean.
+The statements of Sections~\ref{sec:pade}--\ref{sec:threehalves} that are not formalised are marked as paper-only at the statement; all the others are kernel-checked. The kernel-checked statements are formalised in Lean~4 with Mathlib, pinned to Lean~4.36.0 and Mathlib~4.36.0. The zero-axiom core is built from the module \texttt{Mahler32} and depends only on the standard axioms of propositional extensionality, classical choice and quotient soundness; it contains no unfinished proofs and no native-code decision procedure. The paper discusses the modules that carry the argument of Sections~\ref{sec:pade}--\ref{sec:threehalves}; the repository additionally contains auxiliary and peripheral developments (for instance \texttt{Base6LightCone}, \texttt{SyracuseGates}, \texttt{ArnoldTongue5State}, \texttt{ArnoldTongue7State}, \texttt{DAGBoundedGap}, \texttt{Fib11Free}, \texttt{WalshZeroCorr} and \texttt{HInvariance}) that are not needed for the main theorems. All are reachable from \texttt{Mahler32Core.lean} and audited by \texttt{AuditAxioms.lean}, and the README records a complete module-to-content inventory. The conditional statement of Section~\ref{sec:algpair} lives in the separate library \texttt{Mahler32Conditional}, which is the only declaration permitted the extra hypothesis. That hypothesis is the specialised post-reduction form: the passage from the general subspace theorem to it, including the denominator clearing and the height estimate, is verified on paper only, while the two closing cases are checked in Lean.
+
+Two items are paper-only and are marked as such at their statements. The first is the exclusion of every other point in the holed survivor set of Theorem~\ref{thm:holed}: Lean certifies the four points and their four $\mathrm{Step}$ transitions through \texttt{holed\_cage\_two\_cycle} and \texttt{holed\_cage\_transients}, but exactness is the paper proof. The second is the comparison of the certified widths with orbit-exclusion bounds, which is not made (Remark~\ref{rem:certwidths}). The finite-window inequality of Lemma~\ref{lem:lift}, the interval clamp of Theorem~\ref{thm:cantor}, the cosine product of Theorem~\ref{thm:contraction} and the length identity of Theorem~\ref{thm:cup} all have kernel-checked declarations, and the previously unlisted declarations \texttt{Tcup\_mem}, \texttt{Tcup\_dist}, \texttt{two\_one\_split} and \texttt{scale\_two\_thirds} are now included in \texttt{AuditAxioms.lean}.
 
 Reproducibility is layered. The build runs \texttt{lake build -KwarningAsError=true} and lints the core. Axiom discipline is audited by a kernel-axiom check that rejects any axiom outside the standard triple, and the conditional library is checked against a whitelist that adds only the isolated hypothesis. Exact rational certificates are asserted and regenerated by the certificate script. The trusted base is probed independently: \texttt{leanchecker} replays every module, while \texttt{nanoda}, a separate Rust implementation of the Lean kernel fed by \texttt{lean4export}, re-type-checks the exported core and conditional environments. The workflow files are linted, and the LaTeX sources are checked for balanced environments, citations and build warnings. A complete theorem-to-declaration map is maintained in the repository, and the archived snapshot is available under the Zenodo DOI recorded on the title page.
 
 \section{AI assistance statement}
 \label{sec:ai}
 
-The Lean development and the preparation of this manuscript were carried out with substantial assistance from large language models. The mathematical direction, the choice of statements and the review of every claim were the author's; the models assisted with elaboration, tactic search, drafting and continuous-integration iteration. Every unconditional statement is checked by the Lean~4 kernel and by the independent kernel; the conditional statement is marked as such throughout. No numerical or structural claim in this paper rests on unverified model output.
+The Lean development and the preparation of this manuscript were carried out with substantial assistance from large language models. The mathematical direction, the choice of statements and the review of every claim were the author's; the models assisted with elaboration, tactic search, drafting and continuous-integration iteration. Every statement marked as kernel-checked is checked by the Lean~4 kernel and by the independent kernel. The two paper-only items---the exactness of the holed survivor set in Theorem~\ref{thm:holed} and the non-comparison of certified widths in Remark~\ref{rem:certwidths}---are marked as such throughout, and the conditional statement is marked as such throughout. No numerical or structural claim in this paper rests on unverified model output.
 
 \bibliography{refs}
 

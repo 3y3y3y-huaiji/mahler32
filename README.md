@@ -33,7 +33,7 @@ The recurrence is the `3/2` dynamical system of Mahler (1968).
 | `(9,4)` congruence model | Mirror symmetry `g_k + g̃_k = 9^k 4^{N−k} − 1`; even-level extinction; four-point odd-level exclusion; CRT intersection modulo `36^K` of the `2`-adic and `3`-adic survivor sets, with antipodal diameter `≤ (9^K − 4^K)/5`; global odd-frequency decay `‖μ̂_K(u)‖ ≤ C K^{−c}`. | Unconditional, zero axioms |
 | Quantitative Weyl equidistribution | The `9/4` Fourier decay extends to every coprime `p > q ≥ 2`: `‖μ̂_K(u)‖ ≤ C K^{−c}` whenever `q ∤ u`, explicit at `3/2, 4/3, 5/4, 5/3, 7/4, 8/3`. | Unconditional, zero axioms |
 | Simultaneous Padé comparison | Archimedean and `2`-adic diagonal Padé approximants differ by `e c²/(1−c)` and coincide iff `c = 0`; with integer-vanishing this gives the repetition exponent above. | Unconditional, zero axioms |
-| `3/2` deterministic vs joint symbolics | No rational `x` has four iterates of the deterministic map in `[2/7, 5/7)`; the joint two-branch relation admits explicit periodic orbits there; the holed barrier has survivor set `{4/15, 2/5, 3/5, 11/15}`. | Unconditional, zero axioms |
+| `3/2` deterministic vs joint symbolics | No rational `x` has four iterates of the deterministic map in `[2/7, 5/7)`; the joint two-branch relation admits explicit periodic orbits there; the holed barrier has survivor set `{4/15, 2/5, 3/5, 11/15}`. | Unconditional; holed exactness is paper-only (Lean certifies the four points and their transitions) |
 | Zero-topological-entropy automata | An acyclic component ordering with no internal branching forces polynomial walk growth, hence zero entropy, for every signed rational base `±p/q`; exact rational certificates at four regions. | Unconditional, kernel `decide` |
 | Algebraic-pair branch | For algebraic irrational `δ`, the violating index pairs with distinct gaps are finite. | Conditional on Schlickewei's subspace theorem |
 
@@ -124,7 +124,7 @@ The core module [`Mahler32/Basic.lean`](Mahler32/Basic.lean) (1046 lines) proves
 | `Mahler32/HInvariance.lean` | Hensel inverse, word residue, affine offset, `h`-invariance of local Fourier norms |
 | `Mahler32/SyracuseBijection.lean` | full-branch bijection of the accelerated Mahler–Syracuse map |
 | `Mahler32/ZeroEntropyCages.lean` | zero-entropy exclusion intervals; deterministic `[2/7,5/7)` exit; joint orbits and cycles; holed finite survivor core |
-| `Mahler32/DiscreteFluidCertificates.lean` | invariant-measure and transfer bounds, exact `4/19 → 6/19 → 9/19 → 4/19` cycle, `3/2` expansion, `2:1` mass split |
+| `Mahler32/DiscreteFluidCertificates.lean` | transfer and expansion bounds, exact `4/19 → 6/19 → 9/19 → 4/19` cycle, `3/2` expansion, `2:1` length split (no invariant measure) |
 | `Mahler32/Model94Obstructions.lean` | `(9,4)` mirror symmetry, even-level extinction, forbidden sums, four-point odd-level exclusion, sum/difference identities, carry-free base-9 conservation, finite-window bound |
 | `Mahler32/Model94GlobalDecay.lean` | CRT intersection modulo `36^K` of the `2`-adic and `3`-adic survivor sets, antipodal exclusion, `4`-contraction, cosine product, global odd-frequency decay |
 | `Mahler32/RationalBaseDefs.lean` | exposed definitions for general coprime `(p,q)` words, consecutive-digit model, rational intervals, zero-entropy finite-state model |
