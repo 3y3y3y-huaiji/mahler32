@@ -36,10 +36,13 @@ ALLOWED_ROOT_JSON = {"comparator.json", "lake-manifest.json", ".zenodo.json"}
 FORBIDDEN_NAMES = re.compile(
     r"""^(
         \.submit.*\.json | \.verify.*\.json | \.status\.json |
-        \.tag_resp\.json | \.gist_resp\.json | \.review\.json | st\.json
+        \.tag_resp\.json | \.gist_resp\.json | \.review\.json | st\.json |
+        HANDOFF.*\.md
     )$""",
     re.VERBOSE,
 )
+
+FORBIDDEN_PATH_PREFIXES = (".aixiv-notes/", "papers/paper_merged/", "scratch/")
 
 SECRET_PATTERNS = [
     (re.compile(r"access_token"), "contains `access_token`"),
@@ -92,12 +95,16 @@ def read_text(path: str) -> str | None:
 
 def problems_for(path: str) -> list[str]:
     reasons: list[str] = []
-    name = path.rsplit("/", 1)[-1]
+    norm_path = path.replace("\\", "/")
+    name = norm_path.rsplit("/", 1)[-1]
 
     if FORBIDDEN_NAMES.match(name):
-        reasons.append("is a submission scratch file")
+        reasons.append("is a submission/handoff scratch file")
 
-    if path.count("/") == 0 and path.endswith(".json") and path not in ALLOWED_ROOT_JSON:
+    if any(norm_path.startswith(prefix) for prefix in FORBIDDEN_PATH_PREFIXES):
+        reasons.append("is inside a forbidden scratch/handoff directory")
+
+    if norm_path.count("/") == 0 and norm_path.endswith(".json") and norm_path not in ALLOWED_ROOT_JSON:
         reasons.append(
             "is a root-level .json that is not one of "
             + ", ".join(sorted(ALLOWED_ROOT_JSON))

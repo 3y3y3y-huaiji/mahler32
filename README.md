@@ -4,6 +4,7 @@
 [![Independent kernel (nanoda)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/independent-kernel.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/independent-kernel.yml)
 [![Papers (LaTeX)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/papers.yml/badge.svg)](https://github.com/3y3y3y-huaiji/mahler32/actions/workflows/papers.yml)
 [![Release](https://img.shields.io/github/v/release/3y3y3y-huaiji/mahler32?label=Release)](https://github.com/3y3y3y-huaiji/mahler32/releases/latest)
+[![aiXiv](https://img.shields.io/badge/aiXiv-2611.03037-B31B1B.svg)](https://aixiv.online/abs/2611.03037)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24491265.svg)](https://doi.org/10.5281/zenodo.24491265)
 [![Lean 4](https://img.shields.io/badge/Lean-v4.36.0-blue.svg)](https://lean-lang.org/)
 [![Mathlib4](https://img.shields.io/badge/Mathlib4-v4.36.0-brightgreen.svg)](https://github.com/leanprover-community/mathlib4)
@@ -22,7 +23,7 @@ i.e. [OEIS A061419](https://oeis.org/A061419), whose parity is
 [OEIS A205083](https://oeis.org/A205083) (shifted by one index: `A205083(n) = a(n+1) mod 2`).
 The recurrence is the `3/2` dynamical system of Mahler (1968).
 
-**Paper:** [PDF](papers/main/main.pdf) · [LaTeX source](papers/main/main.tex) · [Zenodo DOI](https://doi.org/10.5281/zenodo.24491265).
+**Paper:** [PDF](papers/main/main.pdf) · [LaTeX source](papers/main/main.tex) · [aiXiv:2611.03037](https://aixiv.online/abs/2611.03037) · [Release PDFs](https://github.com/3y3y3y-huaiji/mahler32/releases/latest) · [Zenodo DOI](https://doi.org/10.5281/zenodo.24491265).
 
 ## Main results
 
@@ -72,13 +73,14 @@ reproducibility and the LaTeX build.
 ## Paper
 
 The two former companion papers are merged into a single pure-mathematics paper,
-[*Symbolic exclusion intervals, Fourier decay, and p-adic obstructions for rational-base orbits*](papers/main/main.tex).
-The rendered [PDF](papers/main/main.pdf) (12 pages) is committed next to the source `main.tex` and
-`refs.bib`, so it can be read directly on GitHub. The text is organised as introduction and main
-results, proofs, a short
-formal-verification section, and an AI-assistance statement. The `v1.0.0` snapshot is archived on
-Zenodo under DOI [10.5281/zenodo.24491265](https://doi.org/10.5281/zenodo.24491265); prebuilt PDFs
-and checksums are attached to the [latest GitHub Release](https://github.com/3y3y3y-huaiji/mahler32/releases/latest).
+[*Symbolic exclusion intervals, Fourier decay, and p-adic obstructions for rational-base orbits*](papers/main/main.tex)
+([aiXiv:2611.03037](https://aixiv.online/abs/2611.03037)).
+The CI-compiled [PDF](papers/main/main.pdf) is committed next to the source `main.tex` and
+`refs.bib`, and is attached alongside `SHA256SUMS.txt` on every tagged
+[GitHub Release](https://github.com/3y3y3y-huaiji/mahler32/releases/latest). The text is
+organised as introduction and main results, proofs, a short formal-verification section, and an
+AI-assistance statement. The `v1.0.0` snapshot is archived on Zenodo under DOI
+[10.5281/zenodo.24491265](https://doi.org/10.5281/zenodo.24491265).
 Citation metadata is in [`CITATION.cff`](CITATION.cff) and [`.zenodo.json`](.zenodo.json).
 
 The formal engineering assets — [`AGENTS.md`](AGENTS.md), [`docs/`](docs/),

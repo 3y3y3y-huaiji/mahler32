@@ -1,5 +1,5 @@
 {
-  "title": "Parity structure of the 3/2 Mahler recursion and 9/4 arithmetic obstructions in Lean 4",
+  "title": "Symbolic exclusion intervals, Fourier decay, and p-adic obstructions for rational-base orbits (Lean 4 formalization)",
   "description": "Machine-checked Lean 4 / Mathlib4 formalization of the arithmetic, symbolic-dynamical, and harmonic structure of the 3/2 Mahler recursion a(n+1) = ceil(3 a(n) / 2) (OEIS A061419 / A205083), its 9/4 twin dynamics, and general coprime rational bases p/q. Covers base-6/base-3 two-state automata, information windows, hexadecimal light-cone flips, F_2 linear splitting, 11-free Fibonacci pruning, Walsh zero correlation, simultaneous Archimedean and q-adic Pade evaluation, mod-9 congruence criteria, zero-topological-entropy symbolic obstructions, discrete fluid certificates, finite-roof obstructions, midpoint 36^K Cantor intersections, quantitative Weyl Fourier decay O(K^{-c}), and signed rational zero-entropy Markov SCC automata, verified with zero sorry and audited with Lean kernel replay (leanchecker) and nanoda.",
   "creators": [
     {
@@ -27,6 +27,11 @@
     {
       "identifier": "https://github.com/3y3y3y-huaiji/mahler32",
       "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://aixiv.online/abs/2611.03037",
+      "relation": "isDocumentedBy",
       "scheme": "url"
     }
   ]

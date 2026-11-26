@@ -19,3 +19,8 @@ pg*.html
 
 # Uploaded task material (never committed)
 .uploads/
+
+# Agent handoff and aiXiv submission scratch (never committed)
+HANDOFF*.md
+.aixiv-notes/
+papers/paper_merged/
