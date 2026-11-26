@@ -4,11 +4,13 @@
 Usage:
     python3 scripts/check_latex.py --source
     python3 scripts/check_latex.py --build papers/main
+    python3 scripts/check_latex.py --check-bundle papers/main
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -26,6 +28,14 @@ HEADING_RE = re.compile(r"\\(?:title|section|subsection|subsubsection|paragraph)
 CITE_RE = re.compile(r"\\cite[pt]?\*?(?:\[[^\]]*\])*\{([^}]+)\}")
 BIB_KEY_RE = re.compile(r"@\w+\s*\{\s*([^,\s]+)\s*,")
 OVERFULL_RE = re.compile(r"Overfull \\hbox \(([0-9]+(?:\.[0-9]+)?)pt too wide\)")
+ABSTRACT_RE = re.compile(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", re.DOTALL)
+PLAIN_TEXT_MACRO_RE = re.compile(
+    r"\\(?:texttt|emph|textbf|textit|lean|fract|cite[pt]?|ref|eqref)\b"
+    r"|\\['\"`^~=.uvHc](?:\{|[A-Za-z])"
+)
+TILDE_JOIN_RE = re.compile(r"(?<=\S)~(?=\S)")
+DOUBLE_HYPHEN_RE = re.compile(r"(?<=[A-Za-z])--(?=[A-Za-z])")
+MIN_PDF_BYTES = 1024
 
 
 def strip_tex_comments(text: str) -> str:
@@ -82,6 +92,106 @@ def strip_protected_spans(text: str) -> str:
             if chars[j] != "\n":
                 chars[j] = " "
     return "".join(chars)
+
+
+def strip_math_spans(text: str) -> str:
+    """Blank out `$...$` and `\\(...\\)` inline math spans while preserving newlines."""
+    chars = list(text)
+    n = len(text)
+    i = 0
+    in_dollar = False
+    in_paren = False
+    while i < n:
+        ch = text[i]
+        if ch == "\\" and i + 1 < n:
+            nxt = text[i + 1]
+            if not in_dollar and not in_paren and nxt == "(":
+                in_paren = True
+                chars[i] = " "
+                chars[i + 1] = " "
+                i += 2
+                continue
+            if in_paren and nxt == ")":
+                in_paren = False
+                chars[i] = " "
+                chars[i + 1] = " "
+                i += 2
+                continue
+            if in_dollar or in_paren:
+                chars[i] = " "
+                if chars[i + 1] != "\n":
+                    chars[i + 1] = " "
+            i += 2
+            continue
+        if ch == "$" and not in_paren:
+            if i + 1 < n and text[i + 1] == "$":
+                chars[i] = " "
+                chars[i + 1] = " "
+                i += 2
+                continue
+            in_dollar = not in_dollar
+            chars[i] = " "
+            i += 1
+            continue
+        if (in_dollar or in_paren) and chars[i] != "\n":
+            chars[i] = " "
+        i += 1
+    return "".join(chars)
+
+
+def check_abstract_plain_text(tex_path: Path, clean: str) -> list[str]:
+    """Ensure abstract body is clean for web metadata extraction (no text-level TeX macros)."""
+    errors: list[str] = []
+    match = ABSTRACT_RE.search(clean)
+    if not match:
+        return [f"{tex_path}: missing `\\begin{{abstract}}...\\end{{abstract}}` block"]
+    abstract_raw = match.group(1)
+    base_line = clean[: match.start()].count("\n") + 1
+    if r"\fract{" in abstract_raw:
+        errors.append(
+            f"{tex_path}:{base_line}: custom macro `\\fract{{...}}` inside abstract "
+            "(use standard `\\{{...\\}}`)"
+        )
+    prose_only = strip_math_spans(abstract_raw)
+    for label, pattern in (
+        ("text-level LaTeX macro or accent escape", PLAIN_TEXT_MACRO_RE),
+        ("non-breaking tilde `~` outside math", TILDE_JOIN_RE),
+        ("LaTeX double-hyphen `--` in prose word join", DOUBLE_HYPHEN_RE),
+    ):
+        found = pattern.search(prose_only)
+        if found:
+            line_no = base_line + prose_only[: found.start()].count("\n")
+            errors.append(f"{tex_path}:{line_no}: {label} `{found.group(0)}` inside abstract")
+    return errors
+
+
+def check_metadata_plain_text() -> list[str]:
+    """Ensure CITATION.cff and .zenodo.json are valid and free of raw LaTeX text escapes."""
+    errors: list[str] = []
+    cff_path = ROOT / "CITATION.cff"
+    if cff_path.exists():
+        cff_text = cff_path.read_text(encoding="utf-8")
+        for i, line in enumerate(cff_text.splitlines(), 1):
+            m = PLAIN_TEXT_MACRO_RE.search(line) or TILDE_JOIN_RE.search(line) or DOUBLE_HYPHEN_RE.search(line)
+            if m:
+                errors.append(f"{cff_path}:{i}: raw LaTeX escape/macro `{m.group(0)}` in CITATION.cff")
+
+    zenodo_path = ROOT / ".zenodo.json"
+    if zenodo_path.exists():
+        try:
+            data = json.loads(zenodo_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"{zenodo_path}: invalid JSON: {exc}")
+            return errors
+        for field in ("title", "description"):
+            val = data.get(field)
+            if isinstance(val, str):
+                m = PLAIN_TEXT_MACRO_RE.search(val) or TILDE_JOIN_RE.search(val) or DOUBLE_HYPHEN_RE.search(val)
+                if m:
+                    errors.append(
+                        f"{zenodo_path}: raw LaTeX escape/macro `{m.group(0)}` in `.zenodo.json` field `{field}`"
+                    )
+    return errors
 
 
 def check_bib_file(bib_path: Path) -> tuple[set[str], list[str]]:
@@ -169,12 +279,53 @@ def check_tex_source(tex_path: Path) -> list[str]:
                 line_no = clean[: match.start()].count("\n") + 1
                 errors.append(f"{tex_path}:{line_no}: citation key `{key_s}` missing in refs.bib")
 
+    # Abstract plain-text / aiXiv web compatibility check.
+    errors.extend(check_abstract_plain_text(tex_path, clean))
+
+    return errors
+
+
+def check_pdf_artifact(pdf_path: Path) -> list[str]:
+    """Verify compiled PDF artifact exists, is non-trivial, and begins with `%PDF-`."""
+    if not pdf_path.exists():
+        return [f"{pdf_path}: missing compiled PDF artifact (required for release/submission)"]
+    size = pdf_path.stat().st_size
+    if size < MIN_PDF_BYTES:
+        return [f"{pdf_path}: PDF artifact too small ({size} bytes < {MIN_PDF_BYTES})"]
+    with pdf_path.open("rb") as handle:
+        header = handle.read(5)
+    if header != b"%PDF-":
+        return [f"{pdf_path}: invalid PDF header {header!r} (expected b'%PDF-')"]
+    return []
+
+
+def check_submission_bundle(bundle_dir: Path) -> list[str]:
+    """Validate that a paper directory holds a complete, clean release/submission bundle."""
+    errors: list[str] = []
+    tex_path = bundle_dir / "main.tex"
+    bib_path = bundle_dir / "refs.bib"
+    pdf_path = bundle_dir / "main.pdf"
+    if not tex_path.exists():
+        errors.append(f"{tex_path}: missing main.tex")
+    else:
+        errors.extend(check_tex_source(tex_path))
+    if not bib_path.exists():
+        errors.append(f"{bib_path}: missing refs.bib")
+    errors.extend(check_pdf_artifact(pdf_path))
+    for stray in sorted(bundle_dir.glob("HANDOFF*.md")):
+        errors.append(f"{stray}: stray handoff note inside submission directory")
     return errors
 
 
 def check_build_dir(build_dir: Path, max_overfull_pt: float) -> list[str]:
-    """Validate compiled `.log` and `.blg` diagnostics inside `build_dir`."""
+    """Validate submission completeness plus compiled `.log` and `.blg` inside `build_dir`."""
     errors: list[str] = []
+    if not (build_dir / "main.tex").exists():
+        errors.append(f"{build_dir / 'main.tex'}: missing TeX entrypoint")
+    if not (build_dir / "refs.bib").exists():
+        errors.append(f"{build_dir / 'refs.bib'}: missing BibTeX file")
+    errors.extend(check_pdf_artifact(build_dir / "main.pdf"))
+
     log_path = build_dir / "main.log"
     blg_path = build_dir / "main.blg"
 
@@ -234,6 +385,12 @@ def main(argv: list[str]) -> int:
         help="Validate compiled main.log/main.blg inside the given paper build directory.",
     )
     parser.add_argument(
+        "--check-bundle",
+        type=Path,
+        default=None,
+        help="Validate release/submission bundle completeness (main.tex + refs.bib + main.pdf).",
+    )
+    parser.add_argument(
         "--max-overfull-pt",
         type=float,
         default=5.0,
@@ -241,7 +398,7 @@ def main(argv: list[str]) -> int:
     )
     args = parser.parse_args(argv)
 
-    run_source = args.source or args.build is None
+    run_source = args.source or (args.build is None and args.check_bundle is None)
     errors: list[str] = []
 
     if run_source:
@@ -253,6 +410,16 @@ def main(argv: list[str]) -> int:
             errors.extend(file_errors)
             if not file_errors:
                 print(f"ok [source] {tex.relative_to(ROOT)}")
+        meta_errors = check_metadata_plain_text()
+        errors.extend(meta_errors)
+        if not meta_errors:
+            print("ok [meta]   CITATION.cff & .zenodo.json")
+
+    if args.check_bundle is not None:
+        bundle_errors = check_submission_bundle(args.check_bundle)
+        errors.extend(bundle_errors)
+        if not bundle_errors:
+            print(f"ok [bundle] {args.check_bundle}")
 
     if args.build is not None:
         build_errors = check_build_dir(args.build, args.max_overfull_pt)
