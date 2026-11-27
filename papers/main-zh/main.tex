@@ -41,7 +41,7 @@
 \maketitle
 
 \begin{abstract}
-对 Mahler 映射 $T x = \{3x/2\}$ 及其互素有理基类比 $\alpha = \pm p/q$（$2 \le q < p$），我们研究哪些符号轨道能在一个给定区间内存活，以及存活轨道能分布到多远。一个同时的 Archimedean 与 $q$-adic Padé 比较把最终周期轨道 $U V^{w}$ 的排除归约为一个初等事实：一个整数不可能同时被 $q$ 高度整除又在 Archimedean 意义下很小；对每个互素 $(p,q)$，这给出临界重复指数 $\log_{q} p$。对 $9/4$ 模型，我们证明镜像与同余障碍、$2$-adic 与 $3$-adic 存活集在模 $36^{K}$ 下的 CRT 交集（其对径直径至多 $(9^{K} - 4^{K})/5$），以及定量的奇数频率 Fourier 衰减；最后一项被推广为对所有互素基的 Weyl 等分布估计。对 $3/2$ 映射，我们把确定性的单分支退出与双分支关系分开，构造显式的联合周期轨道，并证明：无内部分支的无环分量排序迫使符号熵为零，且带有精确有理证书。代数对分支的有限性是唯一的条件性陈述，它由 Schlickewei 子空间定理的一个显式孤立实例推出。
+对 Mahler 映射 $T x = \{3x/2\}$ 及其互素有理基类比 $\alpha = \pm p/q$（$2 \le q < p$），我们研究哪些符号轨道能在一个给定区间内存活，以及存活轨道能分布到多远。一个同时的 Archimedean 与 $q$-adic Padé 比较把最终周期轨道 $U V^{w}$ 的排除归约为一个初等事实：一个整数不可能同时被 $q$ 高度整除又在 Archimedean 意义下很小；对每个互素 $(p,q)$，这给出临界重复指数 $\log_{q} p$。对 $9/4$ 模型，我们证明镜像与同余障碍、$2$-adic 与 $3$-adic 存活集在模 $36^{K}$ 下的 CRT 交集（其对径直径至多 $(9^{K} - 4^{K})/5$），以及定量的奇数频率 Fourier 衰减；最后一项被推广为对所有互素基的 Weyl 等分布估计。对 $3/2$ 映射，我们把确定性的单分支退出与双分支关系分开，构造显式的联合周期轨道，并证明：无内部分支的无环分量排序迫使符号熵为零，且带有精确有理证书。具有两两互不相同间隔的代数对违反对集合的有限性由 Schlickewei 子空间定理在论文层面无条件证明；其 Lean 4 形式化是整个开发中唯一条件性的部分，仅依赖于一条显式孤立的后归约公理。
 \end{abstract}
 
 \setcounter{tocdepth}{1}
@@ -60,7 +60,7 @@ Mahler \citep{mahler1968} 提出了 $\fract{\xi(3/2)^{n}}$ 的分布问题，此
 
 \subsection{主要结果}
 
-我们证明四组陈述。前三组是无条件的；第四组孤立出一个条件性的有限性定理。每个陈述的形式化状态都在其陈述处记录，并在第~\ref{sec:formal} 与第~\ref{sec:ai} 节中总结。
+我们证明四组陈述。四组陈述在论文层面均是无条件的；前三组（除标明的仅论文注释外）均在零公理核中形式化，第四组的 Lean 形式化则是条件性的。每个陈述的形式化状态都在其陈述处记录，并在第~\ref{sec:formal} 与第~\ref{sec:ai} 节中总结。
 
 \begin{theorem}[主定理 A：Pad\'e 比较与一般重复指数]
 \label{thm:mainA}
@@ -92,12 +92,12 @@ Mahler \citep{mahler1968} 提出了 $\fract{\xi(3/2)^{n}}$ 的分布问题，此
 
 \noindent\emph{形式化状态.} 带洞存活集的精确性在定理~\ref{thm:holed} 中于论文层面证明；它没有被形式化。在 Lean 中，声明 \texttt{holed\_cage\_two\_cycle} 与 \texttt{holed\_cage\_transients} 只验证了这四个点位于障碍内以及四个 $\mathrm{Step}$ 转移成立，并未验证其它所有点都会离开。
 
-\begin{theorem}[主定理 D：代数对分支，条件性]
+\begin{theorem}[主定理 D：代数对分支]
 \label{thm:mainD}
-假设 Schlickewei $p$-adic 子空间定理以下文固定的形式成立。对每个代数无理数 $\delta$ 和每个 $\vartheta \in (0,1)$，满足 $2 \le a < c$、间隔 $c-a$ 互不相同、且 $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ 到一个整数的距离小于 $\vartheta^{c}$ 的下标对集合是有限的。
+对每个代数无理数 $\delta$ 和每个 $\vartheta \in (0,1)$，任何满足 $2 \le a < c$、间隔 $c-a$ 两两互不相同、且 $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ 到一个整数的距离至多为 $\vartheta^{c}$ 的下标对集合是有限的。
 \end{theorem}
 
-定理~\ref{thm:mainA} 与定理~\ref{thm:mainB} 是无条件的，并在零公理核中形式化。定理~\ref{thm:mainC} 是无条件的：其有限陈述已形式化，而带洞存活集的精确性在论文中证明，并在陈述后如此标记。定理~\ref{thm:mainD} 是唯一条件性的结果；其假设被隔离在形式化的一个独立部分中，不在其它地方使用。
+定理~\ref{thm:mainA} 与定理~\ref{thm:mainB} 是无条件的，并在零公理核中形式化。定理~\ref{thm:mainC} 是无条件的：其有限陈述已形式化，而带洞存活集的精确性在论文中证明，并在陈述后如此标记。定理~\ref{thm:mainD} 在论文层面由 Schlickewei 的 $S$-算术子空间定理无条件推出（第~\ref{sec:algpair} 节），而其 Lean~4 形式化则是条件性的，依赖于独立库 \texttt{Mahler32Conditional} 中孤立出的唯一一条后归约假设（不在其它任何地方使用）。
 
 \subsection{组织}
 
@@ -384,7 +384,7 @@ Mahler \citep{mahler1968} 提出了 $\fract{\xi(3/2)^{n}}$ 的分布问题，此
 \end{theorem}
 
 \begin{proof}
-定理~\ref{thm:contraction} 的余弦乘积被 $\gamma^{R}$ 控制，其中 $\gamma = \cos(\pi/18) < 1$，$R = \lfloor \log_{4} K \rfloor$，因为每个数字贡献一个到最近整数距离至少 $1/18$ 的因子。由于 $K < 4^{R+1}$，有 $\gamma^{R} = \gamma^{-1} \gamma^{R+1} \le C K^{-c}$，其中 $c = -\log \gamma / \log 4$，$C = \gamma^{-1}$。
+令 $x_{m} = w^{K-m} u / 4^{m+1}$（$0 \le m < K$），并记 $\|x\| = \min_{n \in \Z} |x - n|$ 为到最近整数的距离。由 $9 w \equiv 1 \pmod{4^{K}}$ 得，对 $0 \le m < K - 1$ 有 $4 x_{m+1} \equiv 9 x_{m} \pmod 1$。因此一旦 $\|x_{m}\| < 1/18$，必有 $\|x_{m+1}\| \ge 1/8 > 1/18$ 或 $\|x_{m+1}\| = \tfrac94 \|x_{m}\|$。因为 $u$ 为奇数，所以 $\|x_{m}\| \ge 4^{-(m+1)}$，从而 $\|x_{m}\| < 1/18$ 的连续游程按 $9/4$ 几何增长，并在每个不相交块 $m \in [4^{j} - 1, 3 \cdot 4^{j} - 1]$（$0 \le j < R = \lfloor \log_{4} K \rfloor$）内必至少一次离开 $[0, 1/18)$。于是这 $R$ 个块在定理~\ref{thm:contraction} 的乘积中各自提供至少一个因子 $|\cos(\pi x_{m})| \le \gamma = \cos(\pi/18) < 1$，而其余因子至多为 $1$。由于 $K < 4^{R+1}$，有 $\gamma^{R} = \gamma^{-1} \gamma^{R+1} \le C K^{-c}$，其中 $c = -\log \gamma / \log 4$，$C = \gamma^{-1}$。
 \end{proof}
 
 \begin{corollary}[收缩与衰减的复合]
@@ -406,7 +406,7 @@ $q$-收缩与基数计数是精确的。$p$-乘法递推同样是余弦乘积，
 
 \begin{remark}[双势证书：框架与实例]
 \label{rem:dualpotential}
-指数衰减由一个有限收缩证书补充。在一个具有严格正顶点势 $\varphi$ 的有限有向图上，若边权 $w$ 对每条边满足 $w(u,v)\varphi(v) \le \lambda \varphi(u)$，其中 $\lambda < 1$，则沿每条闭路径 $p$ 有 $\prod_{e \in p} w(e) \le \lambda^{|p|}$。形式化对任意 \texttt{DualPotentialCert} 完整证明了这个蕴涵，并在两个具体容器 \texttt{cert42} 与 \texttt{cert44} 处实例化。目前这些容器是常数权基线：边关系是完全图，$\varphi \equiv 1$，权重为一致的 $161/162$（分别 $249/250$），因此它们用精确有理数见证接口，但 \emph{不是}具体的几何势表，也不与 $\hat\mu_{K}$ 耦合。定理~\ref{thm:94global} 的衰减估计由余弦乘积独立证明；填充几何表是另一项工作，这里不作声称。
+关于 $K$ 的多项式衰减 $O(K^{-c})$ 由一个沿图路径给出指数收缩的有限证书所补充。在一个具有严格正顶点势 $\varphi$ 的有限有向图上，若边权 $w$ 对每条边满足 $w(u,v)\varphi(v) \le \lambda \varphi(u)$，其中 $\lambda < 1$，则沿每条闭路径 $p$ 有 $\prod_{e \in p} w(e) \le \lambda^{|p|}$。形式化对任意 \texttt{DualPotentialCert} 完整证明了这个蕴涵，并在两个具体容器 \texttt{cert42} 与 \texttt{cert44} 处实例化。目前这些容器是常数权基线：边关系是完全图，$\varphi \equiv 1$，权重为一致的 $161/162$（分别 $249/250$），因此它们用精确有理数见证接口，但 \emph{不是}具体的几何势表，也不与 $\hat\mu_{K}$ 耦合。定理~\ref{thm:94global} 的衰减估计由余弦乘积独立证明；填充几何表是另一项工作，这里不作声称。
 \end{remark}
 
 \section{\texorpdfstring{$3/2$}{3/2} 映射的符号排除：确定性与联合分支}
@@ -465,12 +465,15 @@ $q$-收缩与基数计数是精确的。$p$-乘法递推同样是余弦乘积，
 \noindent\emph{形式化状态.} 四个点、它们在障碍中的成员关系以及四个 $\mathrm{Step}$ 转移由内核检查：相关声明为 \texttt{holed\_cage\_two\_cycle} 与 \texttt{holed\_cage\_transients}。对其它所有点的排除是上面的论文证明，未被形式化；证书脚本只确认到深度 $24$ 的四分量计数。
 
 \begin{remark}[宽度与 $8/57$ 的算术来源]
+\label{rem:857}
 区间 $[2/7,5/7)$ 的宽度为 $3/7$，而 $[1/7,3/7) \cup [4/7,6/7)$ 的宽度为 $4/7 > 1/2$。对左洞族 $[\delta,1/2)$ 与分支限制映射 $F$（$F = T_{0}$ 在 $[0,1/3)$ 上，$F = T_{1}$ 在 $[1/3,1/2)$ 上），阈值
 \[
   \delta^{*} = \frac{8}{57} = \frac23 \cdot \frac{4}{19} = T_{0}^{-1}\!\left(\frac{4}{19}\right)
 \]
-分离出三个精确区域：$\delta > 4/19$ 在有限步内清空；$8/57 < \delta \le 4/19$ 保留一个有限的零熵存活集，其中包含 $3$-环 $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$；$\delta < 8/57$ 通过折叠 $T_{1} \circ T_{0}^{3}$ 把 $[8/81,8/57)$ 映到 $[0,4/19)$ 而获得正熵。
+分离出三个区域：$\delta > 4/19$ 在有限步内清空；$8/57 < \delta \le 4/19$ 保留一个有限的零熵存活集，其中包含 $3$-环 $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$；$\delta < 8/57$ 通过折叠 $T_{1} \circ T_{0}^{3}$ 把 $[8/81,8/57)$ 映到 $[0,4/19)$ 而获得正熵。事实上，$F = T_{1}$ 将 $[1/3,1/2)$ 映入 $[0,1/4)$，而在 $(2/9,1/4)$ 上返回映射 $T_{1} \circ T_{0}$ 为 $y \mapsto 9y/4 - 1/2 < 1/16 < 8/57$；因此每次 $T_{1}$ 步后，任何留在 $[\delta,1/2)$（$\delta \ge 1/16$）内的轨道都必须经由返回字 $T_{1} \circ T_{0}^{2}$（在 $[4/27,2/9]$ 上，斜率 $27/8$，扩张不动点为 $4/19$）或 $T_{1} \circ T_{0}^{3}$（在 $[8/81,4/27]$ 上）回到 $[1/3,1/2)$。将 $\delta$ 与 $4/19$ 及其 $T_{0}$-原像 $8/57$ 比较即得三种情形：大于 $4/19$ 时轨道扩张越过 $2/9$ 而退出；在 $(8/57,4/19]$ 上仅 $4/19$ 及其有限原像存活；小于 $8/57$ 时两个返回分支在 $[\delta,4/19)$ 上重叠从而产生正熵。
 \end{remark}
+
+\noindent\emph{形式化状态.} 宽度恒等式（\texttt{width\_three\_sevenths}、\texttt{width\_four\_sevenths}、\texttt{four\_sevenths\_gt\_half}）与 $3$-环 $4/19 \mapsto 6/19 \mapsto 9/19 \mapsto 4/19$（\texttt{cup\_cycle}）均已由内核检查；注~\ref{rem:857} 中对 $[\delta,1/2)$ 的三区域分类为仅论文内容，并由 \texttt{scripts/generate\_certificates.py} 以精确有理算术独立验证，暂无 Lean 声明。
 
 \subsection{有限状态零熵排除}
 
@@ -539,40 +542,56 @@ $U$ 保持 $[0,1/2)$，具有精确 $3$-环 $4/19 \mapsto 6/19 \mapsto 9/19 \map
 \section{代数对分支}
 \label{sec:algpair}
 
-Stephan 的程序把存活词分为有理情形与代数对情形 \citep{stephan2026subspace,stephan2026minimal,stephan2026third}；代数对归约本身是 \citep{stephan2026minimal} 中孤立出的那一个。对代数无理乘子 $\delta$，违反下标对 $(a,c)$（$2 \le a < c$，间隔 $c-a$ 互不相同）是那些使 $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ 到一个整数的距离小于 $\vartheta^{c}$ 的对。
+Stephan 的程序把存活词分为有理情形与代数对情形 \citep{stephan2026subspace,stephan2026minimal,stephan2026third}；代数对归约本身是 \citep{stephan2026minimal} 中孤立出的那一个。对代数无理乘子 $\delta$，违反下标对 $(a,c)$（$2 \le a < c$）是指使 $\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr)$ 到某整数 $n_{p} \in \Z$ 的距离至多为 $\vartheta^{c}$ 的下标对。
 
-\begin{theorem}[代数对有限性，条件性]
+\begin{theorem}[代数对有限性]
 \label{thm:algpair}
-假设 Schlickewei $p$-adic 子空间定理以本文孤立出的形式成立。则对每个代数无理数 $\delta$ 与每个 $\vartheta \in (0,1)$，具有互不相同间隔的违反对集合是有限的。
+对每个代数无理数 $\delta$ 与每个 $\vartheta \in (0,1)$，任何间隔 $c-a$ 两两互不相同的违反对 $(a,c)$（$2 \le a < c$）集合都是有限的。
 \end{theorem}
 
 \begin{proof}
-在三项关系中清分母并写
+取 $S = \{\infty, 2, 3\}$ 并对 $(a,c)$ 清分母，构造非零整向量
 \[
-  (x_{1},x_{2},x_{3}) = (3^{c}, 3^{a} 2^{c-a}, 2^{c} n_{p}) \in \Z^{3},
+  x = (x_{1},x_{2},x_{3}) = (3^{c}, 3^{a} 2^{c-a}, 2^{c} n_{p}) \in \Z^{3} \setminus \{0\}.
 \]
-把关系变为 $A x_{1} + B x_{2} + C x_{3} = 0$。在两个非 Archimedean 位，幂恒等地抵消，而 Archimedean 逼近把剩余局部因子界定为 $\vartheta^{-c}$ 乘以高度。三个局部贡献的乘积因此满足 $\vartheta^{c} \ll H(x)^{-\varepsilon}$，其中 $\varepsilon > 0$ 是固定的（一个这样的 $\varepsilon$ 就足够），这就是 $S$-算术子空间定理的高度假设。所得有理关系按 $C = 0$ 与否分裂。若 $C = 0$，齐性在无限多个不同间隔上固定 $(3/2)^{c-a}$，与严格单调性矛盾。若 $C \neq 0$，解出 $n_{p}$ 得 $|\delta - \alpha| \le |\delta + \beta|(2/3)^{c-a} + (2\vartheta/3)^{c} \to 0$，迫使 $\delta \in \Q$，与无理性矛盾。
+在每个位 $v \in S$ 上选取在 $\overline{\Q}$ 上线性无关的线性型：在 $v = \infty$ 处取 $L_{\infty,1}(x) = x_{1}$、$L_{\infty,2}(x) = x_{2}$ 与 $L_{\infty,3}(x) = \delta x_{1} - \delta x_{2} - x_{3}$；在 $v \in \{2,3\}$ 处取坐标线性型 $L_{v,i}(x) = x_{i}$（$i = 1,2,3$）。按标准 $p$-adic 绝对值 $|2|_{2} = 1/2$ 与 $|3|_{3} = 1/3$，各坐标处的局部乘积满足
+\[
+  |x_{1}|_{\infty} |x_{1}|_{2} |x_{1}|_{3} = 3^{c} \cdot 1 \cdot 3^{-c} = 1,
+  \qquad
+  |x_{2}|_{\infty} |x_{2}|_{2} |x_{2}|_{3} = 3^{a} 2^{c-a} \cdot 2^{-(c-a)} \cdot 3^{-a} = 1,
+\]
+又因 $n_{p} \in \Z$ 蕴含 $|2^{c} n_{p}|_{2} \le 2^{-c}$ 且 $|2^{c} n_{p}|_{3} \le 1$，故
+\[
+  |L_{\infty,3}(x)|_{\infty} |x_{3}|_{2} |x_{3}|_{3}
+  = 2^{c}\,\bigl|\delta\bigl((3/2)^{c} - (3/2)^{a}\bigr) - n_{p}\bigr|\cdot |2^{c} n_{p}|_{2}\, |2^{c} n_{p}|_{3}
+  \le (2\vartheta)^{c} \cdot 2^{-c} \cdot 1 = \vartheta^{c}.
+\]
+将全部九个线性型的绝对值相乘，即得 $S$-算术乘积界
+\[
+  \prod_{v \in S} \prod_{i=1}^{3} |L_{v,i}(x)|_{v} \;\le\; \vartheta^{c}.
+\]
+此外，$x_{2} = 3^{c}(2/3)^{c-a} < 3^{c} = x_{1}$，且 $|n_{p}| \le |\delta|(3/2)^{c} + \vartheta^{c} \le (|\delta|+1)(3/2)^{c}$ 推出 $|x_{3}| = 2^{c}|n_{p}| \le (|\delta|+1)3^{c}$，从而高度满足 $H(x) = \max(|x_{1}|,|x_{2}|,|x_{3}|) \le (|\delta|+1)3^{c}$（若用 $d = \gcd(x_{1},x_{2},x_{3}) \mid 3^{c}$ 约去公因子，每个局部乘积仍乘以 $|d|_{\infty}|d|_{2}|d|_{3}=1$ 而高度不增）。固定 $0 < \varepsilon < -\log\vartheta / \log 3$，对充分大的 $c$ 有 $\vartheta^{c} \ll H(x)^{-\varepsilon}$。由 Schlickewei 的 $S$-算术子空间定理，所有满足逼近条件的向量 $x$ 均落在有限多个真有理线性子空间 $A x_{1} + B x_{2} + C x_{3} = 0$ 之中。对任意间隔 $c - a$ 两两互不相同的无穷违反对集合，由鸽笼原理可选出落在同一子空间内的无穷子集；除以 $2^{c}$ 即得 $A(3/2)^{c} + B(3/2)^{a} + C n_{p} = 0$。
+
+所得关系按 $C = 0$ 与否分裂。若 $C = 0$，齐性在两两间隔互不相同的无穷集上固定 $(3/2)^{c-a} = -B/A$，与严格单调性矛盾。若 $C \neq 0$，解出 $n_{p}$ 得 $|\delta - \alpha| \le |\delta + \beta|(2/3)^{c-a} + (2\vartheta/3)^{c} \to 0$（当 $c - a \to \infty$），迫使 $\delta = \alpha \in \Q$，与无理性矛盾。
 \end{proof}
 
-两个子情形无需公理即被证明：齐性消元与非齐性有理极限都是无条件的。只有有限性定理本身使用孤立假设，而包含它的模块是一个独立库，因此该假设无法进入零公理核。
+由于 Schlickewei 子空间定理是既成定理且上述归约已在文中完整给出，定理~\ref{thm:algpair} 在论文层面是无条件定理。相反，其 Lean~4 形式化是条件性的：唯有 $C = 0$ 与 $C \neq 0$ 两个收尾子情形在无公理下形式化，而从 Diophantine 逼近条件推出有理线性关系的步骤则被孤立为命名公理 \texttt{schlickewei\_subspace\_Q3}，置于独立库 \texttt{Mahler32Conditional} 中，无法进入零公理核。
 
-孤立假设是一个 \emph{特化后归约} 陈述，而不是一般 $S$-算术子空间定理。具体地，Lean 公理把关于 $\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)$ 的 Diophantine 逼近条件作为假设，并返回有理线性关系；产生 $(3^{c}, 3^{a}2^{c-a}, 2^{c}n_{p}) \in \Z^{3}$ 的清分母过程，以及验证 $S$-算术乘积高度满足 $\vartheta^{c} \ll H(x)^{-\varepsilon}$ 的步骤，都在上文的论文证明中完成，但没有形式化。内核无条件检查的是得到关系之后的一切：$C = 0$ 与 $C \ne 0$ 的收尾论证。因此本节的可信基是该特化推论本身，而不是从教科书定理到它的形式推导。
-
-最后，\citet[定理~5.15]{stephan2026minimal} 把该代数对分支作为假设；定理~\ref{thm:algpair} 在所述子空间假设下提供它。
+具体地，该 Lean 公理以 $\delta\bigl((3/2)^{c}-(3/2)^{a}\bigr)$ 的逼近条件为假设并返回 $A(3/2)^{c} + B(3/2)^{a} + C n_{p} = 0$；产生 $(3^{c}, 3^{a}2^{c-a}, 2^{c}n_{p})$ 的清分母及乘积与高度界的验证均在上文论文证明中完成，未予形式化。最后，\citet[定理~5.15]{stephan2026minimal} 将该代数对分支列为假设；定理~\ref{thm:algpair} 为其提供了证明。
 
 \section{形式化验证与可复现性}
 \label{sec:formal}
 
-第~\ref{sec:pade}--\ref{sec:threehalves} 节中未被形式化的陈述都在陈述处标记为仅论文；其余都是内核检查的。内核检查的陈述在 Lean~4 与 Mathlib 中形式化，固定为 Lean~4.36.0 与 Mathlib~4.36.0。零公理核由模块 \texttt{Mahler32} 构建，只依赖命题外延性、经典选择与商可靠性这几条标准公理；它不包含未完成证明，也不包含原生机判定过程。本文讨论承载第~\ref{sec:pade}--\ref{sec:threehalves} 节论证的模块；仓库还包含辅助与外围发展（例如 \texttt{Base6LightCone}、\texttt{SyracuseGates}、\texttt{ArnoldTongue5State}、\texttt{ArnoldTongue7State}、\texttt{DAGBoundedGap}、\texttt{Fib11Free}、\texttt{WalshZeroCorr} 与 \texttt{HInvariance}），它们不用于主要定理。它们都从 \texttt{Mahler32Core.lean} 可达，并由 \texttt{AuditAxioms.lean} 审计；README 记录完整的模块到内容清单。第~\ref{sec:algpair} 节的条件陈述位于独立库 \texttt{Mahler32Conditional}，它是唯一被允许附加该假设的声明。该假设是特化后归约形式：从一般子空间定理到它的通道，包括清分母与高度估计，仅在论文中验证，而两个收尾情形在 Lean 中检查。
+第~\ref{sec:pade}--\ref{sec:threehalves} 节中未被形式化的陈述都在陈述处标记为仅论文；其余都是内核检查的。内核检查的陈述在 Lean~4 与 Mathlib 中形式化，固定为 Lean~4.36.0 与 Mathlib~4.36.0。零公理核由模块 \texttt{Mahler32} 构建，只依赖命题外延性、经典选择与商可靠性这几条标准公理；它不包含未完成证明，也不包含原生机判定过程。本文讨论承载第~\ref{sec:pade}--\ref{sec:threehalves} 节论证的模块；仓库还包含辅助与外围发展（例如 \texttt{Base6LightCone}、\texttt{SyracuseGates}、\texttt{ArnoldTongue5State}、\texttt{ArnoldTongue7State}、\texttt{DAGBoundedGap}、\texttt{Fib11Free}、\texttt{WalshZeroCorr} 与 \texttt{HInvariance}），它们不用于主要定理。它们都从 \texttt{Mahler32Core.lean} 可达，并由 \texttt{AuditAxioms.lean} 审计；README 记录完整的模块到内容清单。第~\ref{sec:algpair} 节的定理~\ref{thm:algpair} 在论文层面由 Schlickewei 子空间定理无条件成立，而其 Lean~4 形式化位于独立库 \texttt{Mahler32Conditional} 中，依赖孤立出的单条后归约公理 \texttt{schlickewei\_subspace\_Q3}（其中的 $C = 0$ 与 $C \ne 0$ 收尾论证均无公理证明）。
 
-有两项仅论文，并在陈述处如此标记。第一项是定理~\ref{thm:holed} 中带洞存活集对其它所有点的排除：Lean 通过 \texttt{holed\_cage\_two\_cycle} 与 \texttt{holed\_cage\_transients} 验证四个点及其四个 $\mathrm{Step}$ 转移，但精确性是论文证明。第二项是证书宽度与轨道排除界的比较，本文不做此比较（注~\ref{rem:certwidths}）。引理~\ref{lem:lift} 的有限窗口不等式、定理~\ref{thm:cantor} 的区间夹逼、定理~\ref{thm:contraction} 的余弦乘积以及定理~\ref{thm:cup} 的长度恒等式都有内核检查的声明；此前未列出的声明 \texttt{Tcup\_mem}、\texttt{Tcup\_dist}、\texttt{two\_one\_split} 与 \texttt{scale\_two\_thirds} 现已加入 \texttt{AuditAxioms.lean}。
+第~\ref{sec:pade}--\ref{sec:threehalves} 节中有三项仅论文内容，并在陈述处如此标记。第一项是定理~\ref{thm:holed} 中带洞存活集对其它所有点的排除：Lean 通过 \texttt{holed\_cage\_two\_cycle} 与 \texttt{holed\_cage\_transients} 验证四个点及其四个 $\mathrm{Step}$ 转移，但精确性是论文证明。第二项是注~\ref{rem:857} 中对 $[\delta,1/2)$ 的三区域分类：已在论文中证明，并由 \texttt{scripts/generate\_certificates.py} 以精确有理算术确认，无 Lean 声明。第三项是证书宽度与轨道排除界的比较，本文不做此比较（注~\ref{rem:certwidths}）。引理~\ref{lem:lift} 的有限窗口不等式、定理~\ref{thm:cantor} 的区间夹逼、定理~\ref{thm:contraction} 的余弦乘积以及定理~\ref{thm:cup} 的长度恒等式都有内核检查的声明；\texttt{Tcup\_mem}、\texttt{Tcup\_dist}、\texttt{two\_one\_split} 与 \texttt{scale\_two\_thirds} 均已纳入 \texttt{AuditAxioms.lean}。
 
 可复现性是分层的。构建运行 \texttt{lake build -KwarningAsError=true} 并对核做 lint。公理纪律由内核公理检查审计，拒绝标准三元组之外的任何公理；条件库则按白名单检查，只添加孤立假设。精确有理证书由证书脚本断言并重新生成。可信基被独立探测：\texttt{leanchecker} 重放每个模块，而 \texttt{nanoda}（Lean 内核的一个独立 Rust 实现）在 \texttt{lean4export} 导出的核心与条件环境上重新类型检查。工作流文件被 lint，LaTeX 源被检查环境平衡、引用与构建警告。仓库维护完整的定理到声明映射，存档快照可在标题页记录的 Zenodo DOI 下获得。
 
 \section{AI 协助声明}
 \label{sec:ai}
 
-本 Lean 开发与本文准备在大型语言模型的大量协助下完成。数学方向、陈述选择与每个断言审阅均由作者负责；模型协助了 elaboration、策略搜索、起草与持续集成迭代。每个标记为内核检查的陈述都经 Lean~4 内核与独立内核检查。两项仅论文内容——定理~\ref{thm:holed} 中带洞存活集的精确性，以及注~\ref{rem:certwidths} 中证书宽度的不比较——全文如此标记；条件陈述也全文如此标记。本文没有任何数值或结构断言依赖于未经验证的模型输出。
+本 Lean 开发与本文准备在大型语言模型的大量协助下完成。数学方向、陈述选择与每个断言审阅均由作者负责；模型协助了 elaboration、策略搜索、起草与持续集成迭代。每个标记为内核检查的陈述都经 Lean~4 内核与独立内核检查。三项仅论文内容——定理~\ref{thm:holed} 中带洞存活集的精确性、注~\ref{rem:857} 中 $[\delta,1/2)$ 的三区域分类，以及注~\ref{rem:certwidths} 中证书宽度的不比较——与定理~\ref{thm:algpair} 的条件性 Lean 形式化均全文明确标明。本文没有任何数值或结构断言依赖于未经验证的模型输出。
 
 \bibliography{refs}
 
